@@ -90,7 +90,6 @@ public:
 
 private:
 	std::map<uint64_t, Vertex<BundledStructType>*> vertex_map_;
-	AStar<Vertex<BundledStructType>> astar_;
 
 private:
 	/// This function checks if a vertex already exists in the graph.
@@ -227,7 +226,7 @@ public:
 		ResetGraphVertices();
 
 		// do a* search and return search result
-		return astar_.Search(start, goal);
+		return AStar::Search(start, goal);
 	}
 
 	std::vector<Vertex<BundledStructType>*> AStarSearch(uint64_t start_id, uint64_t goal_id)

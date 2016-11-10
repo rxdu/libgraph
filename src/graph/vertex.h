@@ -8,10 +8,10 @@
 #ifndef SRC_GRAPH_VERTEX_H_
 #define SRC_GRAPH_VERTEX_H_
 
-#include <iostream>
 #include <cstdint>
 
 #include "graph/edge.h"
+#include "graph/astar.h"
 
 namespace srcl_ctrl {
 
@@ -52,12 +52,11 @@ public:
 	uint64_t vertex_id_;
 	std::vector<Edge<Vertex<BundledStructType>*>> edges_;
 
-	// member variables for search
-    template<typename GraphVertexType>
-    friend class AStar;
-
     template<typename BDSType>
     friend class Graph;
+
+    template<typename GraphVertexType>
+    friend std::vector<GraphVertexType*> AStar::Search(GraphVertexType *start, GraphVertexType *goal);
 
 private:
 	bool is_checked_;
