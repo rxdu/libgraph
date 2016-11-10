@@ -1,0 +1,51 @@
+# Temp files
+*/Debug
+build
+build*
+*/build
+*~
+*/~
+*/*.*~
+*.m~
+
+# log
+*.log
+
+# Doxygen
+docs/doxygen/html/
+docs/doxygen/latex
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+#*.so
+#*.dylib
+#*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+#*.lai
+#*.la
+#*.a
+#*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Vim
+tags
+*/tags
+*.swp
+*/*.swp
