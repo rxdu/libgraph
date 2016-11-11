@@ -67,6 +67,7 @@ public:
 	}
 };
 
+// Partial specialization of the Edge class template for pointer types
 template<typename VertexType>
 class Edge<VertexType*>
 {

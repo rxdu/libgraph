@@ -27,6 +27,7 @@ set(BUILD_TEST off)
 
 ## Add sub source directories
 add_subdirectory(demo)
+
 if(BUILD_TEST)
 add_subdirectory(tests)
 endif(BUILD_TEST)

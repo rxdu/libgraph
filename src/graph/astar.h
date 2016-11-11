@@ -23,6 +23,7 @@
 namespace srcl_ctrl {
 
 /// A simple priority queue structure used as A* open list.
+// Source: http://www.redblobgames.com/pathfinding/a-star/implementation.html
 template<typename T, typename Number=double>
 struct PriorityQueue {
 	typedef std::pair<Number, T> PQElement;

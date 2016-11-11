@@ -23,9 +23,6 @@ template<typename BundledStructType>
 class Vertex
 {
 public:
-	/**
-	 * @param bundled_data a reference to the bundled data structure
-	 */
 	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
 	Vertex(BundledStructType bundled_data):
 		// attributes related to associated node
@@ -48,17 +45,20 @@ public:
 		edges_.clear();
 	};
 
+	// friends
+	template<typename BDSType>
+	friend class Graph;
+
+	template<typename GraphVertexType>
+	friend std::vector<GraphVertexType*> AStar::Search(GraphVertexType *start, GraphVertexType *goal);
+
+	// generic attributes
 	BundledStructType bundled_data_;
 	uint64_t vertex_id_;
 	std::vector<Edge<Vertex<BundledStructType>*>> edges_;
 
-    template<typename BDSType>
-    friend class Graph;
-
-    template<typename GraphVertexType>
-    friend std::vector<GraphVertexType*> AStar::Search(GraphVertexType *start, GraphVertexType *goal);
-
 private:
+    // attributes for A* search
 	bool is_checked_;
 	bool is_in_openlist_;
 	double f_astar_;
@@ -67,6 +67,7 @@ private:
 	Vertex<BundledStructType>* search_parent_;
 
 private:
+	/// Clear exiting search info before a new search
 	void ClearVertexSearchInfo()
 	{
 		is_checked_ = false;
@@ -78,12 +79,14 @@ private:
 		h_astar_ = 0.0;
 	}
 
+	/// Get heuristic using function provided by bundled data (pointer type)
 	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
 	double CalcHeuristic(Vertex<T>* dst_vertex)
 	{
 		return this->bundled_data_->GetHeuristic(*(dst_vertex->bundled_data_));
 	}
 
+	/// Get heuristic using function provided by bundled data (non-pointer type)
 	template<class T = BundledStructType,
 			typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
 	double CalcHeuristic(Vertex<T>* dst_vertex)
@@ -92,11 +95,8 @@ private:
 	}
 
 public:
-	/**
-	 * == operator overloading. If two vertices have the same id, they're
-	 * regarded as equal.
-	 */
-	bool operator ==(const Vertex<BundledStructType>& other)
+	/// == operator overloading. If two vertices have the same id, they're regarded as equal.
+	bool operator ==(const Vertex<BundledStructType>& other) const
 	{
 		if(vertex_id_ == other.vertex_id_)
 			return true;
@@ -104,6 +104,8 @@ public:
 			return false;
 	}
 
+	/// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
+	///		the two vertices exists.
 	double GetEdgeCost(const Vertex<BundledStructType>& dst_node) const
 	{
 		double cost = -1;
@@ -120,6 +122,7 @@ public:
 		return cost;
 	}
 
+	/// Get all neighbor vertices of this vertex.
 	std::vector<Vertex<BundledStructType>*> GetNeighbours()
 	{
 		std::vector<Vertex<BundledStructType>*> neighbours;
@@ -130,6 +133,7 @@ public:
 		return neighbours;
 	}
 
+	/// Check if a given vertex is the neighbor of current vertex.
 	bool CheckNeighbour(Vertex<BundledStructType>* dst_node)
 	{
 		std::vector<Vertex<BundledStructType>*> neighbours = GetNeighbours();

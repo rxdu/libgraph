@@ -5,28 +5,7 @@
  *      Author: rdu
  *
  *  Description:
- *  	1. This file defines template classes of the graph structure.
- *  	The basic elements include:
- *  	 	a. Vertex
- *  	 	b. Edge
- *  	 	c. Graph
- *
- *  	Note that all above 3 concepts have a "type". This type is determined by "nodes" used
- *  	to construct the graph. For example, a graph is built to represent the connectivities
- *  	among the leaf nodes of a quad tree. Then we have the following three types of graph
- *  	elements:
- *  		a. Vertex<QuadTreeNode>
- *  		b. Edge<Vertex<QuadTreeNode>>
- *  		c. Graph<QuadTreeNode>
- *
- *  	A vertex must be associated with a node (such as the tree node); an edge connects two
- *  	vertices; a graph is a collection of vertices and the edges of each vertex.
- *
- *  	2. The graph uses unique IDs to index its vertices. So it's required that the
- *  	node used to construct the graph should have an unique ID with the name "node_id_".
- *  	Refer to the definition of "struct ExampleNode" defined below.
- *
- *  	3. A visualized illustration of the graph structure
+ *  	1. A visualized illustration of the graph structure
  *
  *  	Graph "G":
  *  		Vertex "V1" - Edge "V1_E1", which connects "V1" to "Vx1"
@@ -38,7 +17,7 @@
  *  			...
  *
  *  		Vertex "Vx"			...
- *
+ *		2. Refer to documentation for instructions of how to use this library
  */
 
 #ifndef SRC_GRAPH_GRAPH_H_
@@ -55,9 +34,11 @@
 
 namespace srcl_ctrl {
 
+// Graph, Edge, Vertex are supposed to be used only internally
 template<typename T>
 class Graph;
 
+// Alias ended with "_t" should be used in user applications
 template<typename T>
 using Graph_t = Graph<T>;
 
@@ -93,7 +74,7 @@ private:
 
 private:
 	/// This function checks if a vertex already exists in the graph.
-	///	If yes, the functions returns the index of the existing vertex,
+	///	If yes, the functions returns the pointer of the existing vertex,
 	///	otherwise it creates a new vertex.
 	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
 	Vertex<BundledStructType>* GetVertex(BundledStructType vertex_node)
@@ -125,6 +106,31 @@ private:
 		return it->second;
 	}
 
+	/// This function checks if a vertex exists in the graph.
+	///	If yes, the functions returns the pointer of the existing vertex,
+	///	otherwise it returns nullptr.
+	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<BundledStructType>* SearchVertex(BundledStructType vertex_node)
+	{
+		auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
+
+		if(it == vertex_map_.end())
+			return nullptr;
+		else
+			return it->second;
+	}
+
+	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<BundledStructType>* SearchVertex(BundledStructType vertex_node)
+	{
+		auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
+
+		if(it == vertex_map_.end())
+			return nullptr;
+		else
+			return it->second;
+	}
+
 	/// This function is used to reset the vertices for a new search
 	void ResetGraphVertices()
 	{
@@ -149,6 +155,35 @@ public:
 
 		Edge<Vertex<BundledStructType>*> new_edge(src_vertex, dst_vertex,cost);
 		src_vertex->edges_.push_back(new_edge);
+	};
+
+	/// This function is used to remove the edge from src_node to dst_node.
+	bool RemoveEdge(BundledStructType src_node, BundledStructType dst_node)
+	{
+		Vertex<BundledStructType>* src_vertex = SearchVertex(src_node);
+		Vertex<BundledStructType>* dst_vertex = SearchVertex(dst_node);
+
+		if((src_vertex != nullptr) && (dst_vertex != nullptr))
+		{
+			bool found_edge = false;
+			auto idx = src_vertex->edges_.end();
+
+			for(auto it = src_vertex->edges_.begin(); it != src_vertex->edges_.end(); it++)
+			{
+				if((*it).dst_ == dst_vertex)
+				{
+					idx = it;
+					found_edge = true;
+				}
+			}
+
+			if(found_edge)
+				src_vertex->edges_.erase(idx);
+
+			return found_edge;
+		}
+		else
+			return false;
 	};
 
 	/// This functions is used to access all vertices of a graph

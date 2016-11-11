@@ -2,7 +2,5 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Add executables
-## examples
-add_executable(simple_graph simple_graph.cpp)
-
+## demo
 add_executable(graph_demo graph_demo.cpp)

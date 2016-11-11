@@ -28,53 +28,59 @@ int main(int argc, char** argv )
 	}
 
 	// create a graph
-	Graph_t<BDSExample> graph;
+	Graph_t<BDSExample*> graph;
 
-	graph.AddEdge(*(nodes[0]), *(nodes[1]), 1.0);
-	graph.AddEdge(*(nodes[0]), *(nodes[3]), 1.5);
-	graph.AddEdge(*(nodes[1]), *(nodes[0]), 2.0);
-	graph.AddEdge(*(nodes[1]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[1]), *(nodes[2]), 1.0);
-	graph.AddEdge(*(nodes[2]), *(nodes[1]), 1.5);
-	graph.AddEdge(*(nodes[2]), *(nodes[5]), 2.0);
-	graph.AddEdge(*(nodes[3]), *(nodes[0]), 2.5);
-	graph.AddEdge(*(nodes[3]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[1]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[3]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[5]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[2]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[8]), 2.5);
-	graph.AddEdge(*(nodes[7]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[7]), *(nodes[8]), 2.5);
-	graph.AddEdge(*(nodes[8]), *(nodes[5]), 2.5);
-	graph.AddEdge(*(nodes[8]), *(nodes[7]), 2.5);
+//	graph.AddEdge(*(nodes[0]), *(nodes[1]), 1.0);
+//	graph.AddEdge(*(nodes[0]), *(nodes[3]), 1.5);
+//	graph.AddEdge(*(nodes[1]), *(nodes[0]), 2.0);
+//	graph.AddEdge(*(nodes[1]), *(nodes[4]), 2.5);
+//	graph.AddEdge(*(nodes[1]), *(nodes[2]), 1.0);
+//	graph.AddEdge(*(nodes[2]), *(nodes[1]), 1.5);
+//	graph.AddEdge(*(nodes[2]), *(nodes[5]), 2.0);
+//	graph.AddEdge(*(nodes[3]), *(nodes[0]), 2.5);
+//	graph.AddEdge(*(nodes[3]), *(nodes[4]), 2.5);
+//	graph.AddEdge(*(nodes[4]), *(nodes[1]), 2.5);
+//	graph.AddEdge(*(nodes[4]), *(nodes[3]), 2.5);
+//	graph.AddEdge(*(nodes[4]), *(nodes[5]), 2.5);
+//	graph.AddEdge(*(nodes[5]), *(nodes[2]), 2.5);
+//	graph.AddEdge(*(nodes[5]), *(nodes[4]), 2.5);
+//	graph.AddEdge(*(nodes[5]), *(nodes[8]), 2.5);
+//	graph.AddEdge(*(nodes[7]), *(nodes[4]), 2.5);
+//	graph.AddEdge(*(nodes[7]), *(nodes[8]), 2.5);
+//	graph.AddEdge(*(nodes[8]), *(nodes[5]), 2.5);
+//	graph.AddEdge(*(nodes[8]), *(nodes[7]), 2.5);
+	graph.AddEdge(nodes[0], nodes[1], 1.0);
+	graph.AddEdge(nodes[0], nodes[3], 1.5);
+	graph.AddEdge(nodes[1], nodes[0], 2.0);
+	graph.AddEdge(nodes[1], nodes[4], 2.5);
+	graph.AddEdge(nodes[1], nodes[2], 1.0);
+	graph.AddEdge(nodes[2], nodes[1], 1.5);
+	graph.AddEdge(nodes[2], nodes[5], 2.0);
+	graph.AddEdge(nodes[3], nodes[0], 2.5);
+	graph.AddEdge(nodes[3], nodes[4], 2.5);
+	graph.AddEdge(nodes[4], nodes[1], 2.5);
+	graph.AddEdge(nodes[4], nodes[3], 2.5);
+	graph.AddEdge(nodes[4], nodes[5], 2.5);
+	graph.AddEdge(nodes[5], nodes[2], 2.5);
+	graph.AddEdge(nodes[5], nodes[4], 2.5);
+	graph.AddEdge(nodes[5], nodes[8], 2.5);
+	graph.AddEdge(nodes[7], nodes[4], 2.5);
+	graph.AddEdge(nodes[7], nodes[8], 2.5);
+	graph.AddEdge(nodes[8], nodes[5], 2.5);
+	graph.AddEdge(nodes[8], nodes[7], 2.5);
 
-	graph.ClearGraph();
+	auto all_edges = graph.GetGraphEdges();
+	for(auto& e : all_edges)
+		e.PrintEdge();
 
-	graph.AddEdge(*(nodes[0]), *(nodes[1]), 1.0);
-	graph.AddEdge(*(nodes[0]), *(nodes[3]), 1.5);
-	graph.AddEdge(*(nodes[1]), *(nodes[0]), 2.0);
-	graph.AddEdge(*(nodes[1]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[1]), *(nodes[2]), 1.0);
-	graph.AddEdge(*(nodes[2]), *(nodes[1]), 1.5);
-	graph.AddEdge(*(nodes[2]), *(nodes[5]), 2.0);
-	graph.AddEdge(*(nodes[3]), *(nodes[0]), 2.5);
-	graph.AddEdge(*(nodes[3]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[1]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[3]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[5]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[2]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[8]), 2.5);
-	graph.AddEdge(*(nodes[7]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[7]), *(nodes[8]), 2.5);
-	graph.AddEdge(*(nodes[8]), *(nodes[5]), 2.5);
-	graph.AddEdge(*(nodes[8]), *(nodes[7]), 2.5);
+	graph.RemoveEdge(nodes[8], nodes[7]);
+	graph.RemoveEdge(nodes[0], nodes[3]);
 
-//	auto all_edges = graph.GetGraphEdges();
-//	for(auto& e : all_edges)
-//		e.PrintEdge();
+	std::cout << "-------------------------------" << std::endl;
+	auto new_edges = graph.GetGraphEdges();
+	for(auto& e : new_edges)
+		e.PrintEdge();
+
 //	std::cout << "test a*" << std::endl;
 //	auto path = graph.AStarSearch(graph.GetVertexFromID(0), graph.GetVertexFromID(8));
 //
