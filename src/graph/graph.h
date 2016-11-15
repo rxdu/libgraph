@@ -28,15 +28,17 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "graph/vertex.h"
-#include "graph/astar.h"
 #include "graph/bds_base.h"
+#include "graph/vertex.h"
 
 namespace srcl_ctrl {
 
 // Graph, Edge, Vertex are supposed to be used only internally
 template<typename T>
 class Graph;
+
+template<typename T>
+class Vertex;
 
 // Alias ended with "_t" should be used in user applications
 template<typename T>
@@ -72,9 +74,7 @@ public:
 private:
 	std::map<uint64_t, Vertex<BundledStructType>*> vertex_map_;
 
-	template<typename GraphBDSType>
-	friend std::vector<Vertex<GraphBDSType>*> AStar::IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds);
-
+	friend class AStar;
 
 private:
 	/// This function checks if a vertex already exists in the graph.
@@ -279,28 +279,28 @@ public:
 			return nullptr;
 	}
 
-	/// Perform A* Search and return a path represented by a serious of vertices
-	std::vector<Vertex<BundledStructType>*> AStarSearch(Vertex<BundledStructType>* start, Vertex<BundledStructType>* goal)
-	{
-		// clear previous search information before new search
-		ResetGraphVertices();
-
-		// do a* search and return search result
-		return AStar::Search(start, goal);
-	}
-
-	std::vector<Vertex<BundledStructType>*> AStarSearch(uint64_t start_id, uint64_t goal_id)
-	{
-		std::vector<Vertex<BundledStructType>*> path;
-		Vertex<BundledStructType> *start = this->GetVertexFromID(start_id);
-		Vertex<BundledStructType> *goal = this->GetVertexFromID(goal_id);
-
-		// do a* search and return search result
-		if(start != nullptr && goal != nullptr)
-			return this->AStarSearch(start, goal);
-		else
-			return path;
-	}
+//	/// Perform A* Search and return a path represented by a serious of vertices
+//	std::vector<Vertex<BundledStructType>*> AStarSearch(Vertex<BundledStructType>* start, Vertex<BundledStructType>* goal)
+//	{
+//		// clear previous search information before new search
+//		ResetGraphVertices();
+//
+//		// do a* search and return search result
+//		return AStar::Search(start, goal);
+//	}
+//
+//	std::vector<Vertex<BundledStructType>*> AStarSearch(uint64_t start_id, uint64_t goal_id)
+//	{
+//		std::vector<Vertex<BundledStructType>*> path;
+//		Vertex<BundledStructType> *start = this->GetVertexFromID(start_id);
+//		Vertex<BundledStructType> *goal = this->GetVertexFromID(goal_id);
+//
+//		// do a* search and return search result
+//		if(start != nullptr && goal != nullptr)
+//			return this->AStarSearch(start, goal);
+//		else
+//			return path;
+//	}
 };
 
 }

@@ -1,19 +1,22 @@
 /*
- * simple_graph.cpp
+ * graph_demo.cpp
  *
  *  Created on: Mar 30, 2016
  *      Author: rdu
+ *
+ *  Description: demo on how to create a graph and perform A* search on the graph.
+ *
  */
 
 
 // standard libaray
-#include <stdio.h>
+#include <iostream>
 #include <vector>
 #include <ctime>
-//#include <tuple>
 
 // user
 #include "graph/graph.h"
+#include "graph/astar.h"
 #include "bds_example.h"
 
 using namespace srcl_ctrl;
@@ -59,7 +62,7 @@ void ValueTypeGraphDemo()
 	for(auto& e : all_edges)
 		e.PrintEdge();
 
-	auto path = graph_val.AStarSearch(graph_val.GetVertexFromID(0), graph_val.GetVertexFromID(8));
+	auto path = AStar::Search(graph_val, graph_val.GetVertexFromID(0), graph_val.GetVertexFromID(8));
 
 	for(auto& e : path)
 		std::cout << "id: " << e->vertex_id_ << std::endl;
@@ -104,7 +107,7 @@ void PointerTypeGraphDemo()
 	for(auto& e : all_edges)
 		e.PrintEdge();
 
-	auto path = graph_ptr.AStarSearch(graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8));
+	auto path = AStar::Search(graph_ptr, graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8));
 
 	for(auto& e : path)
 		std::cout << "id: " << e->vertex_id_ << std::endl;
@@ -151,7 +154,7 @@ void ConstRefTypeGraphDemo()
 	for(auto& e : all_edges)
 		e.PrintEdge();
 
-	auto path = graph_ptr.AStarSearch(graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8));
+	auto path = AStar::Search(graph_ptr, graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8));
 
 	for(auto& e : path)
 		std::cout << "id: " << e->vertex_id_ << std::endl;

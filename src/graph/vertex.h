@@ -9,9 +9,9 @@
 #define SRC_GRAPH_VERTEX_H_
 
 #include <cstdint>
+#include <algorithm>
 
 #include "graph/edge.h"
-#include "graph/astar.h"
 
 namespace srcl_ctrl {
 
@@ -48,12 +48,7 @@ public:
 	// friends
 	template<typename BDSType>
 	friend class Graph;
-
-	template<typename GraphVertexType>
-	friend std::vector<GraphVertexType*> AStar::Search(GraphVertexType *start, GraphVertexType *goal);
-
-	template<typename GraphBDSType>
-	friend std::vector<Vertex<GraphBDSType>*> AStar::IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds);
+	friend class AStar;
 
 	// generic attributes
 	BundledStructType bundled_data_;

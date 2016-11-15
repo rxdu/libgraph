@@ -149,6 +149,7 @@ int main(int argc, char** argv )
 //		e.PrintEdge();
 
 //	auto path = AStar::IncSearch(BDSExample(0), BDSExample(8), std::function<std::vector<std::tuple<BDSExample,double>>(BDSExample)>(GetNeighbour2));
+//	AStar astar;
 	auto path = AStar::IncSearch(BDSExample(0), BDSExample(8), GetNeighbourBDSFunc_t<BDSExample>(GetNeighbour2));
 
 	for(auto& e : path)
