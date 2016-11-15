@@ -52,6 +52,9 @@ public:
 	template<typename GraphVertexType>
 	friend std::vector<GraphVertexType*> AStar::Search(GraphVertexType *start, GraphVertexType *goal);
 
+	template<typename GraphBDSType>
+	friend std::vector<Vertex<GraphBDSType>*> AStar::IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds);
+
 	// generic attributes
 	BundledStructType bundled_data_;
 	uint64_t vertex_id_;

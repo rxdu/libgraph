@@ -5,22 +5,49 @@
  *      Author: rdu
  *  Code Reference:
  *  	1. http://www.redblobgames.com/pathfinding/a-star/implementation.html
+ *  	2. https://oopscenities.net/2012/02/24/c11-stdfunction-and-stdbind/
  */
 
 #ifndef SRC_GRAPH_ASTAR_H_
 #define SRC_GRAPH_ASTAR_H_
 
 #include <vector>
+#include <tuple>
 #include <queue>
 #include <functional>
 #include <utility>
 #include <cmath>
 #include <algorithm>
 #include <type_traits>
-
-#include "graph/vertex.h"
+#include <functional>
 
 namespace srcl_ctrl {
+
+// Graph, Edge, Vertex are supposed to be used only internally
+template<typename T>
+class Graph;
+
+template<typename T>
+class Vertex;
+
+template<typename T>
+class Edge;
+
+// Alias ended with "_t" should be used in user applications
+template<typename T>
+using Graph_t = Graph<T>;
+
+template<typename T>
+using Vertex_t = Vertex<T>;
+
+template<typename T>
+using Edge_t = Edge<Vertex<T>*>;
+
+template<typename T>
+using Path_t = std::vector<Vertex<T>*>;
+
+template<typename GraphBDSType>
+using GetNeighbourBDSFunc_t = std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)>;
 
 /// A simple priority queue structure used as A* open list.
 // Source: http://www.redblobgames.com/pathfinding/a-star/implementation.html
@@ -48,7 +75,8 @@ struct PriorityQueue {
 namespace AStar{
 
 template<typename GraphVertexType>
-std::vector<GraphVertexType*> Search(GraphVertexType *start, GraphVertexType *goal){
+std::vector<GraphVertexType*> Search(GraphVertexType *start, GraphVertexType *goal)
+{
 	bool found_path = false;
 	std::vector<GraphVertexType*> trajectory;
 	GraphVertexType* current_vertex;
@@ -128,6 +156,102 @@ std::vector<GraphVertexType*> Search(GraphVertexType *start, GraphVertexType *go
 		std::cout << "failed to find a path" << std::endl;
 
 	return trajectory;
+};
+
+template<typename GraphBDSType>
+std::vector<Vertex<GraphBDSType>*> IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds)
+{
+	Graph<GraphBDSType> graph;
+
+	bool found_path = false;
+	std::vector<Vertex<GraphBDSType>*> path;
+	Vertex<GraphBDSType>* current_vertex;
+	// open list - a list of vertices that need to be checked out
+	PriorityQueue<Vertex<GraphBDSType>*> openlist;
+
+	// first add start and goal node to graph
+	Vertex<GraphBDSType>* start_vtx = graph.AddVertex(start);
+	Vertex<GraphBDSType>* goal_vtx = graph.AddVertex(goal);
+
+	openlist.put(start_vtx, 0);
+	start_vtx->is_in_openlist_ = true;
+
+	//start->search_parent_ = start;
+	start_vtx->g_astar_ = 0;
+
+	while(!openlist.empty() && found_path != true)
+	{
+		current_vertex = openlist.get();
+		if(current_vertex->is_checked_)
+			continue;
+
+		current_vertex->is_in_openlist_ = false;
+		current_vertex->is_checked_ = true;
+
+		std::vector<std::tuple<GraphBDSType, double>> neighbour_bds = get_neighbour_bds(current_vertex->bundled_data_);
+		for(auto& nb : neighbour_bds)
+			graph.AddEdge(current_vertex->bundled_data_, std::get<0>(nb), std::get<1>(nb));
+
+		std::vector<Edge<Vertex<GraphBDSType>*>> successors = current_vertex->edges_;
+
+		// check all adjacent vertices (successors of current vertex)
+		for(auto& suc:successors)
+		{
+			Vertex<GraphBDSType>* successor;
+			successor = suc.dst_;
+
+			// check if the vertex has been checked (in closed list)
+			if(successor->is_checked_ == false)
+			{
+				// first set the parent of the adjacent vertex to be the current vertex
+				double new_cost = current_vertex->g_astar_ + suc.cost_;
+
+				// if the vertex is not in open list
+				// or if the vertex is in open list but has a higher cost
+				if(successor->is_in_openlist_ == false || new_cost < successor->g_astar_)
+				{
+					successor->search_parent_ = current_vertex;
+					successor->g_astar_ = new_cost;
+
+					successor->h_astar_ = successor->CalcHeuristic(goal_vtx);
+					successor->f_astar_ = successor->g_astar_ + successor->h_astar_;
+
+					openlist.put(successor, successor->f_astar_);
+					successor->is_in_openlist_ = true;
+
+					if(successor == goal_vtx){
+						found_path = true;
+					}
+				}
+			}
+		}
+	}
+
+	// reconstruct path from search
+	if(found_path)
+	{
+		std::cout << "path found" << std::endl;
+		Vertex<GraphBDSType>* waypoint = goal_vtx;
+		while(waypoint != start_vtx)
+		{
+			path.push_back(waypoint);
+			waypoint = waypoint->search_parent_;
+		}
+		// add the start node
+		path.push_back(waypoint);
+		std::reverse(path.begin(), path.end());
+
+		auto traj_s = path.begin();
+		auto traj_e = path.end() - 1;
+		std::cout << "starting vertex id: " << (*traj_s)->vertex_id_ << std::endl;
+		std::cout << "finishing vertex id: " << (*traj_e)->vertex_id_ << std::endl;
+		std::cout << "path length: " << path.size() << std::endl;
+		std::cout << "total cost: " << path.back()->g_astar_ << std::endl;
+	}
+	else
+		std::cout << "failed to find a path" << std::endl;
+
+	return path;
 };
 
 };

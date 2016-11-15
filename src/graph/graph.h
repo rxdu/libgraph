@@ -72,6 +72,10 @@ public:
 private:
 	std::map<uint64_t, Vertex<BundledStructType>*> vertex_map_;
 
+	template<typename GraphBDSType>
+	friend std::vector<Vertex<GraphBDSType>*> AStar::IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds);
+
+
 private:
 	/// This function checks if a vertex already exists in the graph.
 	///	If yes, the functions returns the pointer of the existing vertex,
@@ -104,6 +108,24 @@ private:
 		}
 
 		return it->second;
+	}
+
+	/// This function creates a vertex in the graph that associates with the given node.
+	/// The set of functions AddVertex() are only supposed to be used with incremental a* search.
+	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<BundledStructType>* AddVertex(BundledStructType vertex_node)
+	{
+		Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
+		vertex_map_[vertex_node.data_id_] = new_vertex;
+		return new_vertex;
+	}
+
+	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<BundledStructType>* AddVertex(BundledStructType vertex_node)
+	{
+		Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
+		vertex_map_[vertex_node->data_id_] = new_vertex;
+		return new_vertex;
 	}
 
 	/// This function checks if a vertex exists in the graph.
@@ -152,6 +174,9 @@ public:
 	{
 		Vertex<BundledStructType>* src_vertex = GetVertex(src_node);
 		Vertex<BundledStructType>* dst_vertex = GetVertex(dst_node);
+
+		if(src_vertex->CheckNeighbour(dst_vertex))
+			return;
 
 		Edge<Vertex<BundledStructType>*> new_edge(src_vertex, dst_vertex,cost);
 		src_vertex->edges_.push_back(new_edge);
