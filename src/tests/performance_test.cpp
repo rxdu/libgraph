@@ -139,16 +139,6 @@ std::vector<std::tuple<SquareCell, double>> GetNeighbours(SquareCell cell, std::
 
 int main(int argc, char** argv )
 {
-	clock_t		exec_time;
-	exec_time = clock();
-	SquareCell cell_s(0);
-	cell_s.idx.x = 0;
-	cell_s.idx.y = 0;
-
-	SquareCell cell_g(9595);
-	cell_g.idx.x = 95;
-	cell_g.idx.y = 95;
-
 	std::vector<uint64_t> obstacle_ids;
 	obstacle_ids.push_back(5);
 	obstacle_ids.push_back(6);
@@ -165,6 +155,16 @@ int main(int argc, char** argv )
 //	for(int i = 50; i < GRID_SIZE; i++)
 //		obstacle_ids.push_back(GRID_SIZE * 80 + i);
 
+	clock_t		exec_time;
+	exec_time = clock();
+	SquareCell cell_s(0);
+	cell_s.idx.x = 0;
+	cell_s.idx.y = 0;
+
+	SquareCell cell_g(9595);
+	cell_g.idx.x = 95;
+	cell_g.idx.y = 95;
+
 	auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourBDSFunc_t<SquareCell>(GetSquareCellNeighbour(GRID_SIZE, GRID_SIZE, 1.0, obstacle_ids)));
 	exec_time = clock() - exec_time;
 	std::cout << "Incremental search finished in " << double(exec_time)/CLOCKS_PER_SEC << " s." << std::endl;
@@ -172,7 +172,7 @@ int main(int argc, char** argv )
 //	for(auto& e : path)
 //		std::cout << "id: " << e->vertex_id_ << std::endl;
 
-	std::cout << "\n----------------------------------------------------------\n" << std::endl;
+//	std::cout << "\n----------------------------------------------------------\n" << std::endl;
 
 	exec_time = clock();
 	Graph_t<SquareCell> graph2;
