@@ -111,12 +111,13 @@ public:
 
 	/// Incremental search
 	template<typename GraphBDSType>
-	static std::vector<Vertex<GraphBDSType>*> IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds)
+	static std::vector<GraphBDSType> IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds)
 	{
 		Graph<GraphBDSType> graph;
 
 		bool found_path = false;
 		std::vector<Vertex<GraphBDSType>*> path;
+		std::vector<GraphBDSType> path_bds;
 		Vertex<GraphBDSType>* current_vertex;
 		// open list - a list of vertices that need to be checked out
 		PriorityQueue<Vertex<GraphBDSType>*> openlist;
@@ -201,11 +202,14 @@ public:
 			std::cout << "path length: " << path.size() << std::endl;
 			std::cout << "total cost: " << path.back()->g_astar_ << std::endl;
 #endif
+
+			for(auto& wp : path)
+				path_bds.push_back(wp->bundled_data_);
 		}
 		else
 			std::cout << "failed to find a path" << std::endl;
 
-		return path;
+		return path_bds;
 	};
 
 private:

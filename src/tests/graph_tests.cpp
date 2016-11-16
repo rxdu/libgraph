@@ -153,7 +153,7 @@ int main(int argc, char** argv )
 	auto path = AStar::IncSearch(BDSExample(0), BDSExample(8), GetNeighbourBDSFunc_t<BDSExample>(GetNeighbour2));
 
 	for(auto& e : path)
-		std::cout << "id: " << e->vertex_id_ << std::endl;
+		std::cout << "id: " << e.data_id_ << std::endl;
 
 	return 0;
 }
