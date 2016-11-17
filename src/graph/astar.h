@@ -109,6 +109,42 @@ public:
 			return empty;
 	}
 
+	template<typename GraphBDSType>
+	static std::vector<Vertex<GraphBDSType>*> Search(std::shared_ptr<Graph<GraphBDSType>> graph, uint64_t start_id, uint64_t goal_id)
+	{
+		// reset last search information
+		graph->ResetGraphVertices();
+
+		auto start = graph->GetVertexFromID(start_id);
+		auto goal = graph->GetVertexFromID(goal_id);
+
+		std::vector<Vertex<GraphBDSType>*> empty;
+
+		// start a new search and return result
+		if(start != nullptr && goal != nullptr)
+			return Search(start, goal);
+		else
+			return empty;
+	}
+
+	template<typename GraphBDSType>
+	static std::vector<Vertex<GraphBDSType>*> Search(Graph<GraphBDSType>* graph, uint64_t start_id, uint64_t goal_id)
+	{
+		// reset last search information
+		graph->ResetGraphVertices();
+
+		auto start = graph->GetVertexFromID(start_id);
+		auto goal = graph->GetVertexFromID(goal_id);
+
+		std::vector<Vertex<GraphBDSType>*> empty;
+
+		// start a new search and return result
+		if(start != nullptr && goal != nullptr)
+			return Search(start, goal);
+		else
+			return empty;
+	}
+
 	/// Incremental search
 	template<typename GraphBDSType>
 	static std::vector<GraphBDSType> IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds)
