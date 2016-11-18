@@ -118,8 +118,6 @@ int main(int argc, char** argv )
 	obstacle_ids.push_back(18);
 	obstacle_ids.push_back(19);
 
-	GetSquareCellNeighbour get_neibour_cells(5, 5, 1.0, obstacle_ids);
-
 	auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourBDSFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
 
 	for(auto& e : path)
