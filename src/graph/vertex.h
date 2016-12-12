@@ -42,7 +42,7 @@ public:
 		f_astar_(0),g_astar_(0),h_astar_(0){};
 
 	~Vertex(){
-		edges_.clear();
+		//edges_.clear();
 	};
 
 	// friends
@@ -56,7 +56,10 @@ public:
 	std::vector<Edge<Vertex<BundledStructType>*>> edges_;
 
 private:
-    // attributes for A* search
+	// vertices that contain edges connecting to current vertex
+	std::vector<Vertex<BundledStructType>*> associated_vertices_;
+
+	// attributes for A* search
 	bool is_checked_;
 	bool is_in_openlist_;
 	double f_astar_;

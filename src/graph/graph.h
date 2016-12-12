@@ -178,7 +178,10 @@ public:
 		if(src_vertex->CheckNeighbour(dst_vertex))
 			return;
 
-		Edge<Vertex<BundledStructType>*> new_edge(src_vertex, dst_vertex,cost);
+		// store information for deleting vertex
+		dst_vertex->associated_vertices_.push_back(src_vertex);
+
+		Edge<Vertex<BundledStructType>*> new_edge(src_vertex, dst_vertex, cost);
 		src_vertex->edges_.push_back(new_edge);
 	};
 
@@ -210,6 +213,53 @@ public:
 		else
 			return false;
 	};
+
+	/// This function checks if a vertex exists in the graph and remove it if presents.
+	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+	void RemoveVertex(BundledStructType vertex_node)
+	{
+		auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
+
+		// unknown vertex, no need to remove
+		if(it == vertex_map_.end())
+			return;
+
+		for(auto& asv : it->second->associated_vertices_)
+			for(auto eit = asv->edges_.begin(); eit != asv->edges_.end(); eit++)
+			{
+				if((*eit).dst_ == it->second)
+				{
+					asv->edges_.erase(eit);
+					break;
+				}
+			}
+
+		vertex_map_.erase(it);
+		delete it->second;
+	}
+
+	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	void RemoveVertex(BundledStructType vertex_node)
+	{
+		auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
+
+		// unknown vertex, no need to remove
+		if(it == vertex_map_.end())
+			return;
+
+		for(auto& asv : it->second->associated_vertices_)
+			for(auto eit = asv->edges_.begin(); eit != asv->edges_.end(); eit++)
+			{
+				if((*eit).dst_ == it->second)
+				{
+					asv->edges_.erase(eit);
+					break;
+				}
+			}
+
+		vertex_map_.erase(it);
+		delete it->second;
+	}
 
 	/// This functions is used to access all vertices of a graph
 	std::vector<Vertex<BundledStructType>*> GetGraphVertices() const
@@ -278,29 +328,6 @@ public:
 		else
 			return nullptr;
 	}
-
-//	/// Perform A* Search and return a path represented by a serious of vertices
-//	std::vector<Vertex<BundledStructType>*> AStarSearch(Vertex<BundledStructType>* start, Vertex<BundledStructType>* goal)
-//	{
-//		// clear previous search information before new search
-//		ResetGraphVertices();
-//
-//		// do a* search and return search result
-//		return AStar::Search(start, goal);
-//	}
-//
-//	std::vector<Vertex<BundledStructType>*> AStarSearch(uint64_t start_id, uint64_t goal_id)
-//	{
-//		std::vector<Vertex<BundledStructType>*> path;
-//		Vertex<BundledStructType> *start = this->GetVertexFromID(start_id);
-//		Vertex<BundledStructType> *goal = this->GetVertexFromID(goal_id);
-//
-//		// do a* search and return search result
-//		if(start != nullptr && goal != nullptr)
-//			return this->AStarSearch(start, goal);
-//		else
-//			return path;
-//	}
 };
 
 }
