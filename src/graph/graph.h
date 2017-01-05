@@ -238,8 +238,9 @@ public:
 				}
 			}
 
+		auto vptr = it->second;
 		vertex_map_.erase(it);
-		delete it->second;
+		delete vptr;
 	}
 
 	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
@@ -261,8 +262,9 @@ public:
 				}
 			}
 
+		auto vptr = it->second;
 		vertex_map_.erase(it);
-		delete it->second;
+		delete vptr;
 	}
 
 	/// This functions is used to access all vertices of a graph
