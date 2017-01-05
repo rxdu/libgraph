@@ -88,7 +88,8 @@ private:
 		if(it == vertex_map_.end())
 		{
 			Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
-			vertex_map_[vertex_node.data_id_] = new_vertex;
+			//vertex_map_[vertex_node.data_id_] = new_vertex;
+			vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
 			return new_vertex;
 		}
 
@@ -103,7 +104,8 @@ private:
 		if(it == vertex_map_.end())
 		{
 			Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
-			vertex_map_[vertex_node->data_id_] = new_vertex;
+			//vertex_map_[vertex_node->data_id_] = new_vertex;
+			vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
 			return new_vertex;
 		}
 
@@ -116,7 +118,8 @@ private:
 	Vertex<BundledStructType>* AddVertex(BundledStructType vertex_node)
 	{
 		Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
-		vertex_map_[vertex_node.data_id_] = new_vertex;
+		//vertex_map_[vertex_node.data_id_] = new_vertex;
+		vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
 		return new_vertex;
 	}
 
@@ -124,7 +127,8 @@ private:
 	Vertex<BundledStructType>* AddVertex(BundledStructType vertex_node)
 	{
 		Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
-		vertex_map_[vertex_node->data_id_] = new_vertex;
+		//vertex_map_[vertex_node->data_id_] = new_vertex;
+		vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
 		return new_vertex;
 	}
 
