@@ -251,7 +251,7 @@ public:
 private:
 
 	template<typename GraphVertexType>
-	static std::vector<GraphVertexType*> Search(GraphVertexType *start, GraphVertexType *goal)
+	static std::vector<GraphVertexType*> Search(GraphVertexType *start_vtx, GraphVertexType *goal_vtx)
 	{
 		bool found_path = false;
 		std::vector<GraphVertexType*> trajectory;
@@ -259,17 +259,21 @@ private:
 		// open list - a list of vertices that need to be checked out
 		PriorityQueue<GraphVertexType*> openlist;
 
-		openlist.put(start, 0);
-		start->is_in_openlist_ = true;
+		openlist.put(start_vtx, 0);
+		start_vtx->is_in_openlist_ = true;
 
 		//start->search_parent_ = start;
-		start->g_astar_ = 0;
+		start_vtx->g_astar_ = 0;
 
 		while(!openlist.empty() && found_path != true)
 		{
 			current_vertex = openlist.get();
 			if(current_vertex->is_checked_)
 				continue;
+			if(current_vertex == goal_vtx) {
+				found_path = true;
+				break;
+			}
 
 			current_vertex->is_in_openlist_ = false;
 			current_vertex->is_checked_ = true;
@@ -293,15 +297,11 @@ private:
 						successor->search_parent_ = current_vertex;
 						successor->g_astar_ = new_cost;
 
-						successor->h_astar_ = successor->CalcHeuristic(goal);
+						successor->h_astar_ = successor->CalcHeuristic(goal_vtx);
 						successor->f_astar_ = successor->g_astar_ + successor->h_astar_;
 
 						openlist.put(successor, successor->f_astar_);
 						successor->is_in_openlist_ = true;
-
-						if(successor == goal){
-							found_path = true;
-						}
 					}
 				}
 			}
@@ -311,8 +311,8 @@ private:
 		if(found_path)
 		{
 			std::cout << "path found" << std::endl;
-			GraphVertexType* waypoint = goal;
-			while(waypoint != start)
+			GraphVertexType* waypoint = goal_vtx;
+			while(waypoint != start_vtx)
 			{
 				trajectory.push_back(waypoint);
 				waypoint = waypoint->search_parent_;
