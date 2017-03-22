@@ -168,11 +168,15 @@ public:
 		//start->search_parent_ = start;
 		start_vtx->g_astar_ = 0;
 
-		while(!openlist.empty() && found_path != true)
+		while(!openlist.empty())
 		{
 			current_vertex = openlist.get();
 			if(current_vertex->is_checked_)
 				continue;
+			if(current_vertex == goal_vtx) {
+					found_path = true;
+					break;
+			}
 
 			current_vertex->is_in_openlist_ = false;
 			current_vertex->is_checked_ = true;
@@ -207,10 +211,6 @@ public:
 
 						openlist.put(successor, successor->f_astar_);
 						successor->is_in_openlist_ = true;
-
-						if(successor == goal_vtx){
-							found_path = true;
-						}
 					}
 				}
 			}
