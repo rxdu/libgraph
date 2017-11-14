@@ -21,12 +21,12 @@ namespace librav {
 /*								 Vertex										*/
 /****************************************************************************/
 /// A vertex data structure template.
-template<typename BundledStructType>
+template<typename StateType>
 class Vertex
 {
 public:
-	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	Vertex(BundledStructType bundled_data):
+	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	Vertex(StateType bundled_data):
 		// attributes related to associated node
 		bundled_data_(bundled_data),vertex_id_(bundled_data->data_id_),
 		// common attributes
@@ -34,8 +34,8 @@ public:
 		is_checked_(false), is_in_openlist_(false),
 		f_astar_(0),g_astar_(0),h_astar_(0){};
 
-	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	Vertex(BundledStructType bundled_data):
+	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+	Vertex(StateType bundled_data):
 		// attributes related to associated node
 		bundled_data_(bundled_data), vertex_id_(bundled_data.data_id_),
 		// common attributes
@@ -53,13 +53,13 @@ public:
 	friend class AStar;
 
 	// generic attributes
-	BundledStructType bundled_data_;
+	StateType bundled_data_;
 	uint64_t vertex_id_;
-	std::vector<Edge<Vertex<BundledStructType>*>> edges_;
+	std::vector<Edge<Vertex<StateType>*>> edges_;
 
 private:
 	// vertices that contain edges connecting to current vertex
-	std::vector<Vertex<BundledStructType>*> associated_vertices_;
+	std::vector<Vertex<StateType>*> associated_vertices_;
 
 	// attributes for A* search
 	bool is_checked_;
@@ -67,7 +67,7 @@ private:
 	double f_astar_;
 	double g_astar_;
 	double h_astar_;
-	Vertex<BundledStructType>* search_parent_;
+	Vertex<StateType>* search_parent_;
 
 private:
 	/// Clear exiting search info before a new search
@@ -83,14 +83,14 @@ private:
 	}
 
 	/// Get heuristic using function provided by bundled data (pointer type)
-	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
 	double CalcHeuristic(Vertex<T>* dst_vertex)
 	{
 		return this->bundled_data_->GetHeuristic(*(dst_vertex->bundled_data_));
 	}
 
 	/// Get heuristic using function provided by bundled data (non-pointer type)
-	template<class T = BundledStructType,
+	template<class T = StateType,
 			typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
 	double CalcHeuristic(Vertex<T>* dst_vertex)
 	{
@@ -99,7 +99,7 @@ private:
 
 public:
 	/// == operator overloading. If two vertices have the same id, they're regarded as equal.
-	bool operator ==(const Vertex<BundledStructType>& other) const
+	bool operator ==(const Vertex<StateType>& other) const
 	{
 		if(vertex_id_ == other.vertex_id_)
 			return true;
@@ -109,7 +109,7 @@ public:
 
 	/// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
 	///		the two vertices exists.
-	double GetEdgeCost(const Vertex<BundledStructType>& dst_node) const
+	double GetEdgeCost(const Vertex<StateType>& dst_node) const
 	{
 		double cost = -1;
 
@@ -126,9 +126,9 @@ public:
 	}
 
 	/// Get all neighbor vertices of this vertex.
-	std::vector<Vertex<BundledStructType>*> GetNeighbours()
+	std::vector<Vertex<StateType>*> GetNeighbours()
 	{
-		std::vector<Vertex<BundledStructType>*> neighbours;
+		std::vector<Vertex<StateType>*> neighbours;
 
 		for(const auto& edge:edges_)
 			neighbours.push_back(edge.dst_);
@@ -137,9 +137,9 @@ public:
 	}
 
 	/// Check if a given vertex is the neighbor of current vertex.
-	bool CheckNeighbour(Vertex<BundledStructType>* dst_node)
+	bool CheckNeighbour(Vertex<StateType>* dst_node)
 	{
-		std::vector<Vertex<BundledStructType>*> neighbours = GetNeighbours();
+		std::vector<Vertex<StateType>*> neighbours = GetNeighbours();
 
 		auto it = find(neighbours.begin(), neighbours.end(), dst_node);
 

@@ -1,8 +1,7 @@
 # Temp files
 */Debug
-build
-build*
-*/build
+build/
+*/build/
 *~
 */~
 */*.*~

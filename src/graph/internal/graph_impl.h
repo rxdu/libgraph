@@ -37,7 +37,7 @@ namespace librav {
 /*								 Graph										*/
 /****************************************************************************/
 /// A graph data structure template.
-template<typename BundledStructType>
+template<typename StateType>
 class Graph
 {
 public:
@@ -52,7 +52,7 @@ public:
 	};
 
 private:
-	std::map<uint64_t, Vertex<BundledStructType>*> vertex_map_;
+	std::map<uint64_t, Vertex<StateType>*> vertex_map_;
 
 	friend class AStar;
 
@@ -60,14 +60,14 @@ private:
 	/// This function checks if a vertex already exists in the graph.
 	///	If yes, the functions returns the pointer of the existing vertex,
 	///	otherwise it creates a new vertex.
-	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<BundledStructType>* GetVertex(BundledStructType vertex_node)
+	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<StateType>* GetVertex(StateType vertex_node)
 	{
 		auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
 
 		if(it == vertex_map_.end())
 		{
-			Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
+			Vertex<StateType>* new_vertex = new Vertex<StateType>(vertex_node);
 			//vertex_map_[vertex_node.data_id_] = new_vertex;
 			vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
 			return new_vertex;
@@ -76,14 +76,14 @@ private:
 		return it->second;
 	}
 
-	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<BundledStructType>* GetVertex(BundledStructType vertex_node)
+	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<StateType>* GetVertex(StateType vertex_node)
 	{
 		auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
 
 		if(it == vertex_map_.end())
 		{
-			Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
+			Vertex<StateType>* new_vertex = new Vertex<StateType>(vertex_node);
 			//vertex_map_[vertex_node->data_id_] = new_vertex;
 			vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
 			return new_vertex;
@@ -94,19 +94,19 @@ private:
 
 	/// This function creates a vertex in the graph that associates with the given node.
 	/// The set of functions AddVertex() are only supposed to be used with incremental a* search.
-	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<BundledStructType>* AddVertex(BundledStructType vertex_node)
+	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<StateType>* AddVertex(StateType vertex_node)
 	{
-		Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
+		Vertex<StateType>* new_vertex = new Vertex<StateType>(vertex_node);
 		//vertex_map_[vertex_node.data_id_] = new_vertex;
 		vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
 		return new_vertex;
 	}
 
-	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<BundledStructType>* AddVertex(BundledStructType vertex_node)
+	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<StateType>* AddVertex(StateType vertex_node)
 	{
-		Vertex<BundledStructType>* new_vertex = new Vertex<BundledStructType>(vertex_node);
+		Vertex<StateType>* new_vertex = new Vertex<StateType>(vertex_node);
 		//vertex_map_[vertex_node->data_id_] = new_vertex;
 		vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
 		return new_vertex;
@@ -115,8 +115,8 @@ private:
 	/// This function checks if a vertex exists in the graph.
 	///	If yes, the functions returns the pointer of the existing vertex,
 	///	otherwise it returns nullptr.
-	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<BundledStructType>* SearchVertex(BundledStructType vertex_node)
+	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<StateType>* SearchVertex(StateType vertex_node)
 	{
 		auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
 
@@ -126,8 +126,8 @@ private:
 			return it->second;
 	}
 
-	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<BundledStructType>* SearchVertex(BundledStructType vertex_node)
+	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	Vertex<StateType>* SearchVertex(StateType vertex_node)
 	{
 		auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
 
@@ -154,10 +154,10 @@ public:
 	}
 
 	/// This function is used to create a graph by adding edges connecting two nodes
-	void AddEdge(BundledStructType src_node, BundledStructType dst_node, double cost)
+	void AddEdge(StateType src_node, StateType dst_node, double cost)
 	{
-		Vertex<BundledStructType>* src_vertex = GetVertex(src_node);
-		Vertex<BundledStructType>* dst_vertex = GetVertex(dst_node);
+		Vertex<StateType>* src_vertex = GetVertex(src_node);
+		Vertex<StateType>* dst_vertex = GetVertex(dst_node);
 
 		if(src_vertex->CheckNeighbour(dst_vertex))
 			return;
@@ -165,15 +165,15 @@ public:
 		// store information for deleting vertex
 		dst_vertex->associated_vertices_.push_back(src_vertex);
 
-		Edge<Vertex<BundledStructType>*> new_edge(src_vertex, dst_vertex, cost);
+		Edge<Vertex<StateType>*> new_edge(src_vertex, dst_vertex, cost);
 		src_vertex->edges_.push_back(new_edge);
 	};
 
 	/// This function is used to remove the edge from src_node to dst_node.
-	bool RemoveEdge(BundledStructType src_node, BundledStructType dst_node)
+	bool RemoveEdge(StateType src_node, StateType dst_node)
 	{
-		Vertex<BundledStructType>* src_vertex = SearchVertex(src_node);
-		Vertex<BundledStructType>* dst_vertex = SearchVertex(dst_node);
+		Vertex<StateType>* src_vertex = SearchVertex(src_node);
+		Vertex<StateType>* dst_vertex = SearchVertex(dst_node);
 
 		if((src_vertex != nullptr) && (dst_vertex != nullptr))
 		{
@@ -199,8 +199,8 @@ public:
 	};
 
 	/// This function checks if a vertex exists in the graph and remove it if presents.
-	template<class T = BundledStructType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	void RemoveVertex(BundledStructType vertex_node)
+	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+	void RemoveVertex(StateType vertex_node)
 	{
 		auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
 
@@ -223,8 +223,8 @@ public:
 		delete vptr;
 	}
 
-	template<class T = BundledStructType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	void RemoveVertex(BundledStructType vertex_node)
+	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
+	void RemoveVertex(StateType vertex_node)
 	{
 		auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
 
@@ -248,9 +248,9 @@ public:
 	}
 
 	/// This functions is used to access all vertices of a graph
-	std::vector<Vertex<BundledStructType>*> GetGraphVertices() const
+	std::vector<Vertex<StateType>*> GetGraphVertices() const
 	{
-		std::vector<Vertex<BundledStructType>*> vertices;
+		std::vector<Vertex<StateType>*> vertices;
 
 		for(auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
 		{
@@ -261,13 +261,13 @@ public:
 	};
 
 	/// This functions is used to access all edges of a graph
-	std::vector<Edge<Vertex<BundledStructType>*>> GetGraphEdges() const
+	std::vector<Edge<Vertex<StateType>*>> GetGraphEdges() const
 	{
-		std::vector<Edge<Vertex<BundledStructType>*>> edges;
+		std::vector<Edge<Vertex<StateType>*>> edges;
 
 		for(auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
 		{
-			Vertex<BundledStructType>* vertex = it->second;
+			Vertex<StateType>* vertex = it->second;
 			for(auto ite = vertex->edges_.begin(); ite != vertex->edges_.end(); ite++) {
 				edges.push_back(*ite);
 			}
@@ -277,13 +277,13 @@ public:
 	};
 
 	/// This functions is used to access all edges of a graph
-	std::vector<Edge<Vertex<BundledStructType>*>> GetGraphUndirectedEdges() const
+	std::vector<Edge<Vertex<StateType>*>> GetGraphUndirectedEdges() const
 	{
-		std::vector<Edge<Vertex<BundledStructType>*>> edges;
+		std::vector<Edge<Vertex<StateType>*>> edges;
 
 		for(auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
 		{
-			Vertex<BundledStructType>* vertex = it->second;
+			Vertex<StateType>* vertex = it->second;
 
 			for(auto ite = vertex->edges_.begin(); ite != vertex->edges_.end(); ite++) {
 				bool edge_existed = false;
@@ -305,7 +305,7 @@ public:
 	};
 
 	/// This function return the vertex with specified id
-	Vertex<BundledStructType>* GetVertexFromID(uint64_t vertex_id)
+	Vertex<StateType>* GetVertexFromID(uint64_t vertex_id)
 	{
 		auto it = vertex_map_.find(vertex_id);
 
