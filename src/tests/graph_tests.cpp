@@ -17,7 +17,7 @@
 #include "graph/astar.h"
 #include "demo/bds_example.h"
 
-using namespace srcl_ctrl;
+using namespace librav;
 
 std::vector<std::tuple<BDSExample,double>> GetNeighbour(BDSExample node)
 {

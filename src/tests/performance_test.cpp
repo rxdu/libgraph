@@ -17,7 +17,7 @@
 // user
 #include "graph/astar.h"
 
-using namespace srcl_ctrl;
+using namespace librav;
 
 #define GRID_SIZE 100
 

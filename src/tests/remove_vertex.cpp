@@ -15,7 +15,7 @@
 #include "graph/astar.h"
 #include "demo/bds_example.h"
 
-using namespace srcl_ctrl;
+using namespace librav;
 
 int main(int argc, char* argv[])
 {

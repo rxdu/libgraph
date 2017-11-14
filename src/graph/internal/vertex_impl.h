@@ -1,19 +1,21 @@
-/*
- * vertex.h
- *
- *  Created on: Feb 1, 2016
- *      Author: rdu
- */
+/* 
+ * vertex_impl.h
+ * 
+ * Created on: Feb 1, 2016
+ * Description: 
+ * 
+ * Copyright (c) 2017 Ruixiang Du (rdu)
+ */ 
 
-#ifndef SRC_GRAPH_VERTEX_H_
-#define SRC_GRAPH_VERTEX_H_
+#ifndef VERTEX_IMPL_H
+#define VERTEX_IMPL_H
 
 #include <cstdint>
 #include <algorithm>
 
-#include "graph/edge.h"
+#include "graph/internal/edge_impl.h"
 
-namespace srcl_ctrl {
+namespace librav {
 
 /****************************************************************************/
 /*								 Vertex										*/
@@ -150,4 +152,4 @@ public:
 
 }
 
-#endif /* SRC_GRAPH_VERTEX_H_ */
+#endif /* VERTEX_IMPL_H */

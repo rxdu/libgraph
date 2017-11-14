@@ -1,16 +1,18 @@
-/*
+/* 
  * bds_base.h
- *
- *  Created on: Apr 14, 2016
- *      Author: rdu
- */
+ * 
+ * Created on: Apr 14, 2016
+ * Description: 
+ * 
+ * Copyright (c) 2017 Ruixiang Du (rdu)
+ */ 
 
-#ifndef SRC_GRAPH_BDS_BASE_H_
-#define SRC_GRAPH_BDS_BASE_H_
+#ifndef BDS_BASE_H
+#define BDS_BASE_H
 
 #include <cstdint>
 
-namespace srcl_ctrl {
+namespace librav {
 
 /****************************************************************************/
 /*				   Bundled Data Structure (BDS) Base						*/
@@ -41,4 +43,4 @@ public:
 
 }
 
-#endif /* SRC_GRAPH_BDS_BASE_H_ */
+#endif /* BDS_BASE_H */

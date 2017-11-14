@@ -20,7 +20,7 @@
 #include "graph/astar.h"
 #include "bds_example.h"
 
-using namespace srcl_ctrl;
+using namespace librav;
 
 typedef struct
 {

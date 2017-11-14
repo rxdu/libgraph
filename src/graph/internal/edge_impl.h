@@ -1,16 +1,18 @@
-/*
- * edge.h
- *
- *  Created on: Jul 14, 2016
- *      Author: rdu
- */
+/* 
+ * edge_impl.h
+ * 
+ * Created on: Jul 14, 2016
+ * Description: 
+ * 
+ * Copyright (c) 2017 Ruixiang Du (rdu)
+ */ 
 
-#ifndef PLANNING_SRC_GRAPH_EDGE_H_
-#define PLANNING_SRC_GRAPH_EDGE_H_
+#ifndef EDGE_IMPL_H
+#define EDGE_IMPL_H
 
 #include <iostream>
 
-namespace srcl_ctrl {
+namespace librav {
 
 /****************************************************************************/
 /*								 Edge  										*/
@@ -121,4 +123,4 @@ public:
 
 }
 
-#endif /* PLANNING_SRC_GRAPH_EDGE_H_ */
+#endif /* EDGE_IMPL_H */

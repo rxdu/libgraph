@@ -8,9 +8,9 @@
 #ifndef SRC_GRAPH_BDS_EXAMPLE_H_
 #define SRC_GRAPH_BDS_EXAMPLE_H_
 
-#include "graph/bds_base.h"
+#include "graph/graph.h"
 
-namespace srcl_ctrl {
+namespace librav {
 
 /****************************************************************************/
 /*				   Bundled Data Structure (BDS) Example						*/

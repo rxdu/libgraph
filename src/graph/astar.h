@@ -27,7 +27,7 @@
 
 #define MINIMAL_PRINTOUT 1
 
-namespace srcl_ctrl {
+namespace librav {
 
 template<typename GraphBDSType>
 using GetNeighbourBDSFunc_t = std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)>;
