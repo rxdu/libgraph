@@ -35,14 +35,14 @@ class Vertex_t
 	~Vertex_t() = default;
 
 	// friends
-	template <typename T>
+	template <typename T1, typename T2>
 	friend class Graph_t;
 	friend class AStar;
 
 	// generic attributes
 	StateType state_;
 	uint64_t vertex_id_;
-	std::vector<Edge<Vertex_t<StateType> *>> edges_;
+	std::vector<Edge<Vertex_t<StateType>*, double>> edges_;
 
   public:
 	/// == operator overloading. If two vertices have the same id, they're regarded as equal.

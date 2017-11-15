@@ -16,26 +16,27 @@
 #include <type_traits>
 
 #include "graph/internal/bds_base.h"
+#include "graph/edge.h"
 #include "graph/vertex.h"
 
 namespace librav
 {
 
 // Only types ended with "_t" should be used in user applications
-template <typename T>
+template <typename T1, typename T2 = double>
 class Graph_t;
 
 template <typename T>
 class Vertex_t;
 
-template <typename T>
-using Edge_t = Edge<Vertex_t<T> *>;
+template <typename T1, typename T2 = double>
+using Edge_t = Edge<Vertex_t<T1> *, T2>;
 
 template <typename T>
 using Path_t = std::vector<Vertex_t<T> *>;
 
 /// A graph data structure template.
-template <typename StateType>
+template <typename StateType, typename TransitionType>
 class Graph_t
 {
   public:
@@ -64,10 +65,10 @@ class Graph_t
     std::vector<Vertex_t<StateType> *> GetGraphVertices() const;
 
     /// This functions is used to access all edges of a graph
-    std::vector<Edge<Vertex_t<StateType> *>> GetGraphEdges() const;
+    std::vector<Edge_t<StateType>> GetGraphEdges() const;
 
     /// This functions is used to access all edges of a graph
-    std::vector<Edge<Vertex_t<StateType> *>> GetGraphUndirectedEdges() const;
+    std::vector<Edge_t<StateType>> GetGraphUndirectedEdges() const;
 
     /// This function return the vertex with specified id
     Vertex_t<StateType> *GetVertexFromID(uint64_t vertex_id);
