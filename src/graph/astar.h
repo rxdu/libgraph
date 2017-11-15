@@ -61,7 +61,7 @@ public:
 
 	/// Search using vertices
 	template<typename GraphBDSType, typename GraphVertexType>
-	static std::vector<GraphVertexType*> Search(Graph<GraphBDSType>& graph, GraphVertexType *start, GraphVertexType *goal)
+	static std::vector<GraphVertexType*> Search(Graph_t<GraphBDSType>& graph, GraphVertexType *start, GraphVertexType *goal)
 	{
 		// reset last search information
 		graph.ResetGraphVertices();
@@ -71,7 +71,7 @@ public:
 	}
 
 	template<typename GraphBDSType, typename GraphVertexType>
-	static std::vector<GraphVertexType*> Search(std::shared_ptr<Graph<GraphBDSType>> graph, GraphVertexType *start, GraphVertexType *goal)
+	static std::vector<GraphVertexType*> Search(std::shared_ptr<Graph_t<GraphBDSType>> graph, GraphVertexType *start, GraphVertexType *goal)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -81,7 +81,7 @@ public:
 	}
 
 	template<typename GraphBDSType, typename GraphVertexType>
-	static std::vector<GraphVertexType*> Search(Graph<GraphBDSType>* graph, GraphVertexType *start, GraphVertexType *goal)
+	static std::vector<GraphVertexType*> Search(Graph_t<GraphBDSType>* graph, GraphVertexType *start, GraphVertexType *goal)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -92,7 +92,7 @@ public:
 
 	/// Search using vertex ids
 	template<typename GraphBDSType>
-	static std::vector<Vertex<GraphBDSType>*> Search(Graph<GraphBDSType>& graph, uint64_t start_id, uint64_t goal_id)
+	static std::vector<Vertex<GraphBDSType>*> Search(Graph_t<GraphBDSType>& graph, uint64_t start_id, uint64_t goal_id)
 	{
 		// reset last search information
 		graph.ResetGraphVertices();
@@ -110,7 +110,7 @@ public:
 	}
 
 	template<typename GraphBDSType>
-	static std::vector<Vertex<GraphBDSType>*> Search(std::shared_ptr<Graph<GraphBDSType>> graph, uint64_t start_id, uint64_t goal_id)
+	static std::vector<Vertex<GraphBDSType>*> Search(std::shared_ptr<Graph_t<GraphBDSType>> graph, uint64_t start_id, uint64_t goal_id)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -128,7 +128,7 @@ public:
 	}
 
 	template<typename GraphBDSType>
-	static std::vector<Vertex<GraphBDSType>*> Search(Graph<GraphBDSType>* graph, uint64_t start_id, uint64_t goal_id)
+	static std::vector<Vertex<GraphBDSType>*> Search(Graph_t<GraphBDSType>* graph, uint64_t start_id, uint64_t goal_id)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -149,7 +149,7 @@ public:
 	template<typename GraphBDSType>
 	static std::vector<GraphBDSType> IncSearch(GraphBDSType start, GraphBDSType goal, std::function<std::vector<std::tuple<GraphBDSType, double>>(GraphBDSType)> get_neighbour_bds)
 	{
-		Graph<GraphBDSType> graph;
+		Graph_t<GraphBDSType> graph;
 
 		bool found_path = false;
 		std::vector<Vertex<GraphBDSType>*> path;

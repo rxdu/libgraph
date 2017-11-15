@@ -28,294 +28,290 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "graph/internal/bds_base.h"
-#include "graph/internal/vertex_impl.h"
-
-namespace librav {
-
-/****************************************************************************/
-/*								 Graph										*/
-/****************************************************************************/
-/// A graph data structure template.
-template<typename StateType>
-class Graph
+namespace librav
 {
-public:
-	/// Graph constructor.
-	Graph(){};
-	/// Graph destructor. Graph class is only responsible for the memory recycling of Vertex and Edge
-	/// objects. The node, such as a quadtree node or a square cell, which each vertex is associated
-	///  with needs to be recycled separately, for example by the quadtree/square_grid class.
-	~Graph(){
-		for(auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
-			delete it->second;
-	};
 
-private:
-	std::map<uint64_t, Vertex<StateType>*> vertex_map_;
+/****************************************************************************/
+/*								 Graph_t										*/
+/****************************************************************************/
+template <typename StateType>
+Graph_t<StateType>::~Graph_t()
+{
+	for (auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
+		delete it->second;
+};
 
-	friend class AStar;
+/// This function is used to reset the vertices for a new search
+template <typename StateType>
+void Graph_t<StateType>::ResetGraphVertices()
+{
+	for (const auto &vertex_pair : vertex_map_)
+		vertex_pair.second->ClearVertexSearchInfo();
+};
 
-private:
-	/// This function checks if a vertex already exists in the graph.
-	///	If yes, the functions returns the pointer of the existing vertex,
-	///	otherwise it creates a new vertex.
-	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<StateType>* GetVertex(StateType vertex_node)
+/// This function removes all edges and vertices in the graph
+template <typename StateType>
+void Graph_t<StateType>::ClearGraph()
+{
+	for (auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
+		delete it->second;
+	vertex_map_.clear();
+}
+
+/// This function is used to create a graph by adding edges connecting two nodes
+template <typename StateType>
+void Graph_t<StateType>::AddEdge(StateType src_node, StateType dst_node, double cost)
+{
+	Vertex<StateType> *src_vertex = GetVertex(src_node);
+	Vertex<StateType> *dst_vertex = GetVertex(dst_node);
+
+	if (src_vertex->CheckNeighbour(dst_vertex))
+		return;
+
+	// store information for deleting vertex
+	dst_vertex->associated_vertices_.push_back(src_vertex);
+
+	Edge<Vertex<StateType> *> new_edge(src_vertex, dst_vertex, cost);
+	src_vertex->edges_.push_back(new_edge);
+};
+
+/// This function is used to remove the edge from src_node to dst_node.
+template <typename StateType>
+bool Graph_t<StateType>::RemoveEdge(StateType src_node, StateType dst_node)
+{
+	Vertex<StateType> *src_vertex = SearchVertex(src_node);
+	Vertex<StateType> *dst_vertex = SearchVertex(dst_node);
+
+	if ((src_vertex != nullptr) && (dst_vertex != nullptr))
 	{
-		auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
+		bool found_edge = false;
+		auto idx = src_vertex->edges_.end();
 
-		if(it == vertex_map_.end())
+		for (auto it = src_vertex->edges_.begin(); it != src_vertex->edges_.end(); it++)
 		{
-			Vertex<StateType>* new_vertex = new Vertex<StateType>(vertex_node);
-			//vertex_map_[vertex_node.data_id_] = new_vertex;
-			vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
-			return new_vertex;
+			if ((*it).dst_ == dst_vertex)
+			{
+				idx = it;
+				found_edge = true;
+			}
 		}
 
-		return it->second;
+		if (found_edge)
+			src_vertex->edges_.erase(idx);
+
+		return found_edge;
 	}
+	else
+		return false;
+};
 
-	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<StateType>* GetVertex(StateType vertex_node)
-	{
-		auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
+template <typename StateType>
+template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
+void Graph_t<StateType>::RemoveVertex(T vertex_node)
+{
+	auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
 
-		if(it == vertex_map_.end())
+	// unknown vertex, no need to remove
+	if (it == vertex_map_.end())
+		return;
+
+	for (auto &asv : it->second->associated_vertices_)
+		for (auto eit = asv->edges_.begin(); eit != asv->edges_.end(); eit++)
 		{
-			Vertex<StateType>* new_vertex = new Vertex<StateType>(vertex_node);
-			//vertex_map_[vertex_node->data_id_] = new_vertex;
-			vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
-			return new_vertex;
+			if ((*eit).dst_ == it->second)
+			{
+				asv->edges_.erase(eit);
+				break;
+			}
 		}
 
-		return it->second;
+	auto vptr = it->second;
+	vertex_map_.erase(it);
+	delete vptr;
+};
+
+template <typename StateType>
+template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
+void Graph_t<StateType>::RemoveVertex(T vertex_node)
+{
+	auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
+
+	// unknown vertex, no need to remove
+	if (it == vertex_map_.end())
+		return;
+
+	for (auto &asv : it->second->associated_vertices_)
+		for (auto eit = asv->edges_.begin(); eit != asv->edges_.end(); eit++)
+		{
+			if ((*eit).dst_ == it->second)
+			{
+				asv->edges_.erase(eit);
+				break;
+			}
+		}
+
+	auto vptr = it->second;
+	vertex_map_.erase(it);
+	delete vptr;
+}
+
+/// This functions is used to access all vertices of a graph
+template <typename StateType>
+std::vector<Vertex<StateType> *> Graph_t<StateType>::GetGraphVertices() const
+{
+	std::vector<Vertex<StateType> *> vertices;
+
+	for (auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
+	{
+		vertices.push_back(it->second);
 	}
 
-	/// This function creates a vertex in the graph that associates with the given node.
-	/// The set of functions AddVertex() are only supposed to be used with incremental a* search.
-	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<StateType>* AddVertex(StateType vertex_node)
+	return vertices;
+};
+
+/// This functions is used to access all edges of a graph
+template <typename StateType>
+std::vector<Edge<Vertex<StateType> *>> Graph_t<StateType>::GetGraphEdges() const
+{
+	std::vector<Edge<Vertex<StateType> *>> edges;
+
+	for (auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
 	{
-		Vertex<StateType>* new_vertex = new Vertex<StateType>(vertex_node);
+		Vertex<StateType> *vertex = it->second;
+		for (auto ite = vertex->edges_.begin(); ite != vertex->edges_.end(); ite++)
+		{
+			edges.push_back(*ite);
+		}
+	}
+
+	return edges;
+};
+
+/// This functions is used to access all edges of a graph
+template <typename StateType>
+std::vector<Edge<Vertex<StateType> *>> Graph_t<StateType>::GetGraphUndirectedEdges() const
+{
+	std::vector<Edge<Vertex<StateType> *>> edges;
+
+	for (auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
+	{
+		Vertex<StateType> *vertex = it->second;
+
+		for (auto ite = vertex->edges_.begin(); ite != vertex->edges_.end(); ite++)
+		{
+			bool edge_existed = false;
+
+			for (auto &itedge : edges)
+			{
+				if (itedge -= (*ite))
+				{
+					edge_existed = true;
+					break;
+				}
+			}
+
+			if (!edge_existed)
+				edges.push_back(*ite);
+		}
+	}
+
+	return edges;
+};
+
+/// This function return the vertex with specified id
+template <typename StateType>
+Vertex<StateType> *Graph_t<StateType>::GetVertexFromID(uint64_t vertex_id)
+{
+	auto it = vertex_map_.find(vertex_id);
+
+	if (it != vertex_map_.end())
+		return (*it).second;
+	else
+		return nullptr;
+};
+
+template <typename StateType>
+template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
+Vertex<StateType> *Graph_t<StateType>::GetVertex(T vertex_node)
+{
+	auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
+
+	if (it == vertex_map_.end())
+	{
+		Vertex<StateType> *new_vertex = new Vertex<StateType>(vertex_node);
 		//vertex_map_[vertex_node.data_id_] = new_vertex;
 		vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
 		return new_vertex;
 	}
 
-	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<StateType>* AddVertex(StateType vertex_node)
+	return it->second;
+}
+
+template <typename StateType>
+template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
+Vertex<StateType> *Graph_t<StateType>::GetVertex(T vertex_node)
+{
+	auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
+
+	if (it == vertex_map_.end())
 	{
-		Vertex<StateType>* new_vertex = new Vertex<StateType>(vertex_node);
+		Vertex<StateType> *new_vertex = new Vertex<StateType>(vertex_node);
 		//vertex_map_[vertex_node->data_id_] = new_vertex;
 		vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
 		return new_vertex;
 	}
 
-	/// This function checks if a vertex exists in the graph.
-	///	If yes, the functions returns the pointer of the existing vertex,
-	///	otherwise it returns nullptr.
-	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<StateType>* SearchVertex(StateType vertex_node)
-	{
-		auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
+	return it->second;
+}
 
-		if(it == vertex_map_.end())
-			return nullptr;
-		else
-			return it->second;
-	}
+/// This function creates a vertex in the graph that associates with the given node.
+/// The set of functions AddVertex() are only supposed to be used with incremental a* search.
+template <typename StateType>
+template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
+Vertex<StateType> *Graph_t<StateType>::AddVertex(T vertex_node)
+{
+	Vertex<StateType> *new_vertex = new Vertex<StateType>(vertex_node);
+	//vertex_map_[vertex_node.data_id_] = new_vertex;
+	vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
+	return new_vertex;
+}
 
-	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	Vertex<StateType>* SearchVertex(StateType vertex_node)
-	{
-		auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
+template <typename StateType>
+template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
+Vertex<StateType> *Graph_t<StateType>::AddVertex(T vertex_node)
+{
+	Vertex<StateType> *new_vertex = new Vertex<StateType>(vertex_node);
+	//vertex_map_[vertex_node->data_id_] = new_vertex;
+	vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
+	return new_vertex;
+}
 
-		if(it == vertex_map_.end())
-			return nullptr;
-		else
-			return it->second;
-	}
+/// This function checks if a vertex exists in the graph.
+///	If yes, the functions returns the pointer of the existing vertex,
+///	otherwise it returns nullptr.
+template <typename StateType>
+template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
+Vertex<StateType> *Graph_t<StateType>::SearchVertex(T vertex_node)
+{
+	auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
 
-	/// This function is used to reset the vertices for a new search
-	void ResetGraphVertices()
-	{
-		for(const auto& vertex_pair: vertex_map_)
-			vertex_pair.second->ClearVertexSearchInfo();
-	};
+	if (it == vertex_map_.end())
+		return nullptr;
+	else
+		return it->second;
+}
 
-public:
-	/// This function removes all edges and vertices in the graph
-	void ClearGraph()
-	{
-		for(auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
-			delete it->second;
-		vertex_map_.clear();
-	}
+template <typename StateType>
+template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
+Vertex<StateType> *Graph_t<StateType>::SearchVertex(T vertex_node)
+{
+	auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
 
-	/// This function is used to create a graph by adding edges connecting two nodes
-	void AddEdge(StateType src_node, StateType dst_node, double cost)
-	{
-		Vertex<StateType>* src_vertex = GetVertex(src_node);
-		Vertex<StateType>* dst_vertex = GetVertex(dst_node);
-
-		if(src_vertex->CheckNeighbour(dst_vertex))
-			return;
-
-		// store information for deleting vertex
-		dst_vertex->associated_vertices_.push_back(src_vertex);
-
-		Edge<Vertex<StateType>*> new_edge(src_vertex, dst_vertex, cost);
-		src_vertex->edges_.push_back(new_edge);
-	};
-
-	/// This function is used to remove the edge from src_node to dst_node.
-	bool RemoveEdge(StateType src_node, StateType dst_node)
-	{
-		Vertex<StateType>* src_vertex = SearchVertex(src_node);
-		Vertex<StateType>* dst_vertex = SearchVertex(dst_node);
-
-		if((src_vertex != nullptr) && (dst_vertex != nullptr))
-		{
-			bool found_edge = false;
-			auto idx = src_vertex->edges_.end();
-
-			for(auto it = src_vertex->edges_.begin(); it != src_vertex->edges_.end(); it++)
-			{
-				if((*it).dst_ == dst_vertex)
-				{
-					idx = it;
-					found_edge = true;
-				}
-			}
-
-			if(found_edge)
-				src_vertex->edges_.erase(idx);
-
-			return found_edge;
-		}
-		else
-			return false;
-	};
-
-	/// This function checks if a vertex exists in the graph and remove it if presents.
-	template<class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-	void RemoveVertex(StateType vertex_node)
-	{
-		auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
-
-		// unknown vertex, no need to remove
-		if(it == vertex_map_.end())
-			return;
-
-		for(auto& asv : it->second->associated_vertices_)
-			for(auto eit = asv->edges_.begin(); eit != asv->edges_.end(); eit++)
-			{
-				if((*eit).dst_ == it->second)
-				{
-					asv->edges_.erase(eit);
-					break;
-				}
-			}
-
-		auto vptr = it->second;
-		vertex_map_.erase(it);
-		delete vptr;
-	}
-
-	template<class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type* = nullptr>
-	void RemoveVertex(StateType vertex_node)
-	{
-		auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
-
-		// unknown vertex, no need to remove
-		if(it == vertex_map_.end())
-			return;
-
-		for(auto& asv : it->second->associated_vertices_)
-			for(auto eit = asv->edges_.begin(); eit != asv->edges_.end(); eit++)
-			{
-				if((*eit).dst_ == it->second)
-				{
-					asv->edges_.erase(eit);
-					break;
-				}
-			}
-
-		auto vptr = it->second;
-		vertex_map_.erase(it);
-		delete vptr;
-	}
-
-	/// This functions is used to access all vertices of a graph
-	std::vector<Vertex<StateType>*> GetGraphVertices() const
-	{
-		std::vector<Vertex<StateType>*> vertices;
-
-		for(auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
-		{
-			vertices.push_back(it->second);
-		}
-
-		return vertices;
-	};
-
-	/// This functions is used to access all edges of a graph
-	std::vector<Edge<Vertex<StateType>*>> GetGraphEdges() const
-	{
-		std::vector<Edge<Vertex<StateType>*>> edges;
-
-		for(auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
-		{
-			Vertex<StateType>* vertex = it->second;
-			for(auto ite = vertex->edges_.begin(); ite != vertex->edges_.end(); ite++) {
-				edges.push_back(*ite);
-			}
-		}
-
-		return edges;
-	};
-
-	/// This functions is used to access all edges of a graph
-	std::vector<Edge<Vertex<StateType>*>> GetGraphUndirectedEdges() const
-	{
-		std::vector<Edge<Vertex<StateType>*>> edges;
-
-		for(auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
-		{
-			Vertex<StateType>* vertex = it->second;
-
-			for(auto ite = vertex->edges_.begin(); ite != vertex->edges_.end(); ite++) {
-				bool edge_existed = false;
-
-				for(auto& itedge : edges)
-				{
-					if(itedge -= (*ite)) {
-						edge_existed = true;
-						break;
-					}
-				}
-
-				if(!edge_existed)
-					edges.push_back(*ite);
-			}
-		}
-
-		return edges;
-	};
-
-	/// This function return the vertex with specified id
-	Vertex<StateType>* GetVertexFromID(uint64_t vertex_id)
-	{
-		auto it = vertex_map_.find(vertex_id);
-
-		if(it != vertex_map_.end())
-			return (*it).second;
-		else
-			return nullptr;
-	}
-};
-
+	if (it == vertex_map_.end())
+		return nullptr;
+	else
+		return it->second;
+}
 }
 
 #endif /* GRAPH_IMPL_H */

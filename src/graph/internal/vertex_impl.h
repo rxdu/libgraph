@@ -49,7 +49,7 @@ public:
 
 	// friends
 	template<typename BDSType>
-	friend class Graph;
+	friend class Graph_t;
 	friend class AStar;
 
 	// generic attributes
