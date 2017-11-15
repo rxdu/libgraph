@@ -15,11 +15,24 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "graph/internal/vertex_impl.h"
 #include "graph/internal/bds_base.h"
+#include "graph/vertex.h"
 
 namespace librav
 {
+
+// Only types ended with "_t" should be used in user applications
+template <typename T>
+class Graph_t;
+
+template <typename T>
+class Vertex_t;
+
+template <typename T>
+using Edge_t = Edge<Vertex_t<T> *>;
+
+template <typename T>
+using Path_t = std::vector<Vertex_t<T> *>;
 
 /// A graph data structure template.
 template <typename StateType>
@@ -28,7 +41,7 @@ class Graph_t
   public:
     /// Graph_t constructor.
     Graph_t(){};
-    /// Graph_t destructor. Graph_t class is only responsible for the memory recycling of Vertex and Edge
+    /// Graph_t destructor. Graph_t class is only responsible for the memory recycling of Vertex_t and Edge_t
     /// objects. The node, such as a quadtree node or a square cell, which each vertex is associated
     ///  with needs to be recycled separately, for example by the quadtree/square_grid class.
     ~Graph_t();
@@ -48,37 +61,37 @@ class Graph_t
     void RemoveVertex(T vertex_node);
 
     /// This functions is used to access all vertices of a graph
-    std::vector<Vertex<StateType> *> GetGraphVertices() const;
+    std::vector<Vertex_t<StateType> *> GetGraphVertices() const;
 
     /// This functions is used to access all edges of a graph
-    std::vector<Edge<Vertex<StateType> *>> GetGraphEdges() const;
+    std::vector<Edge<Vertex_t<StateType> *>> GetGraphEdges() const;
 
     /// This functions is used to access all edges of a graph
-    std::vector<Edge<Vertex<StateType> *>> GetGraphUndirectedEdges() const;
+    std::vector<Edge<Vertex_t<StateType> *>> GetGraphUndirectedEdges() const;
 
     /// This function return the vertex with specified id
-    Vertex<StateType> *GetVertexFromID(uint64_t vertex_id);
+    Vertex_t<StateType> *GetVertexFromID(uint64_t vertex_id);
 
   private:
-    std::map<uint64_t, Vertex<StateType> *> vertex_map_;
+    std::map<uint64_t, Vertex_t<StateType> *> vertex_map_;
     friend class AStar;
 
     /// This function checks if a vertex already exists in the graph.
     ///	If yes, the functions returns the pointer of the existing vertex,
     ///	otherwise it creates a new vertex.
     template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-    Vertex<StateType> *GetVertex(T vertex_node);
+    Vertex_t<StateType> *GetVertex(T vertex_node);
 
     /// This function creates a vertex in the graph that associates with the given node.
     /// The set of functions AddVertex() are only supposed to be used with incremental a* search.
     template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-    Vertex<StateType> *AddVertex(T vertex_node);
+    Vertex_t<StateType> *AddVertex(T vertex_node);
 
     /// This function checks if a vertex exists in the graph.
     ///	If yes, the functions returns the pointer of the existing vertex,
     ///	otherwise it returns nullptr.
     template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-    Vertex<StateType> *SearchVertex(T vertex_node);
+    Vertex_t<StateType> *SearchVertex(T vertex_node);
 
     /// This function is used to reset the vertices for a new search
     void ResetGraphVertices();
@@ -88,24 +101,15 @@ class Graph_t
     void RemoveVertex(T vertex_node);
 
     template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-    Vertex<StateType> *GetVertex(T vertex_node);
+    Vertex_t<StateType> *GetVertex(T vertex_node);
 
     template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-    Vertex<StateType> *AddVertex(T vertex_node);
+    Vertex_t<StateType> *AddVertex(T vertex_node);
 
     template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-    Vertex<StateType> *SearchVertex(T vertex_node);
+    Vertex_t<StateType> *SearchVertex(T vertex_node);
 };
 
-// Alias ended with "_t" should be used in user applications
-template <typename T>
-using Vertex_t = Vertex<T>;
-
-template <typename T>
-using Edge_t = Edge<Vertex<T> *>;
-
-template <typename T>
-using Path_t = std::vector<Vertex<T> *>;
 }
 
 #include "graph/internal/graph_impl.h"

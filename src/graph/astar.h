@@ -181,9 +181,9 @@ public:
 			current_vertex->is_in_openlist_ = false;
 			current_vertex->is_checked_ = true;
 
-			std::vector<std::tuple<GraphBDSType, double>> neighbour_bds = get_neighbour_bds(current_vertex->bundled_data_);
+			std::vector<std::tuple<GraphBDSType, double>> neighbour_bds = get_neighbour_bds(current_vertex->state_);
 			for(auto& nb : neighbour_bds)
-				graph.AddEdge(current_vertex->bundled_data_, std::get<0>(nb), std::get<1>(nb));
+				graph.AddEdge(current_vertex->state_, std::get<0>(nb), std::get<1>(nb));
 
 			std::vector<Edge<Vertex<GraphBDSType>*>> successors = current_vertex->edges_;
 
@@ -240,7 +240,7 @@ public:
 #endif
 
 			for(auto& wp : path)
-				path_bds.push_back(wp->bundled_data_);
+				path_bds.push_back(wp->state_);
 		}
 		else
 			std::cout << "failed to find a path" << std::endl;
