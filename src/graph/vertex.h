@@ -22,7 +22,7 @@ namespace librav
 /*								 Vertex_t										*/
 /****************************************************************************/
 /// A vertex data structure template.
-template <typename StateType>
+template <typename StateType, typename TransitionType>
 class Vertex_t
 {
   public:
@@ -42,25 +42,25 @@ class Vertex_t
 	// generic attributes
 	StateType state_;
 	uint64_t vertex_id_;
-	std::vector<Edge<Vertex_t<StateType>*, double>> edges_;
+	std::vector<Edge<Vertex_t<StateType,TransitionType>*, TransitionType>> edges_;
 
   public:
 	/// == operator overloading. If two vertices have the same id, they're regarded as equal.
-	bool operator==(const Vertex_t<StateType> &other) const;
+	bool operator==(const Vertex_t<StateType,TransitionType> &other) const;
 
 	/// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
 	///		the two vertices exists.
-	double GetEdgeCost(const Vertex_t<StateType> &dst_node) const;
+	double GetEdgeCost(const Vertex_t<StateType,TransitionType> &dst_node) const;
 
 	/// Get all neighbor vertices of this vertex.
-	std::vector<Vertex_t<StateType> *> GetNeighbours();
+	std::vector<Vertex_t<StateType,TransitionType> *> GetNeighbours();
 
 	/// Check if a given vertex is the neighbor of current vertex.
-	bool CheckNeighbour(Vertex_t<StateType> *dst_node);
+	bool CheckNeighbour(Vertex_t<StateType,TransitionType> *dst_node);
 
   private:
 	// vertices that contain edges connecting to current vertex
-	std::vector<Vertex_t<StateType> *> associated_vertices_;
+	std::vector<Vertex_t<StateType,TransitionType> *> associated_vertices_;
 
 	// attributes for A* search
 	bool is_checked_;
@@ -68,7 +68,7 @@ class Vertex_t
 	double f_astar_;
 	double g_astar_;
 	double h_astar_;
-	Vertex_t<StateType> *search_parent_;
+	Vertex_t<StateType,TransitionType> *search_parent_;
 
   private:
 	/// Clear exiting search info before a new search
@@ -77,7 +77,7 @@ class Vertex_t
 	// DEPRACATED
 	/// Get heuristic using function provided by bundled data (pointer type)
 	template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-	double CalcHeuristic(Vertex_t<StateType> *dst_vertex)
+	double CalcHeuristic(Vertex_t<StateType,TransitionType> *dst_vertex)
 	{
 		return this->state_->GetHeuristic(*(dst_vertex->state_));
 	}
@@ -86,7 +86,7 @@ class Vertex_t
 	/// Get heuristic using function provided by bundled data (non-pointer type)
 	template <class T = StateType,
 			  typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-	double CalcHeuristic(Vertex_t<StateType> *dst_vertex)
+	double CalcHeuristic(Vertex_t<StateType,TransitionType> *dst_vertex)
 	{
 		return this->state_.GetHeuristic(dst_vertex->state_);
 	}

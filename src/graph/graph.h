@@ -1,7 +1,7 @@
 /* 
  * graph.h
  * 
- * Created on: Nov 10, 2017 
+ * Created on: Dec 9, 2015
  * Description: 
  * 
  * Copyright (c) 2017 Ruixiang Du (rdu)
@@ -23,94 +23,98 @@ namespace librav
 {
 
 // Only types ended with "_t" should be used in user applications
-template <typename T1, typename T2 = double>
+template <typename StateType, typename TransitionType = double>
 class Graph_t;
 
-template <typename T>
+template <typename StateType, typename TransitionType>
 class Vertex_t;
 
-template <typename T1, typename T2 = double>
-using Edge_t = Edge<Vertex_t<T1> *, T2>;
+template <typename StateType, typename TransitionType>
+using Edge_t = Edge<Vertex_t<StateType, TransitionType> *, TransitionType>;
 
-template <typename T>
-using Path_t = std::vector<Vertex_t<T> *>;
+template <typename StateType, typename TransitionType>
+using Path_t = std::vector<Vertex_t<StateType, TransitionType> *>;
 
 /// A graph data structure template.
 template <typename StateType, typename TransitionType>
 class Graph_t
 {
-  public:
-    /// Graph_t constructor.
-    Graph_t(){};
-    /// Graph_t destructor. Graph_t class is only responsible for the memory recycling of Vertex_t and Edge_t
-    /// objects. The node, such as a quadtree node or a square cell, which each vertex is associated
-    ///  with needs to be recycled separately, for example by the quadtree/square_grid class.
-    ~Graph_t();
+public:
+  /// Graph_t constructor.
+  Graph_t(){};
+  /// Graph_t destructor. Graph_t class is only responsible for the memory recycling of Vertex_t and Edge_t
+  /// objects. The node, such as a quadtree node or a square cell, which each vertex is associated
+  ///  with needs to be recycled separately, for example by the quadtree/square_grid class.
+  ~Graph_t();
 
-  public:
-    /// This function removes all edges and vertices in the graph
-    void ClearGraph();
+  typedef Vertex_t<StateType, TransitionType> VertexType;
+  typedef Edge_t<StateType, TransitionType> EdgeType;
+  typedef std::vector<Vertex_t<StateType, TransitionType> *> PathType;
 
-    /// This function is used to create a graph by adding edges connecting two nodes
-    void AddEdge(StateType src_node, StateType dst_node, double cost);
+public:
+  /// This function removes all edges and vertices in the graph
+  void ClearGraph();
 
-    /// This function is used to remove the edge from src_node to dst_node.
-    bool RemoveEdge(StateType src_node, StateType dst_node);
+  /// This function is used to create a graph by adding edges connecting two nodes
+  void AddEdge(StateType src_node, StateType dst_node, double cost);
 
-    /// This function checks if a vertex exists in the graph and remove it if presents.
-    template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-    void RemoveVertex(T vertex_node);
+  /// This function is used to remove the edge from src_node to dst_node.
+  bool RemoveEdge(StateType src_node, StateType dst_node);
 
-    /// This functions is used to access all vertices of a graph
-    std::vector<Vertex_t<StateType> *> GetGraphVertices() const;
+  /// This function checks if a vertex exists in the graph and remove it if presents.
+  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
+  void RemoveVertex(T vertex_node);
 
-    /// This functions is used to access all edges of a graph
-    std::vector<Edge_t<StateType>> GetGraphEdges() const;
+  /// This function return the vertex with specified id
+  VertexType *GetVertexFromID(uint64_t vertex_id);
 
-    /// This functions is used to access all edges of a graph
-    std::vector<Edge_t<StateType>> GetGraphUndirectedEdges() const;
+  /// This functions is used to access all vertices of a graph
+  std::vector<VertexType *> GetGraphVertices() const;
 
-    /// This function return the vertex with specified id
-    Vertex_t<StateType> *GetVertexFromID(uint64_t vertex_id);
+  /// This functions is used to access all edges of a graph
+  std::vector<Edge_t<StateType, TransitionType>> GetGraphEdges() const;
 
-  private:
-    std::map<uint64_t, Vertex_t<StateType> *> vertex_map_;
-    friend class AStar;
+  /// This functions is used to access all edges of a graph
+  std::vector<Edge_t<StateType, TransitionType>> GetGraphUndirectedEdges() const;
 
-    /// This function checks if a vertex already exists in the graph.
-    ///	If yes, the functions returns the pointer of the existing vertex,
-    ///	otherwise it creates a new vertex.
-    template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-    Vertex_t<StateType> *GetVertex(T vertex_node);
+public:
+  /* Same functions for pointer type State node */
+  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
+  void RemoveVertex(T vertex_node);
 
-    /// This function creates a vertex in the graph that associates with the given node.
-    /// The set of functions AddVertex() are only supposed to be used with incremental a* search.
-    template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-    Vertex_t<StateType> *AddVertex(T vertex_node);
+  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
+  VertexType *GetVertex(T vertex_node);
 
-    /// This function checks if a vertex exists in the graph.
-    ///	If yes, the functions returns the pointer of the existing vertex,
-    ///	otherwise it returns nullptr.
-    template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-    Vertex_t<StateType> *SearchVertex(T vertex_node);
+  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
+  VertexType *AddVertex(T vertex_node);
 
-    /// This function is used to reset the vertices for a new search
-    void ResetGraphVertices();
+  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
+  VertexType *SearchVertex(T vertex_node);
 
-    /* Same functions for pointer type State node */
-    template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-    void RemoveVertex(T vertex_node);
+private:
+  std::map<uint64_t, VertexType *> vertex_map_;
+  friend class AStar;
 
-    template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-    Vertex_t<StateType> *GetVertex(T vertex_node);
+  /// This function checks if a vertex already exists in the graph.
+  ///	If yes, the functions returns the pointer of the existing vertex,
+  ///	otherwise it creates a new vertex.
+  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
+  VertexType *GetVertex(T vertex_node);
 
-    template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-    Vertex_t<StateType> *AddVertex(T vertex_node);
+  /// This function creates a vertex in the graph that associates with the given node.
+  /// The set of functions AddVertex() are only supposed to be used with incremental a* search.
+  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
+  VertexType *AddVertex(T vertex_node);
 
-    template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-    Vertex_t<StateType> *SearchVertex(T vertex_node);
+  /// This function checks if a vertex exists in the graph.
+  ///	If yes, the functions returns the pointer of the existing vertex,
+  ///	otherwise it returns nullptr.
+  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
+  VertexType *SearchVertex(T vertex_node);
+
+  /// This function is used to reset the vertices for a new search
+  void ResetGraphVertices();
 };
-
 }
 
 #include "graph/internal/graph_impl.h"

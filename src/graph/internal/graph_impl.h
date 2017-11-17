@@ -44,8 +44,8 @@ void Graph_t<StateType,TransitionType>::ClearGraph()
 template <typename StateType, typename TransitionType>
 void Graph_t<StateType,TransitionType>::AddEdge(StateType src_node, StateType dst_node, double cost)
 {
-	Vertex_t<StateType> *src_vertex = GetVertex(src_node);
-	Vertex_t<StateType> *dst_vertex = GetVertex(dst_node);
+	Vertex_t<StateType,TransitionType> *src_vertex = GetVertex(src_node);
+	Vertex_t<StateType,TransitionType> *dst_vertex = GetVertex(dst_node);
 
 	if (src_vertex->CheckNeighbour(dst_vertex))
 		return;
@@ -53,7 +53,7 @@ void Graph_t<StateType,TransitionType>::AddEdge(StateType src_node, StateType ds
 	// store information for deleting vertex
 	dst_vertex->associated_vertices_.push_back(src_vertex);
 
-	Edge_t<StateType> new_edge(src_vertex, dst_vertex, cost);
+	Edge_t<StateType,TransitionType> new_edge(src_vertex, dst_vertex, cost);
 	src_vertex->edges_.push_back(new_edge);
 };
 
@@ -61,8 +61,8 @@ void Graph_t<StateType,TransitionType>::AddEdge(StateType src_node, StateType ds
 template <typename StateType, typename TransitionType>
 bool Graph_t<StateType,TransitionType>::RemoveEdge(StateType src_node, StateType dst_node)
 {
-	Vertex_t<StateType> *src_vertex = SearchVertex(src_node);
-	Vertex_t<StateType> *dst_vertex = SearchVertex(dst_node);
+	Vertex_t<StateType,TransitionType> *src_vertex = SearchVertex(src_node);
+	Vertex_t<StateType,TransitionType> *dst_vertex = SearchVertex(dst_node);
 
 	if ((src_vertex != nullptr) && (dst_vertex != nullptr))
 	{
@@ -139,9 +139,9 @@ void Graph_t<StateType,TransitionType>::RemoveVertex(T vertex_node)
 
 /// This functions is used to access all vertices of a graph
 template <typename StateType, typename TransitionType>
-std::vector<Vertex_t<StateType> *> Graph_t<StateType,TransitionType>::GetGraphVertices() const
+std::vector<Vertex_t<StateType,TransitionType> *> Graph_t<StateType,TransitionType>::GetGraphVertices() const
 {
-	std::vector<Vertex_t<StateType> *> vertices;
+	std::vector<Vertex_t<StateType,TransitionType> *> vertices;
 
 	for (auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
 	{
@@ -153,13 +153,13 @@ std::vector<Vertex_t<StateType> *> Graph_t<StateType,TransitionType>::GetGraphVe
 
 /// This functions is used to access all edges of a graph
 template <typename StateType, typename TransitionType>
-std::vector<Edge_t<StateType>> Graph_t<StateType,TransitionType>::GetGraphEdges() const
+std::vector<Edge_t<StateType,TransitionType>> Graph_t<StateType,TransitionType>::GetGraphEdges() const
 {
-	std::vector<Edge_t<StateType>> edges;
+	std::vector<Edge_t<StateType,TransitionType>> edges;
 
 	for (auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
 	{
-		Vertex_t<StateType> *vertex = it->second;
+		Vertex_t<StateType,TransitionType> *vertex = it->second;
 		for (auto ite = vertex->edges_.begin(); ite != vertex->edges_.end(); ite++)
 		{
 			edges.push_back(*ite);
@@ -171,13 +171,13 @@ std::vector<Edge_t<StateType>> Graph_t<StateType,TransitionType>::GetGraphEdges(
 
 /// This functions is used to access all edges of a graph
 template <typename StateType, typename TransitionType>
-std::vector<Edge_t<StateType>> Graph_t<StateType,TransitionType>::GetGraphUndirectedEdges() const
+std::vector<Edge_t<StateType,TransitionType>> Graph_t<StateType,TransitionType>::GetGraphUndirectedEdges() const
 {
-	std::vector<Edge_t<StateType>> edges;
+	std::vector<Edge_t<StateType,TransitionType>> edges;
 
 	for (auto it = vertex_map_.begin(); it != vertex_map_.end(); it++)
 	{
-		Vertex_t<StateType> *vertex = it->second;
+		Vertex_t<StateType,TransitionType> *vertex = it->second;
 
 		for (auto ite = vertex->edges_.begin(); ite != vertex->edges_.end(); ite++)
 		{
@@ -202,7 +202,7 @@ std::vector<Edge_t<StateType>> Graph_t<StateType,TransitionType>::GetGraphUndire
 
 /// This function return the vertex with specified id
 template <typename StateType, typename TransitionType>
-Vertex_t<StateType> *Graph_t<StateType,TransitionType>::GetVertexFromID(uint64_t vertex_id)
+Vertex_t<StateType,TransitionType> *Graph_t<StateType,TransitionType>::GetVertexFromID(uint64_t vertex_id)
 {
 	auto it = vertex_map_.find(vertex_id);
 
@@ -214,13 +214,13 @@ Vertex_t<StateType> *Graph_t<StateType,TransitionType>::GetVertexFromID(uint64_t
 
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-Vertex_t<StateType> *Graph_t<StateType,TransitionType>::GetVertex(T vertex_node)
+Vertex_t<StateType,TransitionType> *Graph_t<StateType,TransitionType>::GetVertex(T vertex_node)
 {
 	auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
 
 	if (it == vertex_map_.end())
 	{
-		Vertex_t<StateType> *new_vertex = new Vertex_t<StateType>(vertex_node);
+		Vertex_t<StateType,TransitionType> *new_vertex = new Vertex_t<StateType,TransitionType>(vertex_node);
 		//vertex_map_[vertex_node.data_id_] = new_vertex;
 		vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
 		return new_vertex;
@@ -231,13 +231,13 @@ Vertex_t<StateType> *Graph_t<StateType,TransitionType>::GetVertex(T vertex_node)
 
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-Vertex_t<StateType> *Graph_t<StateType,TransitionType>::GetVertex(T vertex_node)
+Vertex_t<StateType,TransitionType> *Graph_t<StateType,TransitionType>::GetVertex(T vertex_node)
 {
 	auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
 
 	if (it == vertex_map_.end())
 	{
-		Vertex_t<StateType> *new_vertex = new Vertex_t<StateType>(vertex_node);
+		Vertex_t<StateType,TransitionType> *new_vertex = new Vertex_t<StateType,TransitionType>(vertex_node);
 		//vertex_map_[vertex_node->data_id_] = new_vertex;
 		vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
 		return new_vertex;
@@ -250,9 +250,9 @@ Vertex_t<StateType> *Graph_t<StateType,TransitionType>::GetVertex(T vertex_node)
 /// The set of functions AddVertex() are only supposed to be used with incremental a* search.
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-Vertex_t<StateType> *Graph_t<StateType,TransitionType>::AddVertex(T vertex_node)
+Vertex_t<StateType,TransitionType> *Graph_t<StateType,TransitionType>::AddVertex(T vertex_node)
 {
-	Vertex_t<StateType> *new_vertex = new Vertex_t<StateType>(vertex_node);
+	Vertex_t<StateType,TransitionType> *new_vertex = new Vertex_t<StateType,TransitionType>(vertex_node);
 	//vertex_map_[vertex_node.data_id_] = new_vertex;
 	vertex_map_.insert(std::make_pair(vertex_node.data_id_, new_vertex));
 	return new_vertex;
@@ -260,9 +260,9 @@ Vertex_t<StateType> *Graph_t<StateType,TransitionType>::AddVertex(T vertex_node)
 
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-Vertex_t<StateType> *Graph_t<StateType,TransitionType>::AddVertex(T vertex_node)
+Vertex_t<StateType,TransitionType> *Graph_t<StateType,TransitionType>::AddVertex(T vertex_node)
 {
-	Vertex_t<StateType> *new_vertex = new Vertex_t<StateType>(vertex_node);
+	Vertex_t<StateType,TransitionType> *new_vertex = new Vertex_t<StateType,TransitionType>(vertex_node);
 	//vertex_map_[vertex_node->data_id_] = new_vertex;
 	vertex_map_.insert(std::make_pair(vertex_node->data_id_, new_vertex));
 	return new_vertex;
@@ -273,7 +273,7 @@ Vertex_t<StateType> *Graph_t<StateType,TransitionType>::AddVertex(T vertex_node)
 ///	otherwise it returns nullptr.
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-Vertex_t<StateType> *Graph_t<StateType,TransitionType>::SearchVertex(T vertex_node)
+Vertex_t<StateType,TransitionType> *Graph_t<StateType,TransitionType>::SearchVertex(T vertex_node)
 {
 	auto it = vertex_map_.find((uint64_t)(vertex_node.data_id_));
 
@@ -285,7 +285,7 @@ Vertex_t<StateType> *Graph_t<StateType,TransitionType>::SearchVertex(T vertex_no
 
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-Vertex_t<StateType> *Graph_t<StateType,TransitionType>::SearchVertex(T vertex_node)
+Vertex_t<StateType,TransitionType> *Graph_t<StateType,TransitionType>::SearchVertex(T vertex_node)
 {
 	auto it = vertex_map_.find((uint64_t)(vertex_node->data_id_));
 

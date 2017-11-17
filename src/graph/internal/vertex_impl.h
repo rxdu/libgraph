@@ -22,18 +22,18 @@ namespace librav
 /*								 Vertex_t										*/
 /****************************************************************************/
 /// A vertex data structure template.
-template <typename StateType>
+template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-Vertex_t<StateType>::Vertex_t(T bundled_data) : // attributes related to associated node
+Vertex_t<StateType,TransitionType>::Vertex_t(T bundled_data) : // attributes related to associated node
 												state_(bundled_data), vertex_id_(bundled_data->data_id_),
 												// common attributes
 												search_parent_(nullptr),
 												is_checked_(false), is_in_openlist_(false),
 												f_astar_(0), g_astar_(0), h_astar_(0){};
 
-template <typename StateType>
+template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-Vertex_t<StateType>::Vertex_t(T bundled_data) : // attributes related to associated node
+Vertex_t<StateType,TransitionType>::Vertex_t(T bundled_data) : // attributes related to associated node
 												state_(bundled_data), vertex_id_(bundled_data.data_id_),
 												// common attributes
 												search_parent_(nullptr),
@@ -41,8 +41,8 @@ Vertex_t<StateType>::Vertex_t(T bundled_data) : // attributes related to associa
 												f_astar_(0), g_astar_(0), h_astar_(0){};
 
 /// Clear exiting search info before a new search
-template <typename StateType>
-void Vertex_t<StateType>::ClearVertexSearchInfo()
+template <typename StateType, typename TransitionType>
+void Vertex_t<StateType,TransitionType>::ClearVertexSearchInfo()
 {
 	is_checked_ = false;
 	is_in_openlist_ = false;
@@ -54,8 +54,8 @@ void Vertex_t<StateType>::ClearVertexSearchInfo()
 }
 
 /// == operator overloading. If two vertices have the same id, they're regarded as equal.
-template <typename StateType>
-bool Vertex_t<StateType>::operator==(const Vertex_t<StateType> &other) const
+template <typename StateType, typename TransitionType>
+bool Vertex_t<StateType,TransitionType>::operator==(const Vertex_t<StateType,TransitionType> &other) const
 {
 	if (vertex_id_ == other.vertex_id_)
 		return true;
@@ -65,8 +65,8 @@ bool Vertex_t<StateType>::operator==(const Vertex_t<StateType> &other) const
 
 /// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
 ///		the two vertices exists.
-template <typename StateType>
-double Vertex_t<StateType>::GetEdgeCost(const Vertex_t<StateType> &dst_node) const
+template <typename StateType, typename TransitionType>
+double Vertex_t<StateType,TransitionType>::GetEdgeCost(const Vertex_t<StateType,TransitionType> &dst_node) const
 {
 	double cost = -1;
 
@@ -83,10 +83,10 @@ double Vertex_t<StateType>::GetEdgeCost(const Vertex_t<StateType> &dst_node) con
 }
 
 /// Get all neighbor vertices of this vertex.
-template <typename StateType>
-std::vector<Vertex_t<StateType> *> Vertex_t<StateType>::GetNeighbours()
+template <typename StateType, typename TransitionType>
+std::vector<Vertex_t<StateType,TransitionType> *> Vertex_t<StateType,TransitionType>::GetNeighbours()
 {
-	std::vector<Vertex_t<StateType> *> neighbours;
+	std::vector<Vertex_t<StateType,TransitionType> *> neighbours;
 
 	for (const auto &edge : edges_)
 		neighbours.push_back(edge.dst_);
@@ -95,10 +95,10 @@ std::vector<Vertex_t<StateType> *> Vertex_t<StateType>::GetNeighbours()
 }
 
 /// Check if a given vertex is the neighbor of current vertex.
-template <typename StateType>
-bool Vertex_t<StateType>::CheckNeighbour(Vertex_t<StateType> *dst_node)
+template <typename StateType, typename TransitionType>
+bool Vertex_t<StateType,TransitionType>::CheckNeighbour(Vertex_t<StateType,TransitionType> *dst_node)
 {
-	std::vector<Vertex_t<StateType> *> neighbours = GetNeighbours();
+	std::vector<Vertex_t<StateType,TransitionType> *> neighbours = GetNeighbours();
 
 	auto it = find(neighbours.begin(), neighbours.end(), dst_node);
 
