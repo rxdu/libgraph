@@ -16,7 +16,7 @@
 
 // user
 #include "graph/graph.h"
-#include "bds_example.h"
+#include "state_example.h"
 
 using namespace librav;
 
@@ -26,15 +26,15 @@ void ConstRefTypeGraphDemo();
 
 void ValueTypeGraphDemo()
 {
-	std::vector<BDSExample> nodes;
+	std::vector<StateExample> nodes;
 
 	// create nodes
 	for(int i = 0; i < 9; i++) {
-		nodes.push_back(BDSExample(i));
+		nodes.push_back(StateExample(i));
 	}
 
 	// create a graph
-	Graph_t<BDSExample> graph_val;
+	Graph_t<StateExample> graph_val;
 
 	graph_val.AddEdge(nodes[0], nodes[1], 1.0);
 	graph_val.AddEdge(nodes[0], nodes[3], 1.5);
@@ -66,15 +66,15 @@ void ValueTypeGraphDemo()
 
 void PointerTypeGraphDemo()
 {
-	std::vector<BDSExample*> nodes;
+	std::vector<StateExample*> nodes;
 
 	// create nodes
 	for(int i = 0; i < 9; i++) {
-		nodes.push_back(new BDSExample(i));
+		nodes.push_back(new StateExample(i));
 	}
 
 	// create a graph
-	Graph_t<BDSExample*> graph_ptr;
+	Graph_t<StateExample*> graph_ptr;
 
 	graph_ptr.AddEdge(nodes[0], nodes[1], 1.0);
 	graph_ptr.AddEdge(nodes[0], nodes[3], 1.5);
@@ -108,15 +108,15 @@ void PointerTypeGraphDemo()
 
 void ConstRefTypeGraphDemo()
 {
-	std::vector<BDSExample> nodes;
+	std::vector<StateExample> nodes;
 
 	// create nodes
 	for(int i = 0; i < 9; i++) {
-		nodes.push_back(BDSExample(i));
+		nodes.push_back(StateExample(i));
 	}
 
 	// create a graph
-	Graph_t<const BDSExample&> graph_ptr;
+	Graph_t<const StateExample&> graph_ptr;
 
 	graph_ptr.AddEdge((nodes[0]), (nodes[1]), 1.0);
 	graph_ptr.AddEdge((nodes[0]), (nodes[3]), 1.5);

@@ -198,7 +198,7 @@ int main(int argc, char** argv )
 		}
 	}
 
-	auto path2 = AStar::Search(graph2, cells[0].data_id_, cells[9595].data_id_);
+	auto path2 = AStar::Search(graph2, cells[0].state_id_, cells[9595].state_id_);
 	if(path2.empty())
 		std::cout << "search failed" << std::endl;
 	exec_time = clock() - exec_time;

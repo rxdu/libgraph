@@ -10,12 +10,17 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#define USE_UNORDERED_MAP
+
+#ifndef USE_UNORDERED_MAP
 #include <map>
+#else
+#include <unordered_map>
+#endif
 #include <vector>
 #include <cstdint>
 #include <type_traits>
 
-#include "graph/internal/bds_base.h"
 #include "graph/edge.h"
 #include "graph/vertex.h"
 
@@ -92,7 +97,14 @@ public:
   VertexType *SearchVertex(T vertex_node);
 
 private:
+#ifndef USE_UNORDERED_MAP
   std::map<uint64_t, VertexType *> vertex_map_;
+  // std::map<uint64_t, VertexType *> edge_map_;
+#else
+  std::unordered_map<uint64_t, VertexType *> vertex_map_;
+  // std::unordered_map<uint64_t, EdgeType *> edge_map_;
+#endif
+  // std::unordered_map <
   friend class AStar;
 
   /// This function checks if a vertex already exists in the graph.
@@ -117,6 +129,6 @@ private:
 };
 }
 
-#include "graph/internal/graph_impl.h"
+#include "graph/details/graph_impl.h"
 
 #endif /* GRAPH_H */

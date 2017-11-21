@@ -66,6 +66,6 @@ class Edge
 };
 }
 
-#include "graph/internal/edge_impl.h"
+#include "graph/details/edge_impl.h"
 
 #endif /* EDGE_H */

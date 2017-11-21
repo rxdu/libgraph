@@ -17,7 +17,7 @@
 // user
 #include "graph/graph.h"
 #include "graph/astar.h"
-#include "bds_example.h"
+#include "state_example.h"
 
 using namespace librav;
 
@@ -25,17 +25,32 @@ void ValueTypeGraphDemo();
 void PointerTypeGraphDemo();
 void ConstRefTypeGraphDemo();
 
+double CalcHeuristicVal(StateExample node1, StateExample node2)
+{
+	return 0.0;
+}
+
+double CalcHeuristicPtr(StateExample* node1, StateExample* node2)
+{
+	return 0.0;
+}
+
+double CalcHeuristicRef(const StateExample& node1, const StateExample& node2)
+{
+	return 0.0;
+}
+
 void ValueTypeGraphDemo()
 {
-	std::vector<BDSExample> nodes;
+	std::vector<StateExample> nodes;
 
 	// create nodes
 	for(int i = 0; i < 9; i++) {
-		nodes.push_back(BDSExample(i));
+		nodes.push_back(StateExample(i));
 	}
 
 	// create a graph
-	Graph_t<BDSExample> graph_val;
+	Graph_t<StateExample> graph_val;
 
 	graph_val.AddEdge(nodes[0], nodes[1], 1.0);
 	graph_val.AddEdge(nodes[0], nodes[3], 1.5);
@@ -62,7 +77,7 @@ void ValueTypeGraphDemo()
 	for(auto& e : all_edges)
 		e.PrintEdge();
 
-	auto path = AStar::Search(graph_val, graph_val.GetVertexFromID(0), graph_val.GetVertexFromID(8));
+	auto path = AStar::Search(graph_val, graph_val.GetVertexFromID(0), graph_val.GetVertexFromID(8), CalcHeuristicFunc_t<StateExample>(CalcHeuristicVal));
 
 	for(auto& e : path)
 		std::cout << "id: " << e->vertex_id_ << std::endl;
@@ -72,15 +87,15 @@ void ValueTypeGraphDemo()
 
 void PointerTypeGraphDemo()
 {
-	std::vector<BDSExample*> nodes;
+	std::vector<StateExample*> nodes;
 
 	// create nodes
 	for(int i = 0; i < 9; i++) {
-		nodes.push_back(new BDSExample(i));
+		nodes.push_back(new StateExample(i));
 	}
 
 	// create a graph
-	Graph_t<BDSExample*> graph_ptr;
+	Graph_t<StateExample*> graph_ptr;
 
 	graph_ptr.AddEdge(nodes[0], nodes[1], 1.0);
 	graph_ptr.AddEdge(nodes[0], nodes[3], 1.5);
@@ -107,7 +122,7 @@ void PointerTypeGraphDemo()
 	for(auto& e : all_edges)
 		e.PrintEdge();
 
-	auto path = AStar::Search(graph_ptr, graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8));
+	auto path = AStar::Search(graph_ptr, graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8),CalcHeuristicFunc_t<StateExample*>(CalcHeuristicPtr));
 
 	for(auto& e : path)
 		std::cout << "id: " << e->vertex_id_ << std::endl;
@@ -119,15 +134,15 @@ void PointerTypeGraphDemo()
 
 void ConstRefTypeGraphDemo()
 {
-	std::vector<BDSExample> nodes;
+	std::vector<StateExample> nodes;
 
 	// create nodes
 	for(int i = 0; i < 9; i++) {
-		nodes.push_back(BDSExample(i));
+		nodes.push_back(StateExample(i));
 	}
 
 	// create a graph
-	Graph_t<const BDSExample&> graph_ptr;
+	Graph_t<const StateExample&> graph_ptr;
 
 	graph_ptr.AddEdge((nodes[0]), (nodes[1]), 1.0);
 	graph_ptr.AddEdge((nodes[0]), (nodes[3]), 1.5);
@@ -154,7 +169,7 @@ void ConstRefTypeGraphDemo()
 	for(auto& e : all_edges)
 		e.PrintEdge();
 
-	auto path = AStar::Search(graph_ptr, graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8));
+	auto path = AStar::Search(graph_ptr, graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8),CalcHeuristicFunc_t<const StateExample&>(CalcHeuristicRef));
 
 	for(auto& e : path)
 		std::cout << "id: " << e->vertex_id_ << std::endl;

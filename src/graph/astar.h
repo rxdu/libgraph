@@ -29,6 +29,9 @@
 
 namespace librav {
 
+template<typename StateType>
+using CalcHeuristicFunc_t = std::function<double(StateType,StateType)>;
+
 /// A simple priority queue structure used as A* open list.
 // Source: http://www.redblobgames.com/pathfinding/a-star/implementation.html
 template<typename T, typename Number=double>
@@ -58,38 +61,38 @@ public:
 
 	/// Search using vertices
 	template<typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType>& graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal)
+	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType>& graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal, std::function<double(StateType, StateType)> calc_heuristic)
 	{
 		// reset last search information
 		graph.ResetGraphVertices();
 
 		// start a new search and return result
-		return Search(start, goal);
+		return Search(start, goal, calc_heuristic);
 	}
 
 	template<typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal)
+	static Path_t<StateType, TransitionType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal, std::function<double(StateType, StateType)> calc_heuristic)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
 
 		// start a new search and return result
-		return Search(start, goal);
+		return Search(start, goal, calc_heuristic);
 	}
 
 	template<typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType>* graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal)
+	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType>* graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal, std::function<double(StateType, StateType)> calc_heuristic)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
 
 		// start a new search and return result
-		return Search(start, goal);
+		return Search(start, goal, calc_heuristic);
 	}
 
 	/// Search using vertex ids
 	template<typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType>& graph, uint64_t start_id, uint64_t goal_id)
+	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType>& graph, uint64_t start_id, uint64_t goal_id, std::function<double(StateType, StateType)> calc_heuristic)
 	{
 		// reset last search information
 		graph.ResetGraphVertices();
@@ -101,13 +104,13 @@ public:
 
 		// start a new search and return result
 		if(start != nullptr && goal != nullptr)
-			return Search(start, goal);
+			return Search(start, goal, calc_heuristic);
 		else
 			return empty;
 	}
 
 	template<typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, uint64_t start_id, uint64_t goal_id)
+	static Path_t<StateType, TransitionType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, uint64_t start_id, uint64_t goal_id, std::function<double(StateType, StateType)> calc_heuristic)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -119,13 +122,13 @@ public:
 
 		// start a new search and return result
 		if(start != nullptr && goal != nullptr)
-			return Search(start, goal);
+			return Search(start, goal, calc_heuristic);
 		else
 			return empty;
 	}
 
 	template<typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType>* graph, uint64_t start_id, uint64_t goal_id)
+	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType>* graph, uint64_t start_id, uint64_t goal_id, std::function<double(StateType, StateType)> calc_heuristic)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -137,16 +140,17 @@ public:
 
 		// start a new search and return result
 		if(start != nullptr && goal != nullptr)
-			return Search(start, goal);
+			return Search(start, goal, calc_heuristic);
 		else
 			return empty;
 	}
 
 private:
-
-	template<typename GraphVertexType>
-	static std::vector<GraphVertexType*> Search(GraphVertexType *start_vtx, GraphVertexType *goal_vtx)
+	template<typename StateType>
+	static std::vector<Vertex_t<StateType, double>*> Search(Vertex_t<StateType, double> *start_vtx, Vertex_t<StateType, double> *goal_vtx, std::function<double(StateType,StateType)> CalcHeuristic)
 	{
+		using GraphVertexType = Vertex_t<StateType, double>;
+
 		bool found_path = false;
 		std::vector<GraphVertexType*> path;
 		GraphVertexType* current_vertex;
@@ -191,7 +195,7 @@ private:
 						successor->search_parent_ = current_vertex;
 						successor->g_astar_ = new_cost;
 
-						successor->h_astar_ = successor->CalcHeuristic(goal_vtx);
+						successor->h_astar_ = CalcHeuristic(successor->state_, goal_vtx->state_); 
 						successor->f_astar_ = successor->g_astar_ + successor->h_astar_;
 
 						openlist.put(successor, successor->f_astar_);

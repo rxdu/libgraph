@@ -34,34 +34,34 @@ Here is an example to use the templates.
 I. We first define a BDS type we want to use for constructing the graph.
 
 ~~~
-struct BDSExample: public BDSBase<BDSExample>
+struct StateExample: public BDSBase<StateExample>
 {
-	BDSExample(uint64_t id):
-		BDSBase<BDSExample>(id){};
-	~BDSExample(){};
+	StateExample(uint64_t id):
+		BDSBase<StateExample>(id){};
+	~StateExample(){};
 
     // simplest implementation of the function
-	double GetHeuristic(const BDSExample& other_struct) const {
+	double GetHeuristic(const StateExample& other_struct) const {
 		return 0.0;
 	}
 };
 ~~~
 
-II. Then we can create a few objects of class BDSExample
+II. Then we can create a few objects of class StateExample
 
 ~~~
-std::vector<BDSExample*> nodes;
+std::vector<StateExample*> nodes;
 
 // create nodes to be bundled with the graph vertices
 for(int i = 0; i < 9; i++) {
-	nodes.push_back(new BDSExample(i));
+	nodes.push_back(new StateExample(i));
 ~~~
 
-III. Now use those nodes to construct a graph. Note that the graph is of type BDSExample in this example.
+III. Now use those nodes to construct a graph. Note that the graph is of type StateExample in this example.
 
 ~~~
 // create a graph
-Graph<BDSExample*> graph;
+Graph<StateExample*> graph;
 
 // the reference is used to access the bundled data structure in a vertex,
 //  so you need to pass in an object instead of a pointer
@@ -94,7 +94,7 @@ Edge: start - 2 , end - 3 , cost - 2.5
 When a Graph object goes out of scope, its destructor function will recycle memory allocated for its vertices and edges. **The graph doesn't recycle memory allocated for the bundled data structure if each vertex is only associated with a pointer or a reference to a BDS**. In the square grid example, the graph doesn't assume the square grid also becomes useless when the graph itself is destructed. Thus you still have a complete square grid data structure after the graph object goes out of scope. The **square grid** should be responsible for recycling the memory allocated for its square cells when it becomes of no use. Thus in the above simple example, we will need to do the following operation to free the memory at the end.
 
 ~~~
-// delete objects of BDSExample
+// delete objects of StateExample
 for(auto& e : nodes)
 		delete e;
 ~~~
@@ -103,7 +103,7 @@ It's usually preferred to only associate a pointer or a (const) reference to a v
 
 In other cases, you can copy data to graph vertices and treat the graph and the original data as two separate entities. The data copied to a graph will be managed by the graph. You only need to recycle the original data properly.
 
-An detailed example of the graph and path search can be found in "demo/graph_demo.cpp". The basic operations of Graph<BDSExample>, Graph<BDSExample*> and Graph<const BDSExample&> are shown in the demo.
+An detailed example of the graph and path search can be found in "demo/graph_demo.cpp". The basic operations of Graph<StateExample>, Graph<StateExample*> and Graph<const StateExample&> are shown in the demo.
 
 ### d. Notes on Graph
 

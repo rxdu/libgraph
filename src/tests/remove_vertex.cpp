@@ -13,28 +13,28 @@
 // user
 #include "graph/graph.h"
 #include "graph/astar.h"
-#include "demo/bds_example.h"
+#include "demo/state_example.h"
 
 using namespace librav;
 
 int main(int argc, char* argv[])
 {
-//	std::vector<BDSExample*> nodes;
+//	std::vector<StateExample*> nodes;
 //
 //	// create nodes
 //	for(int i = 0; i < 9; i++) {
-//		nodes.push_back(new BDSExample(i));
+//		nodes.push_back(new StateExample(i));
 //	}
 
-	std::vector<BDSExample> nodes;
+	std::vector<StateExample> nodes;
 
 	// create nodes
 	for(int i = 0; i < 9; i++) {
-		nodes.push_back(BDSExample(i));
+		nodes.push_back(StateExample(i));
 	}
 
 	// create a graph
-	Graph_t<BDSExample> test_graph;
+	Graph_t<StateExample> test_graph;
 
 	test_graph.AddEdge(nodes[0], nodes[1], 1.0);
 	test_graph.AddEdge(nodes[0], nodes[3], 1.5);

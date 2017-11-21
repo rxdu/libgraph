@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <algorithm>
 
-#include "graph/internal/edge_impl.h"
+#include "graph/details/edge_impl.h"
 
 namespace librav
 {
@@ -25,7 +25,7 @@ namespace librav
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
 Vertex_t<StateType,TransitionType>::Vertex_t(T bundled_data) : // attributes related to associated node
-												state_(bundled_data), vertex_id_(bundled_data->data_id_),
+												state_(bundled_data), vertex_id_(bundled_data->state_id_),
 												// common attributes
 												search_parent_(nullptr),
 												is_checked_(false), is_in_openlist_(false),
@@ -34,7 +34,7 @@ Vertex_t<StateType,TransitionType>::Vertex_t(T bundled_data) : // attributes rel
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
 Vertex_t<StateType,TransitionType>::Vertex_t(T bundled_data) : // attributes related to associated node
-												state_(bundled_data), vertex_id_(bundled_data.data_id_),
+												state_(bundled_data), vertex_id_(bundled_data.state_id_),
 												// common attributes
 												search_parent_(nullptr),
 												is_checked_(false), is_in_openlist_(false),

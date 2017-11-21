@@ -15,96 +15,96 @@
 // user
 #include "graph/graph.h"
 #include "graph/astar.h"
-#include "demo/bds_example.h"
+#include "demo/state_example.h"
 
 using namespace librav;
 
-std::vector<std::tuple<BDSExample,double>> GetNeighbour(BDSExample node)
+std::vector<std::tuple<StateExample,double>> GetNeighbour(StateExample node)
 {
-	std::vector<std::tuple<BDSExample,double>> empty;
+	std::vector<std::tuple<StateExample,double>> empty;
 
-	switch(node.data_id_)
+	switch(node.state_id_)
 	{
 	case 0:
-		empty.emplace_back(BDSExample(1),1.0);
-		empty.emplace_back(BDSExample(3),1.0);
+		empty.emplace_back(StateExample(1),1.0);
+		empty.emplace_back(StateExample(3),1.0);
 		break;
 	case 1:
-		empty.emplace_back(BDSExample(0),1.0);
-		empty.emplace_back(BDSExample(4),1.0);
-		empty.emplace_back(BDSExample(2),1.0);
+		empty.emplace_back(StateExample(0),1.0);
+		empty.emplace_back(StateExample(4),1.0);
+		empty.emplace_back(StateExample(2),1.0);
 		break;
 	case 2:
-		empty.emplace_back(BDSExample(1),1.0);
-		empty.emplace_back(BDSExample(5),1.0);
+		empty.emplace_back(StateExample(1),1.0);
+		empty.emplace_back(StateExample(5),1.0);
 		break;
 	case 3:
-		empty.emplace_back(BDSExample(0),1.0);
-		empty.emplace_back(BDSExample(4),1.0);
+		empty.emplace_back(StateExample(0),1.0);
+		empty.emplace_back(StateExample(4),1.0);
 		break;
 	case 4:
-		empty.emplace_back(BDSExample(1),1.0);
-		empty.emplace_back(BDSExample(3),1.0);
-		empty.emplace_back(BDSExample(5),1.0);
+		empty.emplace_back(StateExample(1),1.0);
+		empty.emplace_back(StateExample(3),1.0);
+		empty.emplace_back(StateExample(5),1.0);
 		break;
 	case 5:
-		empty.emplace_back(BDSExample(2),1.0);
-		empty.emplace_back(BDSExample(4),1.0);
-		empty.emplace_back(BDSExample(8),1.0);
+		empty.emplace_back(StateExample(2),1.0);
+		empty.emplace_back(StateExample(4),1.0);
+		empty.emplace_back(StateExample(8),1.0);
 		break;
 	case 7:
-		empty.emplace_back(BDSExample(4),1.0);
-		empty.emplace_back(BDSExample(8),1.0);
+		empty.emplace_back(StateExample(4),1.0);
+		empty.emplace_back(StateExample(8),1.0);
 		break;
 	case 8:
-		empty.emplace_back(BDSExample(5),1.0);
-		empty.emplace_back(BDSExample(7),1.0);
+		empty.emplace_back(StateExample(5),1.0);
+		empty.emplace_back(StateExample(7),1.0);
 		break;
 	}
 
 	return empty;
 }
 
-std::vector<std::tuple<BDSExample,double>> GetNeighbour2(BDSExample node)
+std::vector<std::tuple<StateExample,double>> GetNeighbour2(StateExample node)
 {
-	std::vector<std::tuple<BDSExample,double>> empty;
+	std::vector<std::tuple<StateExample,double>> empty;
 
-	switch(node.data_id_)
+	switch(node.state_id_)
 	{
 	case 0:
-		empty.emplace_back(BDSExample(1),1.0);
-		empty.emplace_back(BDSExample(3),1.5);
+		empty.emplace_back(StateExample(1),1.0);
+		empty.emplace_back(StateExample(3),1.5);
 		break;
 	case 1:
-		empty.emplace_back(BDSExample(0),2.0);
-		empty.emplace_back(BDSExample(4),2.5);
-		empty.emplace_back(BDSExample(2),1.0);
+		empty.emplace_back(StateExample(0),2.0);
+		empty.emplace_back(StateExample(4),2.5);
+		empty.emplace_back(StateExample(2),1.0);
 		break;
 	case 2:
-		empty.emplace_back(BDSExample(1),1.5);
-		empty.emplace_back(BDSExample(5),2.0);
+		empty.emplace_back(StateExample(1),1.5);
+		empty.emplace_back(StateExample(5),2.0);
 		break;
 	case 3:
-		empty.emplace_back(BDSExample(0),2.5);
-		empty.emplace_back(BDSExample(4),2.5);
+		empty.emplace_back(StateExample(0),2.5);
+		empty.emplace_back(StateExample(4),2.5);
 		break;
 	case 4:
-		empty.emplace_back(BDSExample(1),2.5);
-		empty.emplace_back(BDSExample(3),2.5);
-		empty.emplace_back(BDSExample(5),2.5);
+		empty.emplace_back(StateExample(1),2.5);
+		empty.emplace_back(StateExample(3),2.5);
+		empty.emplace_back(StateExample(5),2.5);
 		break;
 	case 5:
-		empty.emplace_back(BDSExample(2),2.5);
-		empty.emplace_back(BDSExample(4),2.5);
-		empty.emplace_back(BDSExample(8),2.5);
+		empty.emplace_back(StateExample(2),2.5);
+		empty.emplace_back(StateExample(4),2.5);
+		empty.emplace_back(StateExample(8),2.5);
 		break;
 	case 7:
-		empty.emplace_back(BDSExample(4),2.5);
-		empty.emplace_back(BDSExample(8),2.5);
+		empty.emplace_back(StateExample(4),2.5);
+		empty.emplace_back(StateExample(8),2.5);
 		break;
 	case 8:
-		empty.emplace_back(BDSExample(5),2.5);
-		empty.emplace_back(BDSExample(7),2.5);
+		empty.emplace_back(StateExample(5),2.5);
+		empty.emplace_back(StateExample(7),2.5);
 		break;
 	}
 
@@ -113,15 +113,15 @@ std::vector<std::tuple<BDSExample,double>> GetNeighbour2(BDSExample node)
 
 int main(int argc, char** argv )
 {
-	std::vector<BDSExample> nodes;
+	std::vector<StateExample> nodes;
 
 	// create nodes
 	for(int i = 0; i < 9; i++) {
-		nodes.push_back(BDSExample(i));
+		nodes.push_back(StateExample(i));
 	}
 
 	// create a graph
-//	Graph_t<BDSExample> graph_val;
+//	Graph_t<StateExample> graph_val;
 //
 //	graph_val.AddEdge(nodes[0], nodes[1], 1.0);
 //	graph_val.AddEdge(nodes[0], nodes[3], 1.0);
@@ -148,12 +148,12 @@ int main(int argc, char** argv )
 //	for(auto& e : all_edges)
 //		e.PrintEdge();
 
-//	auto path = AStar::IncSearch(BDSExample(0), BDSExample(8), std::function<std::vector<std::tuple<BDSExample,double>>(BDSExample)>(GetNeighbour2));
+//	auto path = AStar::IncSearch(StateExample(0), StateExample(8), std::function<std::vector<std::tuple<StateExample,double>>(StateExample)>(GetNeighbour2));
 //	AStar astar;
-	auto path = AStar::IncSearch(BDSExample(0), BDSExample(8), GetNeighbourBDSFunc_t<BDSExample>(GetNeighbour2));
+	auto path = AStar::IncSearch(StateExample(0), StateExample(8), GetNeighbourBDSFunc_t<StateExample>(GetNeighbour2));
 
 	for(auto& e : path)
-		std::cout << "id: " << e.data_id_ << std::endl;
+		std::cout << "id: " << e.state_id_ << std::endl;
 
 	return 0;
 }

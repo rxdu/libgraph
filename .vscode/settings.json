@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "vector": "cpp",
+        "map": "cpp",
+        "cmath": "cpp",
+        "ctime": "cpp",
+        "cstdint": "cpp",
+        "unordered_map": "cpp"
+    }
+}

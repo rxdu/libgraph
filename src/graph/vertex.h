@@ -73,26 +73,9 @@ class Vertex_t
   private:
 	/// Clear exiting search info before a new search
 	void ClearVertexSearchInfo();
-
-	// DEPRACATED
-	/// Get heuristic using function provided by bundled data (pointer type)
-	template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-	double CalcHeuristic(Vertex_t<StateType,TransitionType> *dst_vertex)
-	{
-		return this->state_->GetHeuristic(*(dst_vertex->state_));
-	}
-
-	// DEPRACATED
-	/// Get heuristic using function provided by bundled data (non-pointer type)
-	template <class T = StateType,
-			  typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-	double CalcHeuristic(Vertex_t<StateType,TransitionType> *dst_vertex)
-	{
-		return this->state_.GetHeuristic(dst_vertex->state_);
-	}
 };
 }
 
-#include "graph/internal/vertex_impl.h"
+#include "graph/details/vertex_impl.h"
 
 #endif /* VERTEX_H */
