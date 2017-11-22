@@ -177,16 +177,16 @@ private:
 			current_vertex->is_checked_ = true;
 
 			// check all adjacent vertices (successors of current vertex)
-			for(auto ite = current_vertex->edges_.begin(); ite != current_vertex->edges_.end(); ite++)
+			for(auto& edge : current_vertex->edges_to_)
 			{
 				GraphVertexType* successor;
-				successor = (*ite).dst_;
+				successor = edge.dst_;
 
 				// check if the vertex has been checked (in closed list)
 				if(successor->is_checked_ == false)
 				{
 					// first set the parent of the adjacent vertex to be the current vertex
-					double new_cost = current_vertex->g_astar_ + (*ite).cost_;
+					double new_cost = current_vertex->g_astar_ + edge.cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost

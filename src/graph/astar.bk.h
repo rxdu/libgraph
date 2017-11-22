@@ -185,7 +185,7 @@ public:
 			for(auto& nb : neighbour_bds)
 				graph.AddEdge(current_vertex->state_, std::get<0>(nb), std::get<1>(nb));
 
-			std::vector<Edge<Vertex<GraphBDSType>*>> successors = current_vertex->edges_;
+			std::vector<Edge<Vertex<GraphBDSType>*>> successors = current_vertex->edges_to_;
 
 			// check all adjacent vertices (successors of current vertex)
 			for(auto& suc:successors)
@@ -279,7 +279,7 @@ private:
 			current_vertex->is_checked_ = true;
 
 			// check all adjacent vertices (successors of current vertex)
-			for(auto ite = current_vertex->edges_.begin(); ite != current_vertex->edges_.end(); ite++)
+			for(auto ite = current_vertex->edges_to_.begin(); ite != current_vertex->edges_to_.end(); ite++)
 			{
 				GraphVertexType* successor;
 				successor = (*ite).dst_;

@@ -23,7 +23,7 @@ std::vector<std::tuple<StateExample,double>> GetNeighbour(StateExample node)
 {
 	std::vector<std::tuple<StateExample,double>> empty;
 
-	switch(node.state_id_)
+	switch(node.GetUniqueID())
 	{
 	case 0:
 		empty.emplace_back(StateExample(1),1.0);
@@ -69,7 +69,7 @@ std::vector<std::tuple<StateExample,double>> GetNeighbour2(StateExample node)
 {
 	std::vector<std::tuple<StateExample,double>> empty;
 
-	switch(node.state_id_)
+	switch(node.GetUniqueID())
 	{
 	case 0:
 		empty.emplace_back(StateExample(1),1.0);
@@ -153,7 +153,7 @@ int main(int argc, char** argv )
 	auto path = AStar::IncSearch(StateExample(0), StateExample(8), GetNeighbourBDSFunc_t<StateExample>(GetNeighbour2));
 
 	for(auto& e : path)
-		std::cout << "id: " << e.state_id_ << std::endl;
+		std::cout << "id: " << e.GetUniqueID() << std::endl;
 
 	return 0;
 }

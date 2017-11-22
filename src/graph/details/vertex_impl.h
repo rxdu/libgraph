@@ -24,8 +24,8 @@ namespace librav
 /// A vertex data structure template.
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-Vertex_t<StateType,TransitionType>::Vertex_t(T bundled_data) : // attributes related to associated node
-												state_(bundled_data), vertex_id_(bundled_data->state_id_),
+Vertex_t<StateType,TransitionType>::Vertex_t(T state) : // attributes related to associated node
+												state_(state), vertex_id_(state->GetUniqueID()),
 												// common attributes
 												search_parent_(nullptr),
 												is_checked_(false), is_in_openlist_(false),
@@ -33,8 +33,8 @@ Vertex_t<StateType,TransitionType>::Vertex_t(T bundled_data) : // attributes rel
 
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-Vertex_t<StateType,TransitionType>::Vertex_t(T bundled_data) : // attributes related to associated node
-												state_(bundled_data), vertex_id_(bundled_data.state_id_),
+Vertex_t<StateType,TransitionType>::Vertex_t(T state) : // attributes related to associated node
+												state_(state), vertex_id_(state.GetUniqueID()),
 												// common attributes
 												search_parent_(nullptr),
 												is_checked_(false), is_in_openlist_(false),
@@ -66,11 +66,11 @@ bool Vertex_t<StateType,TransitionType>::operator==(const Vertex_t<StateType,Tra
 /// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
 ///		the two vertices exists.
 template <typename StateType, typename TransitionType>
-double Vertex_t<StateType,TransitionType>::GetEdgeCost(const Vertex_t<StateType,TransitionType> &dst_node) const
+TransitionType Vertex_t<StateType,TransitionType>::GetEdgeCost(const Vertex_t<StateType,TransitionType> &dst_node) const
 {
-	double cost = -1;
+	TransitionType cost;
 
-	for (const auto &it : edges_)
+	for (const auto &it : edges_to_)
 	{
 		if (it.dst_.vertex_id_ == dst_node.vertex_id_)
 		{
@@ -88,7 +88,7 @@ std::vector<Vertex_t<StateType,TransitionType> *> Vertex_t<StateType,TransitionT
 {
 	std::vector<Vertex_t<StateType,TransitionType> *> neighbours;
 
-	for (const auto &edge : edges_)
+	for (const auto &edge : edges_to_)
 		neighbours.push_back(edge.dst_);
 
 	return neighbours;

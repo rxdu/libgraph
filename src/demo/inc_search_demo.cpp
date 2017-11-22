@@ -121,7 +121,7 @@ int main(int argc, char** argv )
 	auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourBDSFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
 
 	for(auto& e : path)
-		std::cout << "id: " << e.state_id_ << std::endl;
+		std::cout << "id: " << e.GetUniqueID() << std::endl;
 
 	return 0;
 }

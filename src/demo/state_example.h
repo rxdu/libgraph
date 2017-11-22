@@ -16,9 +16,14 @@ namespace librav {
 
 struct StateExample
 {
-	StateExample(uint64_t id):state_id_(id){};
+	StateExample(uint64_t id):any_unique_id_(id){};
 
-	uint64_t state_id_;
+	uint64_t any_unique_id_;
+
+	uint64_t GetUniqueID() const
+	{
+		return any_unique_id_;
+	}
 };
 
 }
