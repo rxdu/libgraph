@@ -20,3 +20,19 @@ $ sudo apt-get install doxygen
 $ cd docs
 $ doxygen doxygen/Doxyfile
 ```
+
+## 3. Construct a graph
+
+You can associate a state to each vertex and a transition to each edge. 
+
+The only requirement is you need to define a function inside your state type with the signature
+
+```
+uint64_t GetUniqueID() const
+{
+    <generate and return an unique id>
+}
+```
+This function is used to check if two states are the same so that only one vertex is created for a state inside the graph.
+
+See examples in "demo" folder for more details.

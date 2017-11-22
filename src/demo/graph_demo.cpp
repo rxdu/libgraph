@@ -4,7 +4,7 @@
  *  Created on: Mar 30, 2016
  *      Author: rdu
  *
- *  Description: demo on how to create a graph and perform A* search on the graph.
+ *  Description: demo on how to create different types of graphs and perform A* search on each.
  *
  */
 

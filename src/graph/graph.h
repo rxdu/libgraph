@@ -74,7 +74,7 @@ public:
 
   /* Directed Graph */
   /// This function is used to create a graph by adding edges connecting two nodes
-  void AddEdge(StateType src_node, StateType dst_node, double cost);
+  void AddEdge(StateType src_node, StateType dst_node, TransitionType cost);
 
   /// This function is used to remove the edge from src_node to dst_node.
   bool RemoveEdge(StateType src_node, StateType dst_node);
@@ -87,7 +87,7 @@ public:
 
   /* Undirected Graph */
   /// This function is used to create a graph by adding edges connecting two nodes
-  void AddUndirectedEdge(StateType src_node, StateType dst_node, double cost);
+  void AddUndirectedEdge(StateType src_node, StateType dst_node, TransitionType cost);
 
   /// This function is used to remove the edge from src_node to dst_node.
   bool RemoveUndirectedEdge(StateType src_node, StateType dst_node);

@@ -23,26 +23,26 @@ Graph is a type of data structure that can be used to represent pairwise relatio
 
 A "Graph" consists of a list of "Vertex", each of which has an unique ID and a list of "Edge". To perform A* search in the graph, we also need to add a few more attributes, such as edge cost, heuristics, flags to according data structures. This part is generic to all graph and A* related application.
 
-In practice, we usually want to associate even more attributes to the vertex so that it can be meaningful for a specific application. For example when we use a graph to represent a square grid (created from a map), a square cell can be modeled as a vertex, and the connectivities of a cell with its neighbour cells can be represented as edges. In this case, a square cell (Vertex) may have attributes such as the coordinates in the grid and the occupancy type (cell filled with obstacle or not). Those attributes can be very different across different applications, thus they are not modeled directly in the "Vertex" data structure. Instead, the "additional information" is grouped into a separate concept (called a **Bundled Data Structure (BDS)** in this design) and we uniquely associate a bundled data structure with a vertex.
+In practice, we usually want to associate even more attributes to the vertex so that it can be meaningful for a specific application. For example when we use a graph to represent a square grid (created from a map), a square cell can be modeled as a vertex, and the connectivities of a cell with its neighbour cells can be represented as edges. In this case, a square cell (Vertex) may have attributes such as the coordinates in the grid and the occupancy type (cell filled with obstacle or not). Those attributes can be very different across different applications, thus they are not modeled directly in the "Vertex" data structure. Instead, the "additional information" is grouped into a separate concept (called a **State** in this design) and we uniquely associate a state data structure with a vertex. Similarly we can associate a **Transition** data structure to a Edge. By default the **Transition** type is double.
 
 ### b. Implementation
 
-There are 3 class templates defined: **Graph**, **Vertex**, **Edge**. The use of template enables us to associate different types of "BDS" to a vertex, without modifying the code of the aforementioned 3 classes. In other words, the Graph, Vertex and Edge all have a "type", which is determined by the type of BDS we want to associate with the vertex. With the current implementation, the BDS has to be defined as a class or struct. **A user-defined BDS class/struct has to inherit from the BDSBase class to enable proper graph construction and A* search.** In the graph data structure, the vertex has the same ID with the BDS it's associated with. This is mainly for easy indexing to find one from the other.
+There are 3 class templates defined: **Graph_t**, **Vertex_t**, **Edge_t**. The use of template enables us to associate different types of "State" to a vertex, without modifying the code of the aforementioned 3 classes. In other words, the Graph, Vertex and Edge all have a "type", which is determined by the type of State we want to associate with the vertex. With the current implementation, the State has to be defined as a class or struct. **A user-defined State class/struct has to provide a function with the name "uint64_t GetUniqueID()const"**. In the graph data structure, the vertex has the same ID with the State it's associated with. This is mainly for easy indexing to find one from the other.
 
 Here is an example to use the templates.
 
 I. We first define a BDS type we want to use for constructing the graph.
 
 ~~~
-struct StateExample: public BDSBase<StateExample>
+struct StateExample
 {
-	StateExample(uint64_t id):
-		BDSBase<StateExample>(id){};
-	~StateExample(){};
+	StateExample(uint64_t id):any_unique_id_(id){};
 
-    // simplest implementation of the function
-	double GetHeuristic(const StateExample& other_struct) const {
-		return 0.0;
+	uint64_t any_unique_id_;
+
+	uint64_t GetUniqueID() const
+	{
+		return any_unique_id_;
 	}
 };
 ~~~
@@ -61,7 +61,7 @@ III. Now use those nodes to construct a graph. Note that the graph is of type St
 
 ~~~
 // create a graph
-Graph<StateExample*> graph;
+Graph_t<StateExample*> graph;
 
 // the reference is used to access the bundled data structure in a vertex,
 //  so you need to pass in an object instead of a pointer
@@ -107,6 +107,4 @@ An detailed example of the graph and path search can be found in "demo/graph_dem
 
 ### d. Notes on Graph
 
-* A* performs search on Vertex objects, so the A* algorithm also has a "type". A* is implemented as a template function.
-* When constructing a graph, you don't need to explicitly create objects of "Vertex". By calling member function **AddEdge(src_node, dst_node, cost)** of the graph, vertices are created and associated with the according BDS internally.
-* There are two views of the graph data structure. When constructing the graph (bottom-up view), the BDSs are manipulated directly and vertices are handled implicitly. When using the graph (top-down view) for path search, vertices are the the entities you're directly interacting with and the BDSs they associate with are probably of less interest. Of course, you can access one from the other easily using their common ID.
+* When constructing a graph, you don't need to explicitly create objects of "Vertex". By calling member function **AddEdge(src_node, dst_node, cost)** of the graph, vertices are created and associated with the according State internally.

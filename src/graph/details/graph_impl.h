@@ -54,7 +54,7 @@ Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVert
 
 /// This function is used to create a graph by adding edges connecting two nodes
 template <typename StateType, typename TransitionType>
-void Graph_t<StateType, TransitionType>::AddEdge(StateType src_node, StateType dst_node, double cost)
+void Graph_t<StateType, TransitionType>::AddEdge(StateType src_node, StateType dst_node, TransitionType cost)
 {
 	Vertex_t<StateType, TransitionType> *src_vertex = GetVertex(src_node);
 	Vertex_t<StateType, TransitionType> *dst_vertex = GetVertex(dst_node);
@@ -99,7 +99,7 @@ bool Graph_t<StateType, TransitionType>::RemoveEdge(StateType src_node, StateTyp
 
 /// This function is used to create a graph by adding edges connecting two nodes
 template <typename StateType, typename TransitionType>
-void Graph_t<StateType, TransitionType>::AddUndirectedEdge(StateType src_node, StateType dst_node, double cost)
+void Graph_t<StateType, TransitionType>::AddUndirectedEdge(StateType src_node, StateType dst_node, TransitionType cost)
 {
 	AddEdge(src_node, dst_node);
 	AddEdge(dst_node, src_node);

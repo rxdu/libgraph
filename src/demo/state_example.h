@@ -7,8 +7,8 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */ 
 
-#ifndef BDS_EXAMPLE_H
-#define BDS_EXAMPLE_H
+#ifndef STATE_EXAMPLE_H
+#define STATE_EXAMPLE_H
 
 #include <cstdint>
 
@@ -28,4 +28,4 @@ struct StateExample
 
 }
 
-#endif /* BDS_EXAMPLE_H */
+#endif /* STATE_EXAMPLE_H */
