@@ -31,16 +31,16 @@ There are 3 class templates defined: **Graph_t**, **Vertex_t**, **Edge_t**. The 
 
 Here is an example to use the templates.
 
-I. We first define a BDS type we want to use for constructing the graph.
+I. We first define a State type we want to use for constructing the graph.
 
 ~~~
 struct StateExample
 {
 	StateExample(uint64_t id):any_unique_id_(id){};
 
-	uint64_t any_unique_id_;
+	int64_t any_unique_id_;
 
-	uint64_t GetUniqueID() const
+	int64_t GetUniqueID() const
 	{
 		return any_unique_id_;
 	}

@@ -18,7 +18,7 @@ namespace librav
 /*
  * Description: The template `HasIDGenFunc<T>` exports a
  *    boolean constant `value` that is true iff `T` provides
- *    `uint64_t GetUniqueID() const`
+ *    `int64_t GetUniqueID() const`
  *
  * Source: http://clauandr.sdf-eu.org/blog/2014/01/09/c-template-to-check-for-a-functions-existence-with-sfinae/
  *         https://stackoverflow.com/questions/12015195/how-to-call-member-function-only-if-object-happens-to-have-it
@@ -28,7 +28,7 @@ struct HasIDGenFunc
 {
     /* SFINAE foo-has-correct-sig */
     template <typename A>
-    static std::true_type test(uint64_t (A::*)() const)
+    static std::true_type test(int64_t (A::*)() const)
     {
         return std::true_type();
     }

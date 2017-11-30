@@ -32,7 +32,7 @@ struct BasicState
     int32_t row_;
     int32_t col_;
 
-    uint64_t GetUniqueID() const
+    int64_t GetUniqueID() const
     {
         // You can return the state id directly if you have one and it's unique (see StateExample class)
         // or you can use some kind of hash functions to generate one

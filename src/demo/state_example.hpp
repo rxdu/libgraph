@@ -18,9 +18,9 @@ struct StateExample
 {
 	StateExample(uint64_t id):any_unique_id_(id){};
 
-	uint64_t any_unique_id_;
+	int64_t any_unique_id_;
 
-	uint64_t GetUniqueID() const
+	int64_t GetUniqueID() const
 	{
 		return any_unique_id_;
 	}

@@ -2,7 +2,7 @@
  * lpastar.hpp
  * 
  * Created on: Nov 30, 2017 14:21
- * Description: Lifelong Planning A* 
+ * Description: Lifelong Planning A* algorithm
  * 
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */ 
