@@ -2,7 +2,7 @@
  * astar.hpp
  * 
  * Created on: Jan 18, 2016
- * Description: 
+ * Description: A*
  * Reference:
  *  	1. http://www.redblobgames.com/pathfinding/a-star/implementation.html
  *  	2. https://oopscenities.net/2012/02/24/c11-stdfunction-and-stdbind/
