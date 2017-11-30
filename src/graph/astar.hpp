@@ -26,7 +26,7 @@
 #include <memory>
 
 #include "graph/graph.hpp"
-#include "graph/priority_queue.hpp"
+#include "graph/details/priority_queue.hpp"
 
 #define MINIMAL_PRINTOUT 1
 
