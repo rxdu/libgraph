@@ -1,5 +1,5 @@
 /* 
- * graph_impl.h
+ * graph_impl.hpp
  * 
  * Created on: Nov 13, 2017 23:08
  *  Description:
@@ -7,8 +7,8 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
 
-#ifndef GRAPH_IMPL_H
-#define GRAPH_IMPL_H
+#ifndef GRAPH_IMPL_HPP
+#define GRAPH_IMPL_HPP
 
 namespace librav
 {
@@ -306,4 +306,4 @@ Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::SearchV
 }
 }
 
-#endif /* GRAPH_IMPL_H */
+#endif /* GRAPH_IMPL_HPP */

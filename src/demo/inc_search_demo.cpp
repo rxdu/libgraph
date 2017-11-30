@@ -17,8 +17,8 @@
 #include <algorithm>
 
 // user
-#include "graph/astar.h"
-#include "state_example.h"
+#include "graph/astar.hpp"
+#include "state_example.hpp"
 
 using namespace librav;
 

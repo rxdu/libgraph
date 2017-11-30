@@ -1,5 +1,5 @@
 /* 
- * edge_impl.h
+ * edge_impl.hpp
  * 
  * Created on: Jul 14, 2016
  * Description: 
@@ -7,8 +7,8 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
 
-#ifndef EDGE_IMPL_H
-#define EDGE_IMPL_H
+#ifndef EDGE_IMPL_HPP
+#define EDGE_IMPL_HPP
 
 #include <iostream>
 
@@ -29,4 +29,4 @@ void Edge<VertexPtrType, TransitionType>::PrintEdge() const
 }
 }
 
-#endif /* EDGE_IMPL_H */
+#endif /* EDGE_IMPL_HPP */

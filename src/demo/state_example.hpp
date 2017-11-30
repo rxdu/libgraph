@@ -1,5 +1,5 @@
 /* 
- * state_example.h
+ * state_example.hpp
  * 
  * Created on: Apr 15, 2016
  * Description: 
@@ -7,8 +7,8 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */ 
 
-#ifndef STATE_EXAMPLE_H
-#define STATE_EXAMPLE_H
+#ifndef STATE_EXAMPLE_HPP
+#define STATE_EXAMPLE_HPP
 
 #include <cstdint>
 
@@ -28,4 +28,4 @@ struct StateExample
 
 }
 
-#endif /* STATE_EXAMPLE_H */
+#endif /* STATE_EXAMPLE_HPP */

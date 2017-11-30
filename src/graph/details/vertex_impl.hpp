@@ -1,5 +1,5 @@
 /* 
- * vertex_impl.h
+ * vertex_impl.hpp
  * 
  * Created on: Feb 1, 2016
  * Description: 
@@ -7,13 +7,13 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
 
-#ifndef VERTEX_IMPL_H
-#define VERTEX_IMPL_H
+#ifndef VERTEX_IMPL_HPP
+#define VERTEX_IMPL_HPP
 
 #include <cstdint>
 #include <algorithm>
 
-#include "graph/details/edge_impl.h"
+#include "graph/details/edge_impl.hpp"
 
 namespace librav
 {
@@ -109,4 +109,4 @@ bool Vertex_t<StateType,TransitionType>::CheckNeighbour(Vertex_t<StateType,Trans
 }
 }
 
-#endif /* VERTEX_IMPL_H */
+#endif /* VERTEX_IMPL_HPP */

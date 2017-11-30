@@ -1,5 +1,5 @@
 /* 
- * vertex.h
+ * vertex.hpp
  * 
  * Created on: Feb 1, 2016
  * Description: 
@@ -7,13 +7,13 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
 
-#ifndef VERTEX_H
-#define VERTEX_H
+#ifndef VERTEX_HPP
+#define VERTEX_HPP
 
 #include <cstdint>
 #include <algorithm>
 
-#include "graph/edge.h"
+#include "graph/edge.hpp"
 
 namespace librav
 {
@@ -79,6 +79,6 @@ class Vertex_t
 };
 }
 
-#include "graph/details/vertex_impl.h"
+#include "graph/details/vertex_impl.hpp"
 
-#endif /* VERTEX_H */
+#endif /* VERTEX_HPP */

@@ -1,5 +1,5 @@
 /* 
- * helper_func.h
+ * helper_func.hpp
  * 
  * Created on: Nov 21, 2017 22:35
  * Description: 
@@ -7,8 +7,8 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
 
-#ifndef HELPER_FUNC_H
-#define HELPER_FUNC_H
+#ifndef HELPER_FUNC_HPP
+#define HELPER_FUNC_HPP
 
 #include <cstdint>
 
@@ -57,4 +57,4 @@ struct HasIDGenFunc
 };
 }
 
-#endif /* HELPER_FUNC_H */
+#endif /* HELPER_FUNC_HPP */

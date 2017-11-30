@@ -1,15 +1,17 @@
-/*
- * astar.h
- *
- *  Created on: Jan 18, 2016
- *      Author: rdu
- *  Code Reference:
+/* 
+ * astar.hpp
+ * 
+ * Created on: Jan 18, 2016
+ * Description: 
+ * Reference:
  *  	1. http://www.redblobgames.com/pathfinding/a-star/implementation.html
  *  	2. https://oopscenities.net/2012/02/24/c11-stdfunction-and-stdbind/
- */
+ * 
+ * Copyright (c) 2017 Ruixiang Du (rdu)
+ */ 
 
-#ifndef SRC_GRAPH_ASTAR_H_
-#define SRC_GRAPH_ASTAR_H_
+#ifndef ASTAR_HPP
+#define ASTAR_HPP
 
 #include <vector>
 #include <tuple>
@@ -23,7 +25,8 @@
 #include <iostream>
 #include <memory>
 
-#include "graph/graph.h"
+#include "graph/graph.hpp"
+#include "graph/priority_queue.hpp"
 
 #define MINIMAL_PRINTOUT 1
 
@@ -31,28 +34,6 @@ namespace librav {
 
 template<typename StateType>
 using CalcHeuristicFunc_t = std::function<double(StateType,StateType)>;
-
-/// A simple priority queue structure used as A* open list.
-// Source: http://www.redblobgames.com/pathfinding/a-star/implementation.html
-template<typename T, typename Number=double>
-struct PriorityQueue {
-	typedef std::pair<Number, T> PQElement;
-
-	std::priority_queue<PQElement, std::vector<PQElement>,
-	std::greater<PQElement>> elements;
-
-	inline bool empty() const { return elements.empty(); }
-
-	inline void put(T item, Number priority) {
-		elements.emplace(priority, item);
-	}
-
-	inline T get() {
-		T best_item = elements.top().second;
-		elements.pop();
-		return best_item;
-	}
-};
 
 /// A* search algorithm.
 class AStar{
@@ -238,4 +219,4 @@ private:
 
 }
 
-#endif /* SRC_GRAPH_ASTAR_H_ */
+#endif /* ASTAR_HPP */

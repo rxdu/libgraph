@@ -1,5 +1,5 @@
 /* 
- * edge.h
+ * edge.hpp
  * 
  * Created on: Jul 14, 2016
  * Description: 
@@ -7,8 +7,8 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
 
-#ifndef EDGE_H
-#define EDGE_H
+#ifndef EDGE_HPP
+#define EDGE_HPP
 
 #include <iostream>
 
@@ -66,6 +66,6 @@ class Edge
 };
 }
 
-#include "graph/details/edge_impl.h"
+#include "graph/details/edge_impl.hpp"
 
-#endif /* EDGE_H */
+#endif /* EDGE_HPP */

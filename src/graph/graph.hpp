@@ -1,5 +1,5 @@
 /* 
- * graph.h
+ * graph.hpp
  * 
  * Created on: Dec 9, 2015
  * Description: 
@@ -7,8 +7,8 @@
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
 
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef GRAPH_HPP
+#define GRAPH_HPP
 
 #define USE_UNORDERED_MAP
 
@@ -21,9 +21,9 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "graph/edge.h"
-#include "graph/vertex.h"
-#include "graph/details/helper_func.h"
+#include "graph/edge.hpp"
+#include "graph/vertex.hpp"
+#include "graph/details/helper_func.hpp"
 
 namespace librav
 {
@@ -142,6 +142,6 @@ private:
 };
 }
 
-#include "graph/details/graph_impl.h"
+#include "graph/details/graph_impl.hpp"
 
-#endif /* GRAPH_H */
+#endif /* GRAPH_HPP */

@@ -14,8 +14,8 @@
 #include <cmath>
 
 // user
-#include "graph/graph.h"
-#include "graph/astar.h"
+#include "graph/graph.hpp"
+#include "graph/astar.hpp"
 
 using namespace librav;
 
