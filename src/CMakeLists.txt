@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0.2)
 project(astar_search)
 
 ## Put all binary files into /bin and libraries into /lib
@@ -23,11 +23,11 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(BUILD_TEST off)
+set(BUILD_TEST on)
 
 ## Add sub source directories
 add_subdirectory(demo)
 
 if(BUILD_TEST)
-add_subdirectory(tests)
+	add_subdirectory(tests)
 endif(BUILD_TEST)

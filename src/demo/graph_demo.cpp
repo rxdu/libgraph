@@ -16,7 +16,7 @@
 
 // user
 #include "graph/graph.hpp"
-#include "graph/astar.hpp"
+#include "graph/algorithms/astar.hpp"
 #include "state_example.hpp"
 
 using namespace librav;

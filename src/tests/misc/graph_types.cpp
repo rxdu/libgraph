@@ -15,8 +15,8 @@
 #include <ctime>
 
 // user
-#include "graph/graph.h"
-#include "state_example.h"
+#include "graph/graph.hpp"
+#include "demo/state_example.hpp"
 
 using namespace librav;
 

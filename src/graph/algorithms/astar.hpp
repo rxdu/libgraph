@@ -190,24 +190,7 @@ private:
 		if(found_path)
 		{
 			std::cout << "path found" << std::endl;
-			GraphVertexType* waypoint = goal_vtx;
-			while(waypoint != start_vtx)
-			{
-				path.push_back(waypoint);
-				waypoint = waypoint->search_parent_;
-			}
-			// add the start node
-			path.push_back(waypoint);
-			std::reverse(path.begin(), path.end());
-
-			auto traj_s = path.begin();
-			auto traj_e = path.end() - 1;
-#ifdef MINIMAL_PRINTOUT
-			std::cout << "starting vertex id: " << (*traj_s)->vertex_id_ << std::endl;
-			std::cout << "finishing vertex id: " << (*traj_e)->vertex_id_ << std::endl;
-			std::cout << "path length: " << path.size() << std::endl;
-			std::cout << "total cost: " << path.back()->g_astar_ << std::endl;
-#endif
+			path = ReconstructPath(start_vtx, goal_vtx);
 		}
 		else
 			std::cout << "failed to find a path" << std::endl;
@@ -215,6 +198,30 @@ private:
 		return path;
 	};
 
+	template<typename StateType>
+	static std::vector<Vertex_t<StateType, double>*> ReconstructPath(Vertex_t<StateType, double>* start_vtx, Vertex_t<StateType, double>* goal_vtx)
+	{
+		std::vector<Vertex_t<StateType, double>*> path;
+		Vertex_t<StateType, double>* waypoint = goal_vtx;
+		while(waypoint != start_vtx)
+		{
+			path.push_back(waypoint);
+			waypoint = waypoint->search_parent_;
+		}		
+		// add the start node
+		path.push_back(waypoint);
+		std::reverse(path.begin(), path.end());
+
+#ifdef MINIMAL_PRINTOUT
+		auto traj_s = path.begin();
+		auto traj_e = path.end() - 1;
+		std::cout << "starting vertex id: " << (*traj_s)->vertex_id_ << std::endl;
+		std::cout << "finishing vertex id: " << (*traj_e)->vertex_id_ << std::endl;
+		std::cout << "path length: " << path.size() << std::endl;
+		std::cout << "total cost: " << path.back()->g_astar_ << std::endl;
+#endif
+		return path;
+	}
 };
 
 }

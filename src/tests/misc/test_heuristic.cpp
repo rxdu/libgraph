@@ -5,9 +5,9 @@
 #include <tuple>
 
 // user
-#include "graph/graph.h"
-#include "graph/astar.h"
-#include "demo/state_example.h"
+#include "graph/graph.hpp"
+#include "graph/algorithms/astar.hpp"
+#include "demo/state_example.hpp"
 
 using namespace librav;
 
