@@ -53,7 +53,7 @@ class Edge
 	 */
 	bool operator-=(const Edge<VertexPtrType, TransitionType> &other)
 	{
-		if ((src_->vertex_id_ == other.src_->vertex_id_ && dst_.vertex_id_ == other.dst_->vertex_id_) || (src_->vertex_id_ == other.dst_->vertex_id_ && dst_.vertex_id_ == other.src_->vertex_id_))
+		if ((src_->vertex_id_ == other.src_->vertex_id_ && dst_->vertex_id_ == other.dst_->vertex_id_) || (src_->vertex_id_ == other.dst_->vertex_id_ && dst_->vertex_id_ == other.src_->vertex_id_))
 			return true;
 		else
 			return false;
