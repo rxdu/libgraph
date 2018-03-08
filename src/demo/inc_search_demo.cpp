@@ -17,8 +17,9 @@
 #include <algorithm>
 
 // user
-#include "graph/astar.hpp"
-#include "state_example.hpp"
+#include "graph/graph.hpp"
+#include "graph/algorithms/astar.hpp"
+#include "graph/algorithms/dijkstra.hpp"
 
 using namespace librav;
 
@@ -28,36 +29,41 @@ typedef struct
 	int64_t y;
 } Index;
 
-struct SquareCell: public BDSBase<SquareCell>
+struct SquareCell
 {
-	SquareCell(uint64_t id):
-		BDSBase<SquareCell>(id){};
-	~SquareCell(){};
+	SquareCell(int64_t id) : id_(id){};
+	~SquareCell() = default;
 
 	Index idx;
+	int64_t id_;
 
-	double GetHeuristic(const SquareCell& other_struct) const {
-		return std::abs(idx.x - other_struct.idx.x) + std::abs(idx.y - other_struct.idx.y);
+	int64_t GetUniqueID() const
+	{
+		return id_;
 	}
 };
+
+double CalcHeuristic(SquareCell node1, SquareCell node2)
+{
+	return std::abs(node1.idx.x - node2.idx.x) + std::abs(node1.idx.y - node2.idx.y);
+}
 
 // index of square grid: positive x points towards right, positive y points upwards
 class GetSquareCellNeighbour
 {
-public:
-	GetSquareCellNeighbour(int grid_size_row, int grid_size_col, double size, const std::vector<uint64_t> obstacle_ids):
-		row_size_(grid_size_row),
-		col_size_(grid_size_col),
-		cell_size_(size),
-		obstacle_ids_(obstacle_ids){};
+  public:
+	GetSquareCellNeighbour(int grid_size_row, int grid_size_col, double size, const std::vector<uint64_t> obstacle_ids) : row_size_(grid_size_row),
+																														  col_size_(grid_size_col),
+																														  cell_size_(size),
+																														  obstacle_ids_(obstacle_ids){};
 
-private:
+  private:
 	int row_size_;
 	int col_size_;
 	double cell_size_;
 	std::vector<uint64_t> obstacle_ids_;
 
-public:
+  public:
 	// define the functor operator
 	std::vector<std::tuple<SquareCell, double>> operator()(SquareCell cell)
 	{
@@ -77,14 +83,14 @@ public:
 		pos[3].x = cell.idx.x - 1;
 		pos[3].y = cell.idx.y;
 
-		for(int i = 0; i < 4; i++)
+		for (int i = 0; i < 4; i++)
 		{
-			if(pos[i].x >= 0 && pos[i].x < col_size_ &&
-					pos[i].y >= 0 && pos[i].y < row_size_)
+			if (pos[i].x >= 0 && pos[i].x < col_size_ &&
+				pos[i].y >= 0 && pos[i].y < row_size_)
 			{
 				uint64_t new_id = pos[i].y * col_size_ + pos[i].x;
 
-				if(std::find(obstacle_ids_.begin(), obstacle_ids_.end(), new_id) != obstacle_ids_.end())
+				if (std::find(obstacle_ids_.begin(), obstacle_ids_.end(), new_id) != obstacle_ids_.end())
 					continue;
 
 				SquareCell cell(new_id);
@@ -99,8 +105,7 @@ public:
 	}
 };
 
-
-int main(int argc, char** argv )
+int main(int argc, char **argv)
 {
 	SquareCell cell_s(0);
 	cell_s.idx.x = 0;
@@ -118,12 +123,11 @@ int main(int argc, char** argv )
 	obstacle_ids.push_back(18);
 	obstacle_ids.push_back(19);
 
-	auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourBDSFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
+	auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)), CalcHeuristicFunc_t<SquareCell>(CalcHeuristic));
+	// auto path = Dijkstra::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
 
-	for(auto& e : path)
-		std::cout << "id: " << e.GetUniqueID() << std::endl;
+	for (auto &e : path)
+		std::cout << "id: " << e->vertex_id_ << std::endl;
 
 	return 0;
 }
-
-

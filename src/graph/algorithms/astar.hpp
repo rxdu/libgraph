@@ -28,10 +28,13 @@
 #include "graph/graph.hpp"
 #include "graph/details/priority_queue.hpp"
 
-// #define MINIMAL_PRINTOUT 1
+#define MINIMAL_PRINTOUT 1
 
 namespace librav
 {
+
+template <typename StateType, typename TransitionType = double>
+using GetNeighbourFunc_t = std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)>;
 
 template <typename StateType>
 using CalcHeuristicFunc_t = std::function<double(StateType, StateType)>;
@@ -127,6 +130,88 @@ class AStar
 			return empty;
 	}
 
+	template <typename StateType, typename TransitionType>
+	static std::vector<Vertex_t<StateType, double> *> IncSearch(StateType start_state, StateType goal_state, std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)> get_neighbours, std::function<double(StateType, StateType)> CalcHeuristic)
+	{
+		using GraphVertexType = Vertex_t<StateType, double>;
+
+		// create a new graph with only start and goal vertices
+		Graph_t<StateType> graph;
+		GraphVertexType *start_vtx = graph.AddVertex(start_state);
+		GraphVertexType *goal_vtx = graph.AddVertex(goal_state);
+
+		// open list - a list of vertices that need to be checked out
+		PriorityQueue<GraphVertexType *> openlist;
+
+		// begin with start vertex
+		openlist.put(start_vtx, 0);
+		start_vtx->is_in_openlist_ = true;
+		start_vtx->g_astar_ = 0;
+
+		// start search iterations
+		bool found_path = false;
+		GraphVertexType *current_vertex;
+		while (!openlist.empty() && found_path != true)
+		{
+			current_vertex = openlist.get();
+			if (current_vertex->is_checked_)
+				continue;
+			if (current_vertex == goal_vtx)
+			{
+				found_path = true;
+				break;
+			}
+
+			current_vertex->is_in_openlist_ = false;
+			current_vertex->is_checked_ = true;
+
+			std::vector<std::tuple<StateType, double>> neighbours = get_neighbours(current_vertex->state_);
+			for (auto &nb : neighbours)
+				graph.AddEdge(current_vertex->state_, std::get<0>(nb), std::get<1>(nb));
+
+			// check all adjacent vertices (successors of current vertex)
+			for (auto &edge : current_vertex->edges_to_)
+			{
+				auto successor = edge.dst_;
+
+				// check if the vertex has been checked (in closed list)
+				if (successor->is_checked_ == false)
+				{
+					auto new_cost = current_vertex->g_astar_ + edge.cost_;
+
+					// if the vertex is not in open list
+					// or if the vertex is in open list but has a higher cost
+					if (successor->is_in_openlist_ == false || new_cost < successor->g_astar_)
+					{
+						// first set the parent of the adjacent vertex to be the current vertex
+						successor->search_parent_ = current_vertex;
+
+						// update costs
+						successor->g_astar_ = new_cost;
+						successor->h_astar_ = CalcHeuristic(successor->state_, goal_vtx->state_);
+						successor->f_astar_ = successor->g_astar_ + successor->h_astar_;
+
+						// put vertex into open list
+						openlist.put(successor, successor->f_astar_);
+						successor->is_in_openlist_ = true;
+					}
+				}
+			}
+		}
+
+		// reconstruct path from search
+		std::vector<GraphVertexType *> path;
+		if (found_path)
+		{
+			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
+			path = ReconstructPath(start_vtx, goal_vtx);
+		}
+		else
+			std::cout << "failed to find a path" << std::endl;
+
+		return path;
+	};
+
   private:
 	template <typename StateType>
 	static std::vector<Vertex_t<StateType, double> *> Search(Vertex_t<StateType, double> *start_vtx, Vertex_t<StateType, double> *goal_vtx, std::function<double(StateType, StateType)> CalcHeuristic)
@@ -161,13 +246,12 @@ class AStar
 			// check all adjacent vertices (successors of current vertex)
 			for (auto &edge : current_vertex->edges_to_)
 			{
-				GraphVertexType *successor;
-				successor = edge.dst_;
+				auto successor = edge.dst_;
 
 				// check if the vertex has been checked (in closed list)
 				if (successor->is_checked_ == false)
 				{
-					double new_cost = current_vertex->g_astar_ + edge.cost_;
+					auto new_cost = current_vertex->g_astar_ + edge.cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost
@@ -193,7 +277,7 @@ class AStar
 		std::vector<GraphVertexType *> path;
 		if (found_path)
 		{
-			std::cout << "path found" << std::endl;
+			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
 			path = ReconstructPath(start_vtx, goal_vtx);
 		}
 		else

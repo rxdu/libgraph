@@ -36,3 +36,9 @@ uint64_t GetUniqueID() const
 This function is used to check if two states are the same so that only one vertex is created for a state inside the graph.
 
 See examples in "demo" folder for more details.
+
+# TODO
+
+- [] A* and Dijkstra algorithms currently assume double type cost. Generic type cost with proper comparator defined should also be accepted.
+- [] Implement iterators for vertex and edge to unify the accessing interface
+- [] Update unit tests

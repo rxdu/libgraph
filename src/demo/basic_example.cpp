@@ -16,6 +16,7 @@
 // user
 #include "graph/graph.hpp"
 #include "graph/algorithms/astar.hpp"
+#include "graph/algorithms/dijkstra.hpp"
 
 using namespace librav;
 
@@ -90,13 +91,19 @@ int main(int argc, char **argv)
         e.PrintEdge();
 
     // In order to use A* search, you need to specify how to calculate heuristic
-    auto path = AStar::Search(graph, 0, 13, CalcHeuristicFunc_t<BasicState *>(CalcHeuristic));
+    std::cout << "\nA* search: " << std::endl;
+    auto path_a = AStar::Search(graph, 0, 13, CalcHeuristicFunc_t<BasicState *>(CalcHeuristic));
+    for (auto &e : path_a)
+        std::cout << "id: " << e->vertex_id_ << std::endl;
 
-    for (auto &e : path)
+    // Dijkstra search
+    std::cout << "\nDijkstra search: " << std::endl;
+    auto path_d = Dijkstra::Search(graph, 0, 13);
+    for (auto &e : path_d)
         std::cout << "id: " << e->vertex_id_ << std::endl;
 
     // need to delete all nodes, the graph only maintains pointers to these nodes
-    for (auto& e : nodes)
+    for (auto &e : nodes)
         delete e;
 
     return 0;

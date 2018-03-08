@@ -118,6 +118,7 @@ private:
 #endif
 
   friend class AStar;
+  friend class Dijkstra;
 
   /// This function is used to reset states of all vertice for a new search
   void ResetGraphVertices();
