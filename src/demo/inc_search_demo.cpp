@@ -93,11 +93,11 @@ class GetSquareCellNeighbour
 				if (std::find(obstacle_ids_.begin(), obstacle_ids_.end(), new_id) != obstacle_ids_.end())
 					continue;
 
-				SquareCell cell(new_id);
-				cell.idx.x = pos[i].x;
-				cell.idx.y = pos[i].y;
+				SquareCell ncell(new_id);
+				ncell.idx.x = pos[i].x;
+				ncell.idx.y = pos[i].y;
 
-				adjacent_cells.emplace_back(cell, cell_size_);
+				adjacent_cells.emplace_back(ncell, cell_size_);
 			}
 		}
 
