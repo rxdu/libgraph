@@ -32,13 +32,13 @@ namespace librav
 template <typename StateType, typename TransitionType = double>
 class Graph_t;
 
-template <typename StateType, typename TransitionType>
+template <typename StateType, typename TransitionType = double>
 class Vertex_t;
 
-template <typename StateType, typename TransitionType>
+template <typename StateType, typename TransitionType = double>
 using Edge_t = Edge<Vertex_t<StateType, TransitionType> *, TransitionType>;
 
-template <typename StateType, typename TransitionType>
+template <typename StateType, typename TransitionType = double>
 using Path_t = std::vector<Vertex_t<StateType, TransitionType> *>;
 
 /// A graph data structure template.
@@ -47,11 +47,11 @@ class Graph_t
 {
 public:
   /// Graph_t constructor.
-  /// StateType must provide a function with the signature: uint64_t GetUniqueID() const
+  /// StateType must provide a function with the signature: int64_t GetUniqueID() const
   Graph_t()
   {
     typedef typename std::remove_const<typename std::remove_reference<typename std::remove_pointer<StateType>::type>::type>::type TestType;
-    static_assert(HasIDGenFunc<TestType>::value, "function required in StateType: uint64_t GetUniqueID() const");
+    static_assert(HasIDGenFunc<TestType>::value, "function required in StateType: int64_t GetUniqueID() const");
   }
 
   /// Graph_t destructor. Graph_t class is only responsible for the memory recycling of Vertex_t and Edge_t
