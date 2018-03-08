@@ -23,11 +23,11 @@
 
 using namespace librav;
 
-typedef struct
+struct Index
 {
 	int64_t x;
 	int64_t y;
-} Index;
+};
 
 struct SquareCell
 {
