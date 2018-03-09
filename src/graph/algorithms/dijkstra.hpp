@@ -125,7 +125,7 @@ class Dijkstra
 	}
 
 	template <typename StateType, typename TransitionType>
-	static std::vector<Vertex_t<StateType, double> *> IncSearch(StateType start_state, StateType goal_state, std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)> get_neighbours)
+	static std::vector<StateType> IncSearch(StateType start_state, StateType goal_state, std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)> get_neighbours)
 	{
 		using GraphVertexType = Vertex_t<StateType, double>;
 
@@ -189,11 +189,13 @@ class Dijkstra
 		}
 
 		// reconstruct path from search
-		std::vector<GraphVertexType *> path;
+		std::vector<StateType> path;
 		if (found_path)
 		{
 			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
-			path = ReconstructPath(start_vtx, goal_vtx);
+			auto path_vtx = ReconstructPath(start_vtx, goal_vtx);
+			for (const auto &wp : path_vtx)
+				path.push_back(wp->state_);
 		}
 		else
 			std::cout << "failed to find a path" << std::endl;
