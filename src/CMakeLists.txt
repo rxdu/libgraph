@@ -23,7 +23,7 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(BUILD_TEST off)
+set(BUILD_TEST on)
 
 ## Add sub source directories
 add_subdirectory(demo)

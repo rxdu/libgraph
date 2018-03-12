@@ -12,7 +12,8 @@ endif(GTEST_FOUND)
 
 # Other tests
 #add_executable(test_graph graph_tests.cpp)
-add_executable(graph_types misc/graph_types.cpp)
-add_executable(test_heuristic misc/test_heuristic.cpp)
+add_executable(graph_types others/graph_types.cpp)
+add_executable(test_heuristic others/test_heuristic.cpp)
+add_executable(test_iterator others/test_iterator.cpp)
 #add_executable(test_performance performance_test.cpp)
 #add_executable(remove_vertex remove_vertex.cpp)
