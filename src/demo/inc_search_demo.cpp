@@ -123,11 +123,11 @@ int main(int argc, char **argv)
 	obstacle_ids.push_back(18);
 	obstacle_ids.push_back(19);
 
-	auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)), CalcHeuristicFunc_t<SquareCell>(CalcHeuristic));
-	// auto path = Dijkstra::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
+	// auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)), CalcHeuristicFunc_t<SquareCell>(CalcHeuristic));
+	auto path = Dijkstra::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
 
 	for (auto &e : path)
-		std::cout << "id: " << e->vertex_id_ << std::endl;
+		std::cout << "id: " << e.GetUniqueID() << std::endl;
 
 	return 0;
 }
