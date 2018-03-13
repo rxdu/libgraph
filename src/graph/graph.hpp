@@ -112,8 +112,14 @@ public:
 
 private:
 #ifndef USE_UNORDERED_MAP
+  typedef std::map<uint64_t, VertexType *> VertexMapType;
+  typedef VertexMapType::iterator VertexMapTypeIterator;
+
   std::map<uint64_t, VertexType *> vertex_map_;
 #else
+  typedef std::unordered_map<uint64_t, VertexType *> VertexMapType;
+  typedef typename VertexMapType::iterator VertexMapTypeIterator;
+
   std::unordered_map<uint64_t, VertexType *> vertex_map_;
 #endif
 
@@ -140,6 +146,23 @@ private:
 
   template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
   VertexType *SearchVertex(T vertex_node);
+
+public:
+	// define vertex iterator for easy access
+  // Reference:
+  //  [1] https://stackoverflow.com/questions/1443793/iterate-keys-in-a-c-map
+  //  [2] https://stackoverflow.com/questions/1443793/iterate-keys-in-a-c-map/35262398#35262398
+  class vertex_iterator : public VertexMapTypeIterator
+  {
+  public:
+    vertex_iterator() : VertexMapTypeIterator(){};
+    vertex_iterator(VertexMapTypeIterator s) : VertexMapTypeIterator(s){};
+    VertexType *operator->() { return (VertexType *const) (VertexMapTypeIterator::operator->()->second); }
+    VertexType &operator*() { return *(VertexMapTypeIterator::operator*().second); }
+  };
+
+  vertex_iterator vertex_begin() { return vertex_iterator(vertex_map_.begin()); }
+  vertex_iterator vertex_end() { return vertex_iterator(vertex_map_.end()); }
 };
 }
 

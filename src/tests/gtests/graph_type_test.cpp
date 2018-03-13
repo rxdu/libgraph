@@ -1,18 +1,19 @@
-/*
- * graph_unittest.cpp
- *
- *  Created on: Jul 20, 2016
- *      Author: rdu
- */
+/* 
+ * graph_iter_test.cpp
+ * 
+ * Created on: Mar 13, 2018 12:26
+ * Description: 
+ * 
+ * Copyright (c) 2018 Ruixiang Du (rdu)
+ */ 
 
 #include <stdio.h>
 #include <vector>
 
 #include "gtest/gtest.h"
 
-#include "planning/graph/graph.h"
-#include "planning/graph/astar.h"
-#include "planning/graph/bds_example.h"
+#include "graph/graph.hpp"
+#include "graph/algorithms/astar.hpp"
 
 using namespace librav;
 
@@ -28,25 +29,25 @@ struct TestState
 	}
 };
 
-struct GraphTemplateTest: testing::Test
+struct GraphTypeTest: testing::Test
 {
 	std::vector<TestState*> nodes;
 
-	GraphTemplateTest()
+	GraphTypeTest()
 	{
 		for(int i = 0; i < 9; i++) {
 			nodes.push_back(new TestState(i));
 		}
 	}
 
-	virtual ~GraphTemplateTest()
+	virtual ~GraphTypeTest()
 	{
 		for(auto& nd : nodes)
 			delete nd;
 	}
 };
 
-TEST_F(GraphTemplateTest, ValueType)
+TEST_F(GraphTypeTest, ValueType)
 {
 	// create a graph
 	Graph_t<TestState> graph;
@@ -74,7 +75,7 @@ TEST_F(GraphTemplateTest, ValueType)
 	ASSERT_NE(graph.GetGraphVertices().size(), 0) << "Failed to add a vertex of value type to the graph";
 }
 
-TEST_F(GraphTemplateTest, PointerType)
+TEST_F(GraphTypeTest, PointerType)
 {
 	Graph_t<TestState*> graph;
 
@@ -101,7 +102,7 @@ TEST_F(GraphTemplateTest, PointerType)
 	ASSERT_NE(graph.GetGraphVertices().size(), 0) << "Failed to add a vertex of pointer type to the graph";
 }
 
-TEST_F(GraphTemplateTest, ConstRefType)
+TEST_F(GraphTypeTest, ConstRefType)
 {
 	Graph_t<const TestState&> graph;
 

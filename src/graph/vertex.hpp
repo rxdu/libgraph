@@ -25,6 +25,8 @@ namespace librav
 template <typename StateType, typename TransitionType>
 class Vertex_t
 {
+	using EdgeList = std::vector<Edge<Vertex_t<StateType, TransitionType> *, TransitionType>>;
+
   public:
 	template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
 	Vertex_t(T state_node);
@@ -50,6 +52,12 @@ class Vertex_t
 	// vertices that contain edges connecting to current vertex,
 	//	used to cleanup edges in other vertices if current vertex is deleted
 	std::vector<Vertex_t<StateType, TransitionType> *> vertices_from_;
+
+	// define edge iterator for easy access
+	typedef typename EdgeList::iterator edge_iterator;
+	typedef typename EdgeList::const_iterator const_edge_iterator;
+	edge_iterator edge_begin() { return edges_to_.begin(); }
+	edge_iterator edge_end() { return edges_to_.end(); }
 
   public:
 	/// == operator overloading. If two vertices have the same id, they're regarded as equal.
