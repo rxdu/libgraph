@@ -60,8 +60,8 @@ void Graph_t<StateType, TransitionType>::AddEdge(StateType src_node, StateType d
 template <typename StateType, typename TransitionType>
 bool Graph_t<StateType, TransitionType>::RemoveEdge(StateType src_node, StateType dst_node)
 {
-	Vertex_t<StateType, TransitionType> *src_vertex = FindVertex(src_node);
-	Vertex_t<StateType, TransitionType> *dst_vertex = FindVertex(dst_node);
+	Vertex_t<StateType, TransitionType> *src_vertex = GetVertexFromState(src_node);
+	Vertex_t<StateType, TransitionType> *dst_vertex = GetVertexFromState(dst_node);
 
 	if ((src_vertex != nullptr) && (dst_vertex != nullptr))
 	{
@@ -89,8 +89,8 @@ bool Graph_t<StateType, TransitionType>::RemoveEdge(StateType src_node, StateTyp
 template <typename StateType, typename TransitionType>
 void Graph_t<StateType, TransitionType>::AddUndirectedEdge(StateType src_node, StateType dst_node, TransitionType cost)
 {
-	AddEdge(src_node, dst_node);
-	AddEdge(dst_node, src_node);
+	AddEdge(src_node, dst_node, cost);
+	AddEdge(dst_node, src_node, cost);
 }
 
 /// This function is used to remove the edge from src_node to dst_node.
@@ -106,7 +106,7 @@ bool Graph_t<StateType, TransitionType>::RemoveUndirectedEdge(StateType src_node
 template <typename StateType, typename TransitionType>
 void Graph_t<StateType, TransitionType>::AddVertex(StateType state)
 {
-	if (FindVertex(state) != nullptr)
+	if (GetVertexFromState(state) != nullptr)
 		return;
 
 	Vertex_t<StateType, TransitionType> *new_vertex = new Vertex_t<StateType, TransitionType>(state);
@@ -114,9 +114,17 @@ void Graph_t<StateType, TransitionType>::AddVertex(StateType state)
 }
 
 template <typename StateType, typename TransitionType>
+template <class T, typename std::enable_if<!std::is_integral<T>::value>::type *>
 void Graph_t<StateType, TransitionType>::RemoveVertex(StateType state)
 {
-	auto it = vertex_map_.find(GetStateID(state));
+	int64_t state_id = GetStateID(state);
+	RemoveVertex(state_id);
+};
+
+template <typename StateType, typename TransitionType>
+void Graph_t<StateType, TransitionType>::RemoveVertex(int64_t state_id)
+{
+	auto it = vertex_map_.find(state_id);
 
 	// unknown vertex, no need to remove
 	if (it == vertex_map_.end())
@@ -135,7 +143,7 @@ void Graph_t<StateType, TransitionType>::RemoveVertex(StateType state)
 	auto vptr = it->second;
 	vertex_map_.erase(it);
 	delete vptr;
-};
+}
 
 /// This function return the vertex with specified id
 template <typename StateType, typename TransitionType>
@@ -169,7 +177,7 @@ Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVert
 ///	If yes, the functions returns the pointer of the existing vertex,
 ///	otherwise it returns nullptr.
 template <typename StateType, typename TransitionType>
-Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::FindVertex(StateType state)
+Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVertexFromState(StateType state)
 {
 	auto it = vertex_map_.find(GetStateID(state));
 

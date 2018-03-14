@@ -44,14 +44,7 @@ class Vertex_t
 
 	// generic attributes
 	StateType state_;
-	uint64_t vertex_id_;
-
-	// edges connecting to other vertices
-	std::vector<Edge<Vertex_t<StateType, TransitionType> *, TransitionType>> edges_to_;
-
-	// vertices that contain edges connecting to current vertex,
-	//	used to cleanup edges in other vertices if current vertex is deleted
-	std::vector<Vertex_t<StateType, TransitionType> *> vertices_from_;
+	const uint64_t vertex_id_;
 
 	// edge iterator for easy access
 	typedef typename EdgeList::iterator edge_iterator;
@@ -74,6 +67,13 @@ class Vertex_t
 	bool CheckNeighbour(Vertex_t<StateType, TransitionType> *dst_node);
 
   private:
+	// edges connecting to other vertices
+	std::vector<Edge<Vertex_t<StateType, TransitionType> *, TransitionType>> edges_to_;
+
+	// vertices that contain edges connecting to current vertex,
+	//	used to cleanup edges in other vertices if current vertex is deleted
+	std::vector<Vertex_t<StateType, TransitionType> *> vertices_from_;
+
 	// attributes for A* search
 	bool is_checked_ = false;
 	bool is_in_openlist_ = false;

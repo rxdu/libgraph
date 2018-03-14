@@ -78,8 +78,9 @@ public:
   void AddVertex(StateType state);
 
   /// This function checks if a vertex exists in the graph and remove it if presents.
-  // template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
+  template <class T = StateType, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
   void RemoveVertex(StateType state);
+  void RemoveVertex(int64_t state_id);
 
   /* Directed Graph */
   /// This function is used to create a graph by adding directed edges connecting two nodes
@@ -142,7 +143,7 @@ private:
   /// This function checks if a vertex exists in the graph.
   ///	If exists, the functions returns the pointer of the existing vertex,
   ///	otherwise it returns nullptr.
-  VertexType *FindVertex(StateType state);
+  VertexType *GetVertexFromState(StateType state);
 
   /// This function returns the unique ID of given state.
   template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
@@ -179,6 +180,12 @@ public:
   vertex_iterator FindVertex(int64_t vertex_id)
   {
     return vertex_iterator(vertex_map_.find(vertex_id));
+  }
+
+  template <class T = StateType, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
+  vertex_iterator FindVertex(T state)
+  {
+    return vertex_iterator(vertex_map_.find(GetStateID(state)));
   }
 };
 }
