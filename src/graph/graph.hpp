@@ -95,7 +95,7 @@ public:
   bool RemoveUndirectedEdge(StateType src_node, StateType dst_node);
 
   /// This functions is used to access all edges of a graph
-  std::vector<edge_iterator> GetAllEdges() const
+  std::vector<edge_iterator> GetAllEdges() //const
   {
     std::vector<edge_iterator> edges;
     for (auto &vertex_pair : vertex_map_)
@@ -127,10 +127,10 @@ public:
 
 private:
 #ifndef USE_UNORDERED_MAP
-  typedef std::map<uint64_t, VertexType *> VertexMapType;
+  typedef std::map<int64_t, VertexType *> VertexMapType;
   typedef VertexMapType::iterator VertexMapTypeIterator;
 #else
-  typedef std::unordered_map<uint64_t, VertexType *> VertexMapType;
+  typedef std::unordered_map<int64_t, VertexType *> VertexMapType;
   typedef typename VertexMapType::iterator VertexMapTypeIterator;
 #endif
   VertexMapType vertex_map_;
@@ -139,7 +139,7 @@ private:
   void ResetGraphVertices();
 
   /// This function return the vertex with specified id
-  VertexType *GetVertexFromID(uint64_t vertex_id);
+  VertexType *GetVertexFromID(int64_t vertex_id);
 
   /// This function checks if a vertex already exists in the graph.
   ///	If exists, the functions returns the pointer of the existing vertex,
@@ -169,7 +169,6 @@ public:
   public:
     vertex_iterator() : VertexMapTypeIterator(){};
     vertex_iterator(VertexMapTypeIterator s) : VertexMapTypeIterator(s){};
-    vertex_iterator(const vertex_iterator &) = default;
 
     VertexType *operator->() { return (VertexType *const)(VertexMapTypeIterator::operator->()->second); }
     VertexType &operator*() { return *(VertexMapTypeIterator::operator*().second); }
@@ -179,7 +178,7 @@ public:
   vertex_iterator vertex_end() { return vertex_iterator(vertex_map_.end()); }
 
   /// This function return the vertex iterator with specified id
-  vertex_iterator FindVertex(uint64_t vertex_id)
+  vertex_iterator FindVertex(int64_t vertex_id)
   {
     return vertex_iterator(vertex_map_.find(vertex_id));
   }

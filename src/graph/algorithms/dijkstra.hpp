@@ -40,24 +40,6 @@ class Dijkstra
   public:
 	/// Search using vertex ids
 	template <typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType> &graph, uint64_t start_id, uint64_t goal_id)
-	{
-		// reset last search information
-		graph.ResetGraphVertices();
-
-		auto start = graph.GetVertexFromID(start_id);
-		auto goal = graph.GetVertexFromID(goal_id);
-
-		Path_t<StateType, TransitionType> empty;
-
-		// start a new search and return result
-		if (start != nullptr && goal != nullptr)
-			return Search(&graph, start, goal);
-		else
-			return empty;
-	}
-
-	template <typename StateType, typename TransitionType>
 	static Path_t<StateType, TransitionType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, uint64_t start_id, uint64_t goal_id)
 	{
 		// reset last search information
@@ -203,8 +185,6 @@ class Dijkstra
 				break;
 			}
 
-			std::cout << "current_vertex: " << current_vertex->state_.GetUniqueID() << std::endl;
-
 			current_vertex->is_in_openlist_ = false;
 			current_vertex->is_checked_ = true;
 
@@ -240,13 +220,7 @@ class Dijkstra
 			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
 			auto path_vtx = ReconstructPath(start_vtx, goal_vtx);
 			for (const auto &wp : path_vtx)
-			{
 				path.push_back(graph->FindVertex(wp->vertex_id_));
-				std::cout << "path in dijkstra from vertex: " << wp->state_.GetUniqueID() << std::endl;
-			}
-
-			for (auto &wp : path)
-				std::cout << "path in dijkstra from iterator: " << wp->state_.GetUniqueID() << std::endl;
 		}
 		else
 			std::cout << "failed to find a path" << std::endl;
@@ -261,17 +235,12 @@ class Dijkstra
 		Vertex_t<StateType, TransitionType> *waypoint = goal_vtx;
 		while (waypoint != start_vtx)
 		{
-			std::cout << "path in dijkstra from reconstruct while: " << waypoint->state_.GetUniqueID() << std::endl;
-
 			path.push_back(waypoint);
 			waypoint = waypoint->search_parent_;
 		}
 		// add the start node
 		path.push_back(waypoint);
 		std::reverse(path.begin(), path.end());
-
-		for (auto wp : path)
-			std::cout << "path in dijkstra from reconstruct: " << wp->state_.GetUniqueID() << std::endl;
 
 #ifndef MINIMAL_PRINTOUT
 		auto traj_s = path.begin();

@@ -34,6 +34,12 @@ class Vertex_t
 	template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
 	Vertex_t(T state_node);
 
+	// template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
+	// Vertex_t(const Vertex_t &vtx);
+
+	// template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
+	// Vertex_t &operator=(const Vertex_t &vtx);
+
 	~Vertex_t() = default;
 
 	// friends
