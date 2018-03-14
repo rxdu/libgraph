@@ -1,4 +1,4 @@
-# Graph and A* Search
+# Graph and Search
 
 C++ class templates for constructing graphs and performing A* search. This library is distributed under **MIT license**.
 
@@ -25,20 +25,19 @@ $ doxygen doxygen/Doxyfile
 
 You can associate a state to each vertex and a transition to each edge. 
 
-The only requirement is you need to define a function inside your state type with the signature
+The only requirement is that you need to define a function inside your state type with the signature
 
 ```
-uint64_t GetUniqueID() const
+int64_t GetUniqueID() const
 {
     <generate and return an unique id>
 }
 ```
-This function is used to check if two states are the same so that only one vertex is created for a state inside the graph.
+This function is used to check whether two given states are the same so that only one vertex is created for one unique state inside the graph.
 
 See examples in "demo" folder for more details.
 
-# TODO
+## 4. Known Limitations
 
-- [] A* and Dijkstra algorithms currently assume double type cost. Generic type cost with proper comparator defined should also be accepted.
-- [] Implement iterators for vertex and edge to unify the accessing interface
-- [] Update unit tests
+* [TODO List](./TODO.md)
+
