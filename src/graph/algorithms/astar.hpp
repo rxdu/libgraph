@@ -46,7 +46,7 @@ class AStar
   public:
 	/// Search using vertex ids
 	template <typename StateType, typename TransitionType>
-	static Path_t<StateType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, uint64_t start_id, uint64_t goal_id, std::function<TransitionType(StateType, StateType)> calc_heuristic)
+	static Path_t<StateType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, uint64_t start_id, uint64_t goal_id, CalcHeuristicFunc_t<StateType, TransitionType> calc_heuristic)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -64,7 +64,7 @@ class AStar
 	}
 
 	template <typename StateType, typename TransitionType>
-	static Path_t<StateType> Search(Graph_t<StateType, TransitionType> *graph, uint64_t start_id, uint64_t goal_id, std::function<TransitionType(StateType, StateType)> calc_heuristic)
+	static Path_t<StateType> Search(Graph_t<StateType, TransitionType> *graph, uint64_t start_id, uint64_t goal_id, CalcHeuristicFunc_t<StateType, TransitionType> calc_heuristic)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -82,7 +82,7 @@ class AStar
 	}
 
 	template <typename StateType, typename TransitionType>
-	static Path_t<StateType> IncSearch(StateType start_state, StateType goal_state, std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)> get_neighbours, std::function<TransitionType(StateType, StateType)> CalcHeuristic)
+	static Path_t<StateType> IncSearch(StateType start_state, StateType goal_state, GetNeighbourFunc_t<StateType, TransitionType>  get_neighbours, CalcHeuristicFunc_t<StateType, TransitionType> calc_heuristic)
 	{
 		using GraphVertexType = Vertex_t<StateType, TransitionType>;
 
@@ -142,7 +142,7 @@ class AStar
 
 						// update costs
 						successor->g_astar_ = new_cost;
-						successor->h_astar_ = CalcHeuristic(successor->state_, goal_vtx->state_);
+						successor->h_astar_ = calc_heuristic(successor->state_, goal_vtx->state_);
 						successor->f_astar_ = successor->g_astar_ + successor->h_astar_;
 
 						// put vertex into open list

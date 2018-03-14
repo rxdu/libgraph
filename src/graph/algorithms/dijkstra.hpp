@@ -36,7 +36,6 @@ using GetNeighbourFunc_t = std::function<std::vector<std::tuple<StateType, Trans
 /// Dijkstra search algorithm.
 class Dijkstra
 {
-
   public:
 	/// Search using vertex ids
 	template <typename StateType, typename TransitionType>
@@ -76,7 +75,7 @@ class Dijkstra
 	}
 
 	template <typename StateType, typename TransitionType>
-	static Path_t<StateType> IncSearch(StateType start_state, StateType goal_state, std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)> get_neighbours)
+	static Path_t<StateType> IncSearch(StateType start_state, StateType goal_state, GetNeighbourFunc_t<StateType, TransitionType> get_neighbours)
 	{
 		using GraphVertexType = Vertex_t<StateType, TransitionType>;
 

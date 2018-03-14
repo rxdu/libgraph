@@ -34,12 +34,6 @@ class Vertex_t
 	template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
 	Vertex_t(T state_node);
 
-	// template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-	// Vertex_t(const Vertex_t &vtx);
-
-	// template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-	// Vertex_t &operator=(const Vertex_t &vtx);
-
 	~Vertex_t() = default;
 
 	// friends
@@ -81,12 +75,12 @@ class Vertex_t
 
   private:
 	// attributes for A* search
-	bool is_checked_;
-	bool is_in_openlist_;
-	double f_astar_;
-	double g_astar_;
-	double h_astar_;
-	Vertex_t<StateType, TransitionType> *search_parent_;
+	bool is_checked_ = false;
+	bool is_in_openlist_ = false;
+	double f_astar_ = 0.0;
+	double g_astar_ = 0.0;
+	double h_astar_ = 0.0;
+	Vertex_t<StateType, TransitionType> *search_parent_ = nullptr;
 
 	/// Clear exiting search info before a new search
 	void ClearVertexSearchInfo();

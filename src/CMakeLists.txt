@@ -28,7 +28,7 @@ set(BUILD_TEST on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 ## Add sub source directories
-# add_subdirectory(demo)
+add_subdirectory(demo)
 
 if(BUILD_TEST)
 	add_subdirectory(tests)

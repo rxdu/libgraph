@@ -24,52 +24,11 @@ namespace librav
 /// A vertex data structure template.
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-Vertex_t<StateType, TransitionType>::Vertex_t(T state) : // attributes related to associated node
-														 state_(state), vertex_id_(state->GetUniqueID()),
-														 // common attributes
-														 search_parent_(nullptr),
-														 is_checked_(false), is_in_openlist_(false),
-														 f_astar_(0), g_astar_(0), h_astar_(0){};
+Vertex_t<StateType, TransitionType>::Vertex_t(T state) : state_(state), vertex_id_(state->GetUniqueID()){};
 
 template <typename StateType, typename TransitionType>
 template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-Vertex_t<StateType, TransitionType>::Vertex_t(T state) : // attributes related to associated node
-														 state_(state), vertex_id_(state.GetUniqueID()),
-														 // common attributes
-														 search_parent_(nullptr),
-														 is_checked_(false), is_in_openlist_(false),
-														 f_astar_(0), g_astar_(0), h_astar_(0){};
-
-// template <typename StateType, typename TransitionType>
-// template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-// Vertex_t<StateType, TransitionType>::Vertex_t(const Vertex_t &vtx) : // attributes related to associated node
-// 																	 state_(vtx.state_), vertex_id_(vtx.state_.GetUniqueID()),
-// 																	 // common attributes
-// 																	 search_parent_(nullptr),
-// 																	 is_checked_(false), is_in_openlist_(false),
-// 																	 f_astar_(0), g_astar_(0), h_astar_(0){};
-
-// template <typename StateType, typename TransitionType>
-// template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-// Vertex_t<StateType, TransitionType> &Vertex_t<StateType, TransitionType>::operator=(const Vertex_t &vtx)
-// {
-// 	if (&vtx == this)
-// 		return *this;
-
-// 	// attributes related to associated node
-// 	this->state_ = vtx.state_;
-// 	this->vertex_id_ = vtx.state_.GetUniqueID();
-
-// 	// common attributes
-// 	this->search_parent_ = nullptr;
-// 	this->is_checked_ = false;
-// 	this->is_in_openlist_ = false;
-// 	this->f_astar_ = 0;
-// 	this->g_astar_ = 0;
-// 	this->h_astar_ = 0;
-
-// 	return *this;
-// }
+Vertex_t<StateType, TransitionType>::Vertex_t(T state) : state_(state), vertex_id_(state.GetUniqueID()){};
 
 /// Clear exiting search info before a new search
 template <typename StateType, typename TransitionType>

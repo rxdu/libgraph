@@ -91,13 +91,13 @@ int main(int argc, char **argv)
 
     // In order to use A* search, you need to specify how to calculate heuristic
     std::cout << "\nA* search: " << std::endl;
-    auto path_a = AStar::Search(graph, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
+    auto path_a = AStar::Search(&graph, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
     for (auto &e : path_a)
         std::cout << "id: " << e->GetUniqueID() << std::endl;
 
     // Dijkstra search
     std::cout << "\nDijkstra search: " << std::endl;
-    auto path_d = Dijkstra::Search(graph, 0, 13);
+    auto path_d = Dijkstra::Search(&graph, 0, 13);
     for (auto &e : path_d)
         std::cout << "id: " << e->GetUniqueID() << std::endl;
 

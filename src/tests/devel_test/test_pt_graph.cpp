@@ -100,9 +100,8 @@ int main(int argc, char **argv)
     std::vector<int64_t> path_ids;
     for (auto e : path)
     {
-        path_ids.push_back(e->state_->GetUniqueID());
-        std::cout << "ref path dijkstra vertex id: " << e->vertex_id_ << std::endl;
-        std::cout << "ref path dijkstra state id: " << e->state_->GetUniqueID() << std::endl;
+        path_ids.push_back(e->GetUniqueID());
+        std::cout << "ref path dijkstra state id: " << e->GetUniqueID() << std::endl;
     }
     std::cout << "ref path length: " << path.size() << std::endl;
 

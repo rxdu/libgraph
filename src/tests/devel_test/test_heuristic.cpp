@@ -56,7 +56,7 @@ int main(int argc, char** argv )
 	auto path = AStar::Search(&graph_val, 0, 8, CalcHeuristicFunc_t<StateExample>(CalcHeuristic));
 
 	for(auto& e : path)
-		std::cout << "id: " << e->state_.GetUniqueID() << std::endl;
+		std::cout << "id: " << e.GetUniqueID() << std::endl;
 
 	return 0;
 }
