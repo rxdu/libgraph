@@ -4,7 +4,7 @@
  *  Created on: Mar 30, 2016
  *      Author: rdu
  *
- *  Description: demo on how to create different types of graphs and perform A* search on each.
+ *  Description: demo on how to create a graph and perform A* search on the graph.
  *
  */
 
@@ -16,29 +16,13 @@
 
 // user
 #include "graph/graph.hpp"
-#include "graph/algorithms/astar.hpp"
-#include "state_example.hpp"
+#include "demo/state_example.hpp"
 
 using namespace librav;
 
 void ValueTypeGraphDemo();
 void PointerTypeGraphDemo();
 void ConstRefTypeGraphDemo();
-
-double CalcHeuristicVal(StateExample node1, StateExample node2)
-{
-	return 0.0;
-}
-
-double CalcHeuristicPtr(StateExample* node1, StateExample* node2)
-{
-	return 0.0;
-}
-
-double CalcHeuristicRef(const StateExample& node1, const StateExample& node2)
-{
-	return 0.0;
-}
 
 void ValueTypeGraphDemo()
 {
@@ -72,16 +56,11 @@ void ValueTypeGraphDemo()
 	graph_val.AddEdge(nodes[8], nodes[5], 2.5);
 	graph_val.AddEdge(nodes[8], nodes[7], 2.5);
 
-	auto all_edges = graph_val.GetGraphEdges();
+	auto all_edges = graph_val.GetAllEdges();
 
 	for(auto& e : all_edges)
-		e.PrintEdge();
-
-	auto path = AStar::Search(graph_val, graph_val.GetVertexFromID(0), graph_val.GetVertexFromID(8), CalcHeuristicFunc_t<StateExample>(CalcHeuristicVal));
-
-	for(auto& e : path)
-		std::cout << "id: " << e->vertex_id_ << std::endl;
-
+		e->PrintEdge();
+	
 	// no need to deallocate memory, all data structures are copied to graph
 }
 
@@ -117,16 +96,11 @@ void PointerTypeGraphDemo()
 	graph_ptr.AddEdge(nodes[8], nodes[5], 2.5);
 	graph_ptr.AddEdge(nodes[8], nodes[7], 2.5);
 
-	auto all_edges = graph_ptr.GetGraphEdges();
+	auto all_edges = graph_ptr.GetAllEdges();
 
 	for(auto& e : all_edges)
-		e.PrintEdge();
-
-	auto path = AStar::Search(graph_ptr, graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8),CalcHeuristicFunc_t<StateExample*>(CalcHeuristicPtr));
-
-	for(auto& e : path)
-		std::cout << "id: " << e->vertex_id_ << std::endl;
-
+		e->PrintEdge();
+	
 	// need to delete all nodes, the graph only maintains pointers to these nodes
 	for(auto e : nodes)
 		delete e;
@@ -164,19 +138,12 @@ void ConstRefTypeGraphDemo()
 	graph_ptr.AddEdge((nodes[8]), (nodes[5]), 2.5);
 	graph_ptr.AddEdge((nodes[8]), (nodes[7]), 2.5);
 
-	auto all_edges = graph_ptr.GetGraphEdges();
+	auto all_edges = graph_ptr.GetAllEdges();
 
 	for(auto& e : all_edges)
-		e.PrintEdge();
+		e->PrintEdge();
 
-	auto path = AStar::Search(graph_ptr, graph_ptr.GetVertexFromID(0), graph_ptr.GetVertexFromID(8),CalcHeuristicFunc_t<const StateExample&>(CalcHeuristicRef));
-
-	for(auto& e : path)
-		std::cout << "id: " << e->vertex_id_ << std::endl;
-
-	// need to delete all nodes, the graph only maintains references to these nodes
-	// for(auto e : nodes)
-	// 	delete e;
+	// no need to deallocate memory, all data structures are copied to graph
 }
 
 int main(int argc, char** argv )

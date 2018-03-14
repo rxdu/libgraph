@@ -33,14 +33,17 @@ struct GraphIteratorTest : testing::Test
 	std::vector<TestState *> nodes;
 	Graph_t<TestState *> graph;
 
-	std::set<int32_t> vertex_id_set;
+	std::set<int64_t> vertex_id_set;
 	std::set<double> edge_cost_set;
 
 	GraphIteratorTest()
 	{
 		for (int i = 0; i < 9; i++)
+		{
 			nodes.push_back(new TestState(i));
-
+			vertex_id_set.insert(i);
+		}
+		
 		graph.AddEdge((nodes[0]), (nodes[1]), 1.0);
 		graph.AddEdge((nodes[0]), (nodes[3]), 1.5);
 		graph.AddEdge((nodes[1]), (nodes[0]), 2.0);
@@ -56,15 +59,13 @@ struct GraphIteratorTest : testing::Test
 		graph.AddEdge((nodes[5]), (nodes[2]), 7.0);
 		graph.AddEdge((nodes[5]), (nodes[4]), 7.5);
 		graph.AddEdge((nodes[5]), (nodes[8]), 8.0);
-		graph.AddEdge((nodes[7]), (nodes[4]), 8.5);
-		graph.AddEdge((nodes[7]), (nodes[8]), 9.0);
-		graph.AddEdge((nodes[8]), (nodes[5]), 9.5);
-		graph.AddEdge((nodes[8]), (nodes[7]), 10.0);
+		graph.AddEdge((nodes[5]), (nodes[6]), 8.5);
+		graph.AddEdge((nodes[7]), (nodes[4]), 9.0);
+		graph.AddEdge((nodes[7]), (nodes[8]), 9.5);
+		graph.AddEdge((nodes[8]), (nodes[5]), 10.0);
+		graph.AddEdge((nodes[8]), (nodes[7]), 10.5);
 
-		for (int i = 0; i < 8; ++i)
-			vertex_id_set.insert(i);
-
-		for (int i = 0; i < 19; ++i)
+		for (int i = 0; i < 20; ++i)
 			edge_cost_set.insert(1.0 + 0.5 * i);
 	}
 
@@ -77,7 +78,7 @@ struct GraphIteratorTest : testing::Test
 
 TEST_F(GraphIteratorTest, VertexEdgeIterator)
 {
-	std::set<int32_t> vertex_ids;
+	std::set<int64_t> vertex_ids;
 	std::set<double> edge_costs;
 
 	for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
@@ -87,8 +88,8 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
 			edge_costs.insert((*ite).cost_);
 	}
 
-	ASSERT_TRUE(vertex_ids.size() == vertex_id_set.size()) << "Failed to access all vertices in the graph (with iterator * operator)";
-	ASSERT_TRUE(edge_costs.size() == edge_cost_set.size()) << "Failed to access all vertices in the graph (with iterator * operator)";
+	ASSERT_TRUE(vertex_ids == vertex_id_set) << "Failed to access all vertices in the graph (with iterator * operator)";
+	ASSERT_TRUE(edge_costs == edge_cost_set) << "Failed to access all edges in the graph (with iterator * operator)";
 
 	vertex_ids.clear();
 	edge_costs.clear();
@@ -99,6 +100,6 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
 			edge_costs.insert(ite->cost_);
 	}
 
-	ASSERT_TRUE(vertex_ids.size() == vertex_id_set.size()) << "Failed to access all vertices in the graph (with iterator -> operator)";
-	ASSERT_TRUE(edge_costs.size() == edge_cost_set.size()) << "Failed to access all vertices in the graph (with iterator -> operator)";
+	ASSERT_TRUE(vertex_ids == vertex_id_set) << "Failed to access all vertices in the graph (with iterator -> operator)";
+	ASSERT_TRUE(edge_costs == edge_cost_set) << "Failed to access all edges in the graph (with iterator -> operator)";
 }

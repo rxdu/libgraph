@@ -1,12 +1,3 @@
-/* 
- * basic_example.cpp
- * 
- * Created on: Nov 22, 2017 12:03
- * Description: 
- * 
- * Copyright (c) 2017 Ruixiang Du (rdu)
- */
-
 // standard libaray
 #include <iostream>
 #include <vector>
@@ -85,22 +76,34 @@ int main(int argc, char **argv)
     graph.AddEdge(nodes[13], nodes[9], 1.0);
     graph.AddEdge(nodes[13], nodes[10], 1.414);
 
-    auto all_edges = graph.GetGraphEdges();
+    auto all_edges = graph.GetAllEdges();
 
     for (auto &e : all_edges)
-        e.PrintEdge();
+        e->PrintEdge();
 
-    // In order to use A* search, you need to specify how to calculate heuristic
-    std::cout << "\nA* search: " << std::endl;
-    auto path_a = AStar::Search(graph, 0, 13, CalcHeuristicFunc_t<BasicState *>(CalcHeuristic));
-    for (auto &e : path_a)
-        std::cout << "id: " << e->vertex_id_ << std::endl;
+    std::vector<Graph_t<BasicState *>::vertex_iterator> vextices;
+    std::vector<Graph_t<BasicState *>::edge_iterator> edges;
 
-    // Dijkstra search
-    std::cout << "\nDijkstra search: " << std::endl;
-    auto path_d = Dijkstra::Search(graph, 0, 13);
-    for (auto &e : path_d)
-        std::cout << "id: " << e->vertex_id_ << std::endl;
+    auto vtx = graph.FindVertex(1);
+    for (auto it = vtx->edge_begin(); it != vtx->edge_end(); ++it)
+    {
+        std::cout << "edge iterator * : " << (*it).dst_->vertex_id_ << std::endl;
+        std::cout << "edge iterator -> : " << it->dst_->vertex_id_ << std::endl;
+        edges.push_back(it);
+    }
+
+    for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
+    {
+        std::cout << "vertex iterator * : " << (*it).vertex_id_ << std::endl;
+        std::cout << "vertex iterator -> : " << it->vertex_id_ << std::endl;
+    }
+
+    for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
+    {
+        std::cout << "edges of vertex: " << (*it).vertex_id_ << std::endl;
+        for (auto ite = it->edge_begin(); ite != it->edge_end(); ++ite)
+            std::cout << "edge " << (*ite).dst_->vertex_id_ << std::endl;
+    }
 
     // need to delete all nodes, the graph only maintains pointers to these nodes
     for (auto &e : nodes)

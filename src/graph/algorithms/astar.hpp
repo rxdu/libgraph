@@ -44,56 +44,7 @@ class AStar
 {
 
   public:
-	/// Search using vertices
-	template <typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType> &graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal, std::function<double(StateType, StateType)> calc_heuristic)
-	{
-		// reset last search information
-		graph.ResetGraphVertices();
-
-		// start a new search and return result
-		return Search(start, goal, calc_heuristic);
-	}
-
-	template <typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal, std::function<double(StateType, StateType)> calc_heuristic)
-	{
-		// reset last search information
-		graph->ResetGraphVertices();
-
-		// start a new search and return result
-		return Search(start, goal, calc_heuristic);
-	}
-
-	template <typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType> *graph, Vertex_t<StateType, TransitionType> *start, Vertex_t<StateType, TransitionType> *goal, std::function<double(StateType, StateType)> calc_heuristic)
-	{
-		// reset last search information
-		graph->ResetGraphVertices();
-
-		// start a new search and return result
-		return Search(start, goal, calc_heuristic);
-	}
-
 	/// Search using vertex ids
-	template <typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType> &graph, uint64_t start_id, uint64_t goal_id, std::function<double(StateType, StateType)> calc_heuristic)
-	{
-		// reset last search information
-		graph.ResetGraphVertices();
-
-		auto start = graph.GetVertexFromID(start_id);
-		auto goal = graph.GetVertexFromID(goal_id);
-
-		Path_t<StateType, TransitionType> empty;
-
-		// start a new search and return result
-		if (start != nullptr && goal != nullptr)
-			return Search(start, goal, calc_heuristic);
-		else
-			return empty;
-	}
-
 	template <typename StateType, typename TransitionType>
 	static Path_t<StateType, TransitionType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, uint64_t start_id, uint64_t goal_id, std::function<double(StateType, StateType)> calc_heuristic)
 	{
@@ -107,7 +58,7 @@ class AStar
 
 		// start a new search and return result
 		if (start != nullptr && goal != nullptr)
-			return Search(start, goal, calc_heuristic);
+			return Search(graph.get(), start, goal, calc_heuristic);
 		else
 			return empty;
 	}
@@ -125,7 +76,7 @@ class AStar
 
 		// start a new search and return result
 		if (start != nullptr && goal != nullptr)
-			return Search(start, goal, calc_heuristic);
+			return Search(graph, start, goal, calc_heuristic);
 		else
 			return empty;
 	}
@@ -137,8 +88,11 @@ class AStar
 
 		// create a new graph with only start and goal vertices
 		Graph_t<StateType> graph;
-		GraphVertexType *start_vtx = graph.AddVertex(start_state);
-		GraphVertexType *goal_vtx = graph.AddVertex(goal_state);
+		graph.AddVertex(start_state);
+		graph.AddVertex(goal_state);
+
+		GraphVertexType *start_vtx = graph.GetVertex(start_state);
+		GraphVertexType *goal_vtx = graph.GetVertex(goal_state);
 
 		// open list - a list of vertices that need to be checked out
 		PriorityQueue<GraphVertexType *> openlist;
@@ -215,8 +169,8 @@ class AStar
 	};
 
   private:
-	template <typename StateType>
-	static std::vector<Vertex_t<StateType, double> *> Search(Vertex_t<StateType, double> *start_vtx, Vertex_t<StateType, double> *goal_vtx, std::function<double(StateType, StateType)> CalcHeuristic)
+	template <typename StateType, typename TransitionType>
+	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType> *graph, Vertex_t<StateType, double> *start_vtx, Vertex_t<StateType, double> *goal_vtx, std::function<double(StateType, StateType)> CalcHeuristic)
 	{
 		using GraphVertexType = Vertex_t<StateType, double>;
 
@@ -276,11 +230,13 @@ class AStar
 		}
 
 		// reconstruct path from search
-		std::vector<GraphVertexType *> path;
+		Path_t<StateType, TransitionType> path;
 		if (found_path)
 		{
 			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
-			path = ReconstructPath(start_vtx, goal_vtx);
+			auto path_vtx = ReconstructPath(start_vtx, goal_vtx);
+			for (const auto &wp : path_vtx)
+				path.push_back(graph->FindVertex(wp->vertex_id_));
 		}
 		else
 			std::cout << "failed to find a path" << std::endl;

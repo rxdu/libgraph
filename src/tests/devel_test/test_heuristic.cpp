@@ -48,12 +48,12 @@ int main(int argc, char** argv )
 	graph_val.AddEdge(nodes[8], nodes[5], 1.0);
 	graph_val.AddEdge(nodes[8], nodes[7], 1.0);
 
-	auto all_edges = graph_val.GetGraphEdges();
+	auto all_edges = graph_val.GetAllEdges();
 
 	for(auto& e : all_edges)
-		e.PrintEdge();
+		e->PrintEdge();
 
-	auto path = AStar::Search(graph_val, 0, 8, CalcHeuristicFunc_t<StateExample>(CalcHeuristic));
+	auto path = AStar::Search(&graph_val, 0, 8, CalcHeuristicFunc_t<StateExample>(CalcHeuristic));
 
 	for(auto& e : path)
 		std::cout << "id: " << e->state_.GetUniqueID() << std::endl;

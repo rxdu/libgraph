@@ -53,7 +53,7 @@ class Vertex_t
 	//	used to cleanup edges in other vertices if current vertex is deleted
 	std::vector<Vertex_t<StateType, TransitionType> *> vertices_from_;
 
-	// define edge iterator for easy access
+	// edge iterator for easy access
 	typedef typename EdgeList::iterator edge_iterator;
 	typedef typename EdgeList::const_iterator const_edge_iterator;
 	edge_iterator edge_begin() { return edges_to_.begin(); }
@@ -82,7 +82,6 @@ class Vertex_t
 	double h_astar_;
 	Vertex_t<StateType, TransitionType> *search_parent_;
 
-  private:
 	/// Clear exiting search info before a new search
 	void ClearVertexSearchInfo();
 };
