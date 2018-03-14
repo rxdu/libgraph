@@ -30,7 +30,7 @@
 namespace librav
 {
 
-template <typename StateType, typename TransitionType = double>
+template <typename StateType, typename TransitionType>
 using GetNeighbourFunc_t = std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)>;
 
 /// Dijkstra search algorithm.
