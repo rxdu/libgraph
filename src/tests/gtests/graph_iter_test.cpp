@@ -1,9 +1,11 @@
-/*
- * graph_type_test.cpp
- *
- *  Created on: Jul 20, 2016
- *      Author: rdu
- */
+/* 
+ * graph_iter_test.cpp
+ * 
+ * Created on: Mar 14, 2018 14:05
+ * Description: 
+ * 
+ * Copyright (c) 2018 Ruixiang Du (rdu)
+ */ 
 
 #include <stdio.h>
 #include <vector>

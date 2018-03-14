@@ -5,7 +5,8 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(TESTCASES_SRC
     graph_type_test.cpp
     graph_iter_test.cpp
-    # graph_search_test.cpp
+    graph_search_test.cpp
+    graph_search_inc_test.cpp
 )
 add_executable(gtest_all start_tests.cpp ${TESTCASES_SRC})
 target_link_libraries(gtest_all gtest)

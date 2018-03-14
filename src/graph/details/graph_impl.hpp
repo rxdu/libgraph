@@ -40,18 +40,6 @@ void Graph_t<StateType, TransitionType>::ClearGraph()
 	vertex_map_.clear();
 }
 
-/// This function return the vertex with specified id
-template <typename StateType, typename TransitionType>
-Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVertexFromID(int64_t vertex_id)
-{
-	auto it = vertex_map_.find(vertex_id);
-
-	if (it != vertex_map_.end())
-		return (*it).second;
-	else
-		return nullptr;
-};
-
 /// This function is used to create a graph by adding edges connecting two nodes
 template <typename StateType, typename TransitionType>
 void Graph_t<StateType, TransitionType>::AddEdge(StateType src_node, StateType dst_node, TransitionType cost)
@@ -116,26 +104,19 @@ bool Graph_t<StateType, TransitionType>::RemoveUndirectedEdge(StateType src_node
 /// This function creates a vertex in the graph that associates with the given node.
 /// The set of functions AddVertex() are only supposed to be used with incremental a* search.
 template <typename StateType, typename TransitionType>
-template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-void Graph_t<StateType, TransitionType>::AddVertex(T vertex_node)
+void Graph_t<StateType, TransitionType>::AddVertex(StateType state)
 {
-	Vertex_t<StateType, TransitionType> *new_vertex = new Vertex_t<StateType, TransitionType>(vertex_node);
-	vertex_map_.insert(std::make_pair(vertex_node.GetUniqueID(), new_vertex));
+	if (FindVertex(state) != nullptr)
+		return;
+
+	Vertex_t<StateType, TransitionType> *new_vertex = new Vertex_t<StateType, TransitionType>(state);
+	vertex_map_.insert(std::make_pair(GetStateID(state), new_vertex));
 }
 
 template <typename StateType, typename TransitionType>
-template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-void Graph_t<StateType, TransitionType>::AddVertex(T vertex_node)
+void Graph_t<StateType, TransitionType>::RemoveVertex(StateType state)
 {
-	Vertex_t<StateType, TransitionType> *new_vertex = new Vertex_t<StateType, TransitionType>(vertex_node);
-	vertex_map_.insert(std::make_pair(vertex_node->GetUniqueID(), new_vertex));
-}
-
-template <typename StateType, typename TransitionType>
-template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-void Graph_t<StateType, TransitionType>::RemoveVertex(T vertex_node)
-{
-	auto it = vertex_map_.find(vertex_node.GetUniqueID());
+	auto it = vertex_map_.find(GetStateID(state));
 
 	// unknown vertex, no need to remove
 	if (it == vertex_map_.end())
@@ -156,57 +137,28 @@ void Graph_t<StateType, TransitionType>::RemoveVertex(T vertex_node)
 	delete vptr;
 };
 
+/// This function return the vertex with specified id
 template <typename StateType, typename TransitionType>
-template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-void Graph_t<StateType, TransitionType>::RemoveVertex(T vertex_node)
+Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVertexFromID(int64_t vertex_id)
 {
-	auto it = vertex_map_.find(vertex_node->GetUniqueID());
+	auto it = vertex_map_.find(vertex_id);
 
-	// unknown vertex, no need to remove
-	if (it == vertex_map_.end())
-		return;
-
-	for (auto &asv : it->second->vertices_from_)
-		for (auto eit = asv->edges_to_.begin(); eit != asv->edges_to_.end(); eit++)
-		{
-			if ((*eit).dst_ == it->second)
-			{
-				asv->edges_to_.erase(eit);
-				break;
-			}
-		}
-
-	auto vptr = it->second;
-	vertex_map_.erase(it);
-	delete vptr;
-}
+	if (it != vertex_map_.end())
+		return (*it).second;
+	else
+		return nullptr;
+};
 
 template <typename StateType, typename TransitionType>
-template <class T, typename std::enable_if<!std::is_pointer<T>::value>::type *>
-Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVertex(T vertex_node)
+Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVertex(StateType state)
 {
-	auto it = vertex_map_.find(vertex_node.GetUniqueID());
+	int64_t state_id = GetStateID(state);
+	auto it = vertex_map_.find(state_id);
 
 	if (it == vertex_map_.end())
 	{
-		auto new_vertex = new Vertex_t<StateType, TransitionType>(vertex_node);
-		vertex_map_.insert(std::make_pair(vertex_node.GetUniqueID(), new_vertex));
-		return new_vertex;
-	}
-
-	return it->second;
-}
-
-template <typename StateType, typename TransitionType>
-template <class T, typename std::enable_if<std::is_pointer<T>::value>::type *>
-Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVertex(T vertex_node)
-{
-	auto it = vertex_map_.find(vertex_node->GetUniqueID());
-
-	if (it == vertex_map_.end())
-	{
-		auto new_vertex = new Vertex_t<StateType, TransitionType>(vertex_node);
-		vertex_map_.insert(std::make_pair(vertex_node->GetUniqueID(), new_vertex));
+		auto new_vertex = new Vertex_t<StateType, TransitionType>(state);
+		vertex_map_.insert(std::make_pair(state_id, new_vertex));
 		return new_vertex;
 	}
 
@@ -217,22 +169,9 @@ Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVert
 ///	If yes, the functions returns the pointer of the existing vertex,
 ///	otherwise it returns nullptr.
 template <typename StateType, typename TransitionType>
-template <class T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_integral<T>::value>::type *>
-Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::FindVertex(T vertex_node)
+Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::FindVertex(StateType state)
 {
-	auto it = vertex_map_.find(vertex_node.GetUniqueID());
-
-	if (it == vertex_map_.end())
-		return nullptr;
-	else
-		return it->second;
-}
-
-template <typename StateType, typename TransitionType>
-template <class T, typename std::enable_if<std::is_pointer<T>::value && !std::is_integral<T>::value>::type *>
-Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::FindVertex(T vertex_node)
-{
-	auto it = vertex_map_.find(vertex_node->GetUniqueID());
+	auto it = vertex_map_.find(GetStateID(state));
 
 	if (it == vertex_map_.end())
 		return nullptr;

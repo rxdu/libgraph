@@ -57,14 +57,6 @@ double CalcHeuristicVal(SimpleState node1, SimpleState node2)
 	return std::sqrt(dist_row * dist_row + dist_col * dist_col);
 }
 
-double CalcHeuristicRef(const SimpleState &node1, const SimpleState &node2)
-{
-	int64_t dist_row = node1.row_ - node2.row_;
-	int64_t dist_col = node1.col_ - node2.col_;
-
-	return std::sqrt(dist_row * dist_row + dist_col * dist_col);
-}
-
 struct GraphSearchTest : testing::Test
 {
 	std::vector<SimpleState *> nodes;
@@ -73,7 +65,6 @@ struct GraphSearchTest : testing::Test
 
 	Graph_t<SimpleState> graph_val;
 	Graph_t<SimpleState *> graph_ptr;
-	Graph_t<const SimpleState &> graph_ref;
 
 	GraphSearchTest()
 	{
@@ -149,97 +140,45 @@ struct GraphSearchTest : testing::Test
 		graph_ptr.AddEdge(nodes[10], nodes[13], 1.414);
 		graph_ptr.AddEdge(nodes[13], nodes[9], 1.0);
 		graph_ptr.AddEdge(nodes[13], nodes[10], 1.414);
-
-		graph_ref.AddEdge(*nodes[0], *nodes[1], 1.0);
-		graph_ref.AddEdge(*nodes[1], *nodes[0], 1.0);
-		graph_ref.AddEdge(*nodes[1], *nodes[2], 1.0);
-		graph_ref.AddEdge(*nodes[1], *nodes[6], 1.414);
-		graph_ref.AddEdge(*nodes[2], *nodes[1], 1.0);
-		graph_ref.AddEdge(*nodes[2], *nodes[3], 1.0);
-		graph_ref.AddEdge(*nodes[2], *nodes[6], 1.0);
-		graph_ref.AddEdge(*nodes[3], *nodes[2], 1.0);
-		graph_ref.AddEdge(*nodes[3], *nodes[6], 1.414);
-		graph_ref.AddEdge(*nodes[6], *nodes[1], 1.414);
-		graph_ref.AddEdge(*nodes[6], *nodes[2], 1.0);
-		graph_ref.AddEdge(*nodes[6], *nodes[3], 1.414);
-		graph_ref.AddEdge(*nodes[6], *nodes[9], 1.414);
-		graph_ref.AddEdge(*nodes[6], *nodes[10], 1.0);
-		graph_ref.AddEdge(*nodes[9], *nodes[6], 1.414);
-		graph_ref.AddEdge(*nodes[9], *nodes[10], 1.0);
-		graph_ref.AddEdge(*nodes[9], *nodes[13], 1.0);
-		graph_ref.AddEdge(*nodes[10], *nodes[6], 1.0);
-		graph_ref.AddEdge(*nodes[10], *nodes[9], 1.0);
-		graph_ref.AddEdge(*nodes[10], *nodes[13], 1.414);
-		graph_ref.AddEdge(*nodes[13], *nodes[9], 1.0);
-		graph_ref.AddEdge(*nodes[13], *nodes[10], 1.414);
 	}
 };
 
 TEST_F(GraphSearchTest, ValueTypeAStar)
 {
-	auto path = AStar::Search(&graph_val, 0, 13, CalcHeuristicFunc_t<SimpleState>(CalcHeuristicVal));
+	Path_t<SimpleState> path = AStar::Search(&graph_val, 0, 13, CalcHeuristicFunc_t<SimpleState>(CalcHeuristicVal));
 	std::vector<int64_t> path_ids;
 	for (auto &e : path)
-		path_ids.push_back(e->state_.GetUniqueID());
+		path_ids.push_back(e.GetUniqueID());
 
 	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by A* in value-type graph is not correct";
 }
 
 TEST_F(GraphSearchTest, ValueTypeDijkstra)
 {
-	auto path = Dijkstra::Search(&graph_val, 0, 13);
+	Path_t<SimpleState> path = Dijkstra::Search(&graph_val, 0, 13);
 	std::vector<int64_t> path_ids;
 	for (auto &e : path)
-		path_ids.push_back(e->state_.GetUniqueID());
+		path_ids.push_back(e.GetUniqueID());
 
 	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by Dijkstra in value-type graph is not correct";
 }
 
 TEST_F(GraphSearchTest, PointerTypeAStar)
 {
-	auto path = AStar::Search(&graph_ptr, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristicPtr));
+	Path_t<SimpleState*> path = AStar::Search(&graph_ptr, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristicPtr));
 	std::vector<int64_t> path_ids;
 	for (auto &e : path)
-		path_ids.push_back(e->state_->GetUniqueID());
+		path_ids.push_back(e->GetUniqueID());
 
 	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by A* in pointer-type graph is not correct";
 }
 
 TEST_F(GraphSearchTest, PointerTypeDijkstra)
 {
-	auto path = Dijkstra::Search(&graph_ptr, 0, 13);
+	Path_t<SimpleState*> path = Dijkstra::Search(&graph_ptr, 0, 13);
 	std::vector<int64_t> path_ids;
 	for (auto &e : path)
-		path_ids.push_back(e->state_->GetUniqueID());
+		path_ids.push_back(e->GetUniqueID());
 
 	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by Dijkstra in pointer-type graph is not correct";
-}
-
-TEST_F(GraphSearchTest, RefTypeAStar)
-{
-	auto path = AStar::Search(&graph_ref, 0, 13, CalcHeuristicFunc_t<const SimpleState &>(CalcHeuristicRef));
-	std::vector<int64_t> path_ids;
-	for (auto &e : path)
-	{
-		path_ids.push_back(e->state_.GetUniqueID());
-		std::cout << "ref path a* state id: " << e->state_.row_ << std::endl;
-		std::cout << "ref path a* vertex id: " << e->vertex_id_ << std::endl;
-	}
-
-	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by A* in reference-type graph is not correct";
-}
-
-TEST_F(GraphSearchTest, RefTypeDijkstra)
-{
-	auto path = Dijkstra::Search(&graph_ref, 0, 13);
-	std::vector<int64_t> path_ids;
-	for (auto &e : path)
-	{
-		path_ids.push_back(e->state_.GetUniqueID());
-		std::cout << "ref path dijkstra state id: " << e->state_.GetUniqueID() << std::endl;
-		std::cout << "ref path dijkstra vertex id: " << e->vertex_id_ << std::endl;
-	}
-	std::cout << "ref path length: " << path.size() << std::endl;
-
-	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by Dijkstra in reference-type graph is not correct";
 }

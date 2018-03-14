@@ -30,7 +30,7 @@
 namespace librav
 {
 
-template <typename StateType, typename TransitionType>
+template <typename StateType, typename TransitionType = double>
 using GetNeighbourFunc_t = std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)>;
 
 /// Dijkstra search algorithm.
@@ -40,7 +40,7 @@ class Dijkstra
   public:
 	/// Search using vertex ids
 	template <typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, uint64_t start_id, uint64_t goal_id)
+	static Path_t<StateType> Search(std::shared_ptr<Graph_t<StateType, TransitionType>> graph, uint64_t start_id, uint64_t goal_id)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -48,17 +48,17 @@ class Dijkstra
 		auto start = graph->GetVertexFromID(start_id);
 		auto goal = graph->GetVertexFromID(goal_id);
 
-		Path_t<StateType, TransitionType> empty;
+		Path_t<StateType> empty;
 
 		// start a new search and return result
 		if (start != nullptr && goal != nullptr)
-			return Search(graph.get(), start, goal);
+			return Search(start, goal);
 		else
 			return empty;
 	}
 
 	template <typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType> *graph, uint64_t start_id, uint64_t goal_id)
+	static Path_t<StateType> Search(Graph_t<StateType, TransitionType> *graph, uint64_t start_id, uint64_t goal_id)
 	{
 		// reset last search information
 		graph->ResetGraphVertices();
@@ -66,22 +66,22 @@ class Dijkstra
 		auto start = graph->GetVertexFromID(start_id);
 		auto goal = graph->GetVertexFromID(goal_id);
 
-		Path_t<StateType, TransitionType> empty;
+		Path_t<StateType> empty;
 
 		// start a new search and return result
 		if (start != nullptr && goal != nullptr)
-			return Search(graph, start, goal);
+			return Search(start, goal);
 		else
 			return empty;
 	}
 
 	template <typename StateType, typename TransitionType>
-	static std::vector<StateType> IncSearch(StateType start_state, StateType goal_state, std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)> get_neighbours)
+	static Path_t<StateType> IncSearch(StateType start_state, StateType goal_state, std::function<std::vector<std::tuple<StateType, TransitionType>>(StateType)> get_neighbours)
 	{
-		using GraphVertexType = Vertex_t<StateType, double>;
+		using GraphVertexType = Vertex_t<StateType, TransitionType>;
 
 		// create a new graph with only start and goal vertices
-		Graph_t<StateType> graph;
+		Graph_t<StateType, TransitionType> graph;
 		graph.AddVertex(start_state);
 		graph.AddVertex(goal_state);
 
@@ -113,7 +113,7 @@ class Dijkstra
 			current_vertex->is_in_openlist_ = false;
 			current_vertex->is_checked_ = true;
 
-			std::vector<std::tuple<StateType, double>> neighbours = get_neighbours(current_vertex->state_);
+			std::vector<std::tuple<StateType, TransitionType>> neighbours = get_neighbours(current_vertex->state_);
 			for (auto &nb : neighbours)
 				graph.AddEdge(current_vertex->state_, std::get<0>(nb), std::get<1>(nb));
 
@@ -143,7 +143,7 @@ class Dijkstra
 		}
 
 		// reconstruct path from search
-		std::vector<StateType> path;
+		Path_t<StateType> path;
 		if (found_path)
 		{
 			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
@@ -159,9 +159,9 @@ class Dijkstra
 
   private:
 	template <typename StateType, typename TransitionType>
-	static Path_t<StateType, TransitionType> Search(Graph_t<StateType, TransitionType> *graph, Vertex_t<StateType, double> *start_vtx, Vertex_t<StateType, double> *goal_vtx)
+	static Path_t<StateType> Search(Vertex_t<StateType, TransitionType> *start_vtx, Vertex_t<StateType, TransitionType> *goal_vtx)
 	{
-		using GraphVertexType = Vertex_t<StateType, double>;
+		using GraphVertexType = Vertex_t<StateType, TransitionType>;
 
 		// open list - a list of vertices that need to be checked out
 		PriorityQueue<GraphVertexType *> openlist;
@@ -214,13 +214,13 @@ class Dijkstra
 		}
 
 		// reconstruct path from search
-		Path_t<StateType, TransitionType> path;
+		Path_t<StateType> path;
 		if (found_path)
 		{
 			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
 			auto path_vtx = ReconstructPath(start_vtx, goal_vtx);
 			for (const auto &wp : path_vtx)
-				path.push_back(graph->FindVertex(wp->vertex_id_));
+				path.push_back(wp->state_);
 		}
 		else
 			std::cout << "failed to find a path" << std::endl;

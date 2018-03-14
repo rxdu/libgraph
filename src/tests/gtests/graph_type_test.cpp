@@ -106,32 +106,3 @@ TEST_F(GraphTypeTest, PointerType)
 	ASSERT_EQ(graph.GetGraphVertexNumber(), 9) << "Failed to add vertices to pointer-type graph ";
 	ASSERT_EQ(graph.GetGraphEdgeNumber(), 20) << "Failed to add vertices to pointer-type graph ";
 }
-
-TEST_F(GraphTypeTest, ConstRefType)
-{
-	Graph_t<const TestState &> graph;
-
-	graph.AddEdge(*(nodes[0]), *(nodes[1]), 1.0);
-	graph.AddEdge(*(nodes[0]), *(nodes[3]), 1.5);
-	graph.AddEdge(*(nodes[1]), *(nodes[0]), 2.0);
-	graph.AddEdge(*(nodes[1]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[1]), *(nodes[2]), 1.0);
-	graph.AddEdge(*(nodes[2]), *(nodes[1]), 1.5);
-	graph.AddEdge(*(nodes[2]), *(nodes[5]), 2.0);
-	graph.AddEdge(*(nodes[3]), *(nodes[0]), 2.5);
-	graph.AddEdge(*(nodes[3]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[1]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[3]), 2.5);
-	graph.AddEdge(*(nodes[4]), *(nodes[5]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[2]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[8]), 2.5);
-	graph.AddEdge(*(nodes[5]), *(nodes[6]), 2.5);
-	graph.AddEdge(*(nodes[7]), *(nodes[4]), 2.5);
-	graph.AddEdge(*(nodes[7]), *(nodes[8]), 2.5);
-	graph.AddEdge(*(nodes[8]), *(nodes[5]), 2.5);
-	graph.AddEdge(*(nodes[8]), *(nodes[7]), 2.5);
-
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 9) << "Failed to add vertices to reference-type graph ";
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 20) << "Failed to add vertices to reference-type graph ";
-}

@@ -38,8 +38,8 @@ class Vertex_t;
 template <typename StateType, typename TransitionType = double>
 using Edge_t = Edge<Vertex_t<StateType, TransitionType> *, TransitionType>;
 
-template <typename StateType, typename TransitionType = double>
-using Path_t = std::vector<typename Graph_t<StateType, TransitionType>::vertex_iterator>;
+template <typename StateType>
+using Path_t = std::vector<StateType>;
 
 /// A graph data structure template.
 template <typename StateType, typename TransitionType>
@@ -52,6 +52,7 @@ public:
   {
     typedef typename std::remove_const<typename std::remove_reference<typename std::remove_pointer<StateType>::type>::type>::type TestType;
     static_assert(HasIDGenFunc<TestType>::value, "function required in StateType: int64_t GetUniqueID() const");
+    static_assert(!std::is_reference<StateType>::value, "Graph_t with reference type template parameter is not allowed");
   }
 
   /// Graph_t destructor. Graph_t class is only responsible for the memory recycling of Vertex_t and Edge_t
@@ -61,7 +62,7 @@ public:
 
   typedef Vertex_t<StateType, TransitionType> VertexType;
   typedef Edge_t<StateType, TransitionType> EdgeType;
-  typedef std::vector<StateType> PathType;
+  typedef Path_t<StateType> PathType;
 
   // vertex_iterator can be used to access vertices in the graph
   // edge_iterator can be used to access edges in each vertex
@@ -73,29 +74,29 @@ public:
 
 public:
   /// This function creates a vertex in the graph that associates with the given node.
-  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-  void AddVertex(T vertex_node);
+  // template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
+  void AddVertex(StateType state);
 
   /// This function checks if a vertex exists in the graph and remove it if presents.
-  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-  void RemoveVertex(T vertex_node);
+  // template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
+  void RemoveVertex(StateType state);
 
   /* Directed Graph */
-  /// This function is used to create a graph by adding edges connecting two nodes
+  /// This function is used to create a graph by adding directed edges connecting two nodes
   void AddEdge(StateType src_node, StateType dst_node, TransitionType cost);
 
   /// This function is used to remove the edge from src_node to dst_node.
   bool RemoveEdge(StateType src_node, StateType dst_node);
 
   /* Undirected Graph */
-  /// This function is used to create a graph by adding edges connecting two nodes
+  /// This function is used to create a graph by adding directed edges connecting two nodes
   void AddUndirectedEdge(StateType src_node, StateType dst_node, TransitionType cost);
 
   /// This function is used to remove the edge from src_node to dst_node.
   bool RemoveUndirectedEdge(StateType src_node, StateType dst_node);
 
   /// This functions is used to access all edges of a graph
-  std::vector<edge_iterator> GetAllEdges() //const
+  std::vector<edge_iterator> GetAllEdges() const
   {
     std::vector<edge_iterator> edges;
     for (auto &vertex_pair : vertex_map_)
@@ -117,14 +118,6 @@ public:
   /// This function removes all edges and vertices in the graph
   void ClearGraph();
 
-public:
-  /* Same functions for pointer type State node */
-  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-  void AddVertex(T vertex_node);
-
-  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-  void RemoveVertex(T vertex_node);
-
 private:
 #ifndef USE_UNORDERED_MAP
   typedef std::map<int64_t, VertexType *> VertexMapType;
@@ -144,20 +137,25 @@ private:
   /// This function checks if a vertex already exists in the graph.
   ///	If exists, the functions returns the pointer of the existing vertex,
   ///	otherwise it creates a new vertex.
-  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
-  VertexType *GetVertex(T vertex_node);
-
-  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
-  VertexType *GetVertex(T vertex_node);
+  VertexType *GetVertex(StateType state);
 
   /// This function checks if a vertex exists in the graph.
   ///	If exists, the functions returns the pointer of the existing vertex,
   ///	otherwise it returns nullptr.
-  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value && !std::is_integral<T>::value>::type * = nullptr>
-  VertexType *FindVertex(T vertex_node);
+  VertexType *FindVertex(StateType state);
 
-  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value && !std::is_integral<T>::value>::type * = nullptr>
-  VertexType *FindVertex(T vertex_node);
+  /// This function returns the unique ID of given state.
+  template <class T = StateType, typename std::enable_if<!std::is_pointer<T>::value>::type * = nullptr>
+  inline int64_t GetStateID(T state)
+  {
+    return state.GetUniqueID();
+  }
+
+  template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
+  inline int64_t GetStateID(T state)
+  {
+    return state->GetUniqueID();
+  }
 
 public:
   // Vertex iterator for easy access
