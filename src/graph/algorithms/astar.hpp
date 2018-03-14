@@ -244,11 +244,11 @@ class AStar
 		return path;
 	};
 
-	template <typename StateType>
-	static std::vector<Vertex_t<StateType, double> *> ReconstructPath(Vertex_t<StateType, double> *start_vtx, Vertex_t<StateType, double> *goal_vtx)
+	template <typename StateType, typename TransitionType>
+	static std::vector<Vertex_t<StateType, TransitionType> *> ReconstructPath(Vertex_t<StateType, TransitionType> *start_vtx, Vertex_t<StateType, TransitionType> *goal_vtx)
 	{
-		std::vector<Vertex_t<StateType, double> *> path;
-		Vertex_t<StateType, double> *waypoint = goal_vtx;
+		std::vector<Vertex_t<StateType, TransitionType> *> path;
+		Vertex_t<StateType, TransitionType> *waypoint = goal_vtx;
 		while (waypoint != start_vtx)
 		{
 			path.push_back(waypoint);

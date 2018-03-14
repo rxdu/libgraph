@@ -203,6 +203,8 @@ class Dijkstra
 				break;
 			}
 
+			std::cout << "current_vertex: " << current_vertex->state_.GetUniqueID() << std::endl;
+
 			current_vertex->is_in_openlist_ = false;
 			current_vertex->is_checked_ = true;
 
@@ -252,13 +254,15 @@ class Dijkstra
 		return path;
 	};
 
-	template <typename StateType>
-	static std::vector<Vertex_t<StateType, double> *> ReconstructPath(Vertex_t<StateType, double> *start_vtx, Vertex_t<StateType, double> *goal_vtx)
+	template <typename StateType, typename TransitionType>
+	static std::vector<Vertex_t<StateType, TransitionType> *> ReconstructPath(Vertex_t<StateType, TransitionType> *start_vtx, Vertex_t<StateType, TransitionType> *goal_vtx)
 	{
-		std::vector<Vertex_t<StateType, double> *> path;
-		Vertex_t<StateType, double> *waypoint = goal_vtx;
+		std::vector<Vertex_t<StateType, TransitionType> *> path;
+		Vertex_t<StateType, TransitionType> *waypoint = goal_vtx;
 		while (waypoint != start_vtx)
 		{
+			std::cout << "path in dijkstra from reconstruct while: " << waypoint->state_.GetUniqueID() << std::endl;
+
 			path.push_back(waypoint);
 			waypoint = waypoint->search_parent_;
 		}
@@ -266,8 +270,8 @@ class Dijkstra
 		path.push_back(waypoint);
 		std::reverse(path.begin(), path.end());
 
-		for(auto wp : path)
-		std::cout << "path in dijkstra from reconstruct: " << wp->state_.GetUniqueID() << std::endl;
+		for (auto wp : path)
+			std::cout << "path in dijkstra from reconstruct: " << wp->state_.GetUniqueID() << std::endl;
 
 #ifndef MINIMAL_PRINTOUT
 		auto traj_s = path.begin();

@@ -14,18 +14,24 @@ using namespace librav;
 #define ROW_SIZE 4
 #define COL_SIZE 4
 
-struct BasicState
+class BasicState
 {
+  public:
     BasicState(int32_t row, int32_t col) : row_(row),
                                            col_(col)
     {
     }
+
+    BasicState(BasicState &) = default;
+    BasicState(const BasicState &) = default;
+    BasicState &operator=(const BasicState &) = default;
 
     int32_t row_;
     int32_t col_;
 
     int64_t GetUniqueID() const
     {
+        std::cout << "called (r,c): " << row_ << " , " << col_ << std::endl;
         // You can return the state id directly if you have one and it's unique (see StateExample class)
         // or you can use some kind of hash functions to generate one
         return row_ * COL_SIZE + col_;
