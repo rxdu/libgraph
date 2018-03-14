@@ -14,31 +14,6 @@ using namespace librav;
 #define ROW_SIZE 4
 #define COL_SIZE 4
 
-// class BasicState
-// {
-//   public:
-//     BasicState(int32_t row, int32_t col) : row_(row),
-//                                            col_(col)
-//     {
-//     }
-
-//     BasicState(BasicState &) = default;
-//     BasicState(const BasicState &) = default;
-//     BasicState &operator=(const BasicState &) = default;
-
-//     int32_t row_;
-//     int32_t col_;
-
-//     int64_t GetUniqueID() const
-//     {
-//         // std::cout << "called (r,c): " << row_ << " , " << col_ << std::endl;
-
-//         // You can return the state id directly if you have one and it's unique (see StateExample class)
-//         // or you can use some kind of hash functions to generate one
-//         return row_ * COL_SIZE + col_;
-//     }
-// };
-
 class BasicState
 {
   public:
@@ -89,30 +64,30 @@ int main(int argc, char **argv)
             nodes.push_back(new BasicState(i, j));
 
     // create a graph
-    Graph_t<const BasicState &> graph;
+    Graph_t<const BasicState *> graph;
 
-    graph.AddEdge(*nodes[0], *nodes[1], 1.0);
-    graph.AddEdge(*nodes[1], *nodes[0], 1.0);
-    graph.AddEdge(*nodes[1], *nodes[2], 1.0);
-    graph.AddEdge(*nodes[1], *nodes[6], 1.414);
-    graph.AddEdge(*nodes[2], *nodes[1], 1.0);
-    graph.AddEdge(*nodes[2], *nodes[3], 1.0);
-    graph.AddEdge(*nodes[2], *nodes[6], 1.0);
-    graph.AddEdge(*nodes[3], *nodes[2], 1.0);
-    graph.AddEdge(*nodes[3], *nodes[6], 1.414);
-    graph.AddEdge(*nodes[6], *nodes[1], 1.414);
-    graph.AddEdge(*nodes[6], *nodes[2], 1.0);
-    graph.AddEdge(*nodes[6], *nodes[3], 1.414);
-    graph.AddEdge(*nodes[6], *nodes[9], 1.414);
-    graph.AddEdge(*nodes[6], *nodes[10], 1.0);
-    graph.AddEdge(*nodes[9], *nodes[6], 1.414);
-    graph.AddEdge(*nodes[9], *nodes[10], 1.0);
-    graph.AddEdge(*nodes[9], *nodes[13], 1.0);
-    graph.AddEdge(*nodes[10], *nodes[6], 1.0);
-    graph.AddEdge(*nodes[10], *nodes[9], 1.0);
-    graph.AddEdge(*nodes[10], *nodes[13], 1.414);
-    graph.AddEdge(*nodes[13], *nodes[9], 1.0);
-    graph.AddEdge(*nodes[13], *nodes[10], 1.414);
+    graph.AddEdge(nodes[0], nodes[1], 1.0);
+    graph.AddEdge(nodes[1], nodes[0], 1.0);
+    graph.AddEdge(nodes[1], nodes[2], 1.0);
+    graph.AddEdge(nodes[1], nodes[6], 1.414);
+    graph.AddEdge(nodes[2], nodes[1], 1.0);
+    graph.AddEdge(nodes[2], nodes[3], 1.0);
+    graph.AddEdge(nodes[2], nodes[6], 1.0);
+    graph.AddEdge(nodes[3], nodes[2], 1.0);
+    graph.AddEdge(nodes[3], nodes[6], 1.414);
+    graph.AddEdge(nodes[6], nodes[1], 1.414);
+    graph.AddEdge(nodes[6], nodes[2], 1.0);
+    graph.AddEdge(nodes[6], nodes[3], 1.414);
+    graph.AddEdge(nodes[6], nodes[9], 1.414);
+    graph.AddEdge(nodes[6], nodes[10], 1.0);
+    graph.AddEdge(nodes[9], nodes[6], 1.414);
+    graph.AddEdge(nodes[9], nodes[10], 1.0);
+    graph.AddEdge(nodes[9], nodes[13], 1.0);
+    graph.AddEdge(nodes[10], nodes[6], 1.0);
+    graph.AddEdge(nodes[10], nodes[9], 1.0);
+    graph.AddEdge(nodes[10], nodes[13], 1.414);
+    graph.AddEdge(nodes[13], nodes[9], 1.0);
+    graph.AddEdge(nodes[13], nodes[10], 1.414);
 
     // auto all_edges = graph.GetAllEdges();
     // for (auto &e : all_edges)
@@ -125,9 +100,9 @@ int main(int argc, char **argv)
     std::vector<int64_t> path_ids;
     for (auto e : path)
     {
-        path_ids.push_back(e->state_.GetUniqueID());
+        path_ids.push_back(e->state_->GetUniqueID());
         std::cout << "ref path dijkstra vertex id: " << e->vertex_id_ << std::endl;
-        std::cout << "ref path dijkstra state id: " << e->state_.GetUniqueID() << std::endl;
+        std::cout << "ref path dijkstra state id: " << e->state_->GetUniqueID() << std::endl;
     }
     std::cout << "ref path length: " << path.size() << std::endl;
 

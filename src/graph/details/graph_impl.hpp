@@ -190,12 +190,7 @@ Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVert
 	if (it == vertex_map_.end())
 	{
 		auto new_vertex = new Vertex_t<StateType, TransitionType>(vertex_node);
-
-		// std::cout << "new pointer before1: " << new_vertex->state_.GetUniqueID() << std::endl;
-		// std::cout << "new pointer before2: " << new_vertex->state_.GetUniqueID() << std::endl;
 		vertex_map_.insert(std::make_pair(vertex_node.GetUniqueID(), new_vertex));
-		// std::cout << "new pointer after: " << new_vertex->state_.GetUniqueID() << std::endl;
-
 		return new_vertex;
 	}
 
@@ -211,9 +206,7 @@ Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVert
 	if (it == vertex_map_.end())
 	{
 		auto new_vertex = new Vertex_t<StateType, TransitionType>(vertex_node);
-		// vertex_map_.insert(std::make_pair(vertex_node->GetUniqueID(), new_vertex));
-		vertex_map_[vertex_node->GetUniqueID()] = new_vertex;
-
+		vertex_map_.insert(std::make_pair(vertex_node->GetUniqueID(), new_vertex));
 		return new_vertex;
 	}
 
