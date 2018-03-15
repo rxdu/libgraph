@@ -1,5 +1,6 @@
 # TODO List
 
+- [] Priority queue that supports updating priority of element (and re-arrange the queue)
 - [] A* and Dijkstra algorithms currently assume double type cost. Generic type cost with proper comparator defined should also be accepted.
-- [] Implement iterators for vertex and edge to unify the accessing interface
+- [*] Implement iterators for vertex and edge to unify the accessing interface
 - [*] Update unit tests
