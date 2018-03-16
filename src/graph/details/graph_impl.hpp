@@ -21,7 +21,7 @@ Graph_t<StateType, TransitionType>::~Graph_t()
 {
 	for (auto &vertex_pair : vertex_map_)
 		delete vertex_pair.second;
-};
+}
 
 /// This function is used to reset the vertices for a new search
 template <typename StateType, typename TransitionType>
@@ -29,7 +29,7 @@ void Graph_t<StateType, TransitionType>::ResetGraphVertices()
 {
 	for (auto &vertex_pair : vertex_map_)
 		vertex_pair.second->ClearVertexSearchInfo();
-};
+}
 
 /// This function removes all edges and vertices in the graph
 template <typename StateType, typename TransitionType>
@@ -54,7 +54,7 @@ void Graph_t<StateType, TransitionType>::AddEdge(StateType src_node, StateType d
 	dst_vertex->vertices_from_.push_back(src_vertex);
 
 	src_vertex->edges_to_.emplace_back(src_vertex, dst_vertex, cost);
-};
+}
 
 /// This function is used to remove the edge from src_node to dst_node.
 template <typename StateType, typename TransitionType>
@@ -81,7 +81,7 @@ bool Graph_t<StateType, TransitionType>::RemoveEdge(StateType src_node, StateTyp
 	}
 
 	return false;
-};
+}
 
 /// This function is used to create a graph by adding edges connecting two nodes
 template <typename StateType, typename TransitionType>
@@ -117,7 +117,7 @@ void Graph_t<StateType, TransitionType>::RemoveVertex(StateType state)
 {
 	int64_t state_id = GetStateID(state);
 	RemoveVertex(state_id);
-};
+}
 
 template <typename StateType, typename TransitionType>
 void Graph_t<StateType, TransitionType>::RemoveVertex(int64_t state_id)
@@ -151,7 +151,7 @@ Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVert
 		return (*it).second;
 	else
 		return nullptr;
-};
+}
 
 template <typename StateType, typename TransitionType>
 Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVertex(StateType state)

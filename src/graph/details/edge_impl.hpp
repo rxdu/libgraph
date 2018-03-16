@@ -26,7 +26,7 @@ bool Edge_t<StateType, TransitionType>::operator==(const Edge_t<StateType, Trans
 		return true;
 	else
 		return false;
-};
+}
 
 template <typename StateType, typename TransitionType>
 bool Edge_t<StateType, TransitionType>::operator-=(const Edge_t<StateType, TransitionType> &other)
@@ -35,7 +35,7 @@ bool Edge_t<StateType, TransitionType>::operator-=(const Edge_t<StateType, Trans
 		return true;
 	else
 		return false;
-};
+}
 
 template <typename StateType, typename TransitionType>
 void Edge_t<StateType, TransitionType>::PrintEdge() const
