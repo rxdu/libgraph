@@ -16,16 +16,31 @@ namespace librav
 {
 
 /****************************************************************************/
-/*								 Edge  										*/
+/*								 Edge_t  										*/
 /****************************************************************************/
 
-/**
-	 * Print edge information: start vertex id, destination vertex id, edge cost.
-	 */
-template <typename VertexPtrType, typename TransitionType>
-void Edge<VertexPtrType, TransitionType>::PrintEdge() const
+template <typename StateType, typename TransitionType>
+bool Edge_t<StateType, TransitionType>::operator==(const Edge_t<StateType, TransitionType> &other)
 {
-	std::cout << "Edge: src - " << src_->vertex_id_ << " , dst - " << dst_->vertex_id_ << " , cost - " << cost_ << std::endl;
+	if (src_->vertex_id_ == other.src_->vertex_id_ && dst_->vertex_id_ == other.dst_->vertex_id_)
+		return true;
+	else
+		return false;
+};
+
+template <typename StateType, typename TransitionType>
+bool Edge_t<StateType, TransitionType>::operator-=(const Edge_t<StateType, TransitionType> &other)
+{
+	if ((src_->vertex_id_ == other.src_->vertex_id_ && dst_->vertex_id_ == other.dst_->vertex_id_) || (src_->vertex_id_ == other.dst_->vertex_id_ && dst_->vertex_id_ == other.src_->vertex_id_))
+		return true;
+	else
+		return false;
+};
+
+template <typename StateType, typename TransitionType>
+void Edge_t<StateType, TransitionType>::PrintEdge() const
+{
+	std::cout << "Edge_t: src - " << src_->vertex_id_ << " , dst - " << dst_->vertex_id_ << " , cost - " << cost_ << std::endl;
 }
 }
 

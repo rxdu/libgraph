@@ -28,7 +28,7 @@
 namespace librav
 {
 
-// Only types ended with "_t" should be used in user applications
+// Availabe class templates
 template <typename StateType, typename TransitionType = double>
 class Graph_t;
 
@@ -36,7 +36,7 @@ template <typename StateType, typename TransitionType = double>
 class Vertex_t;
 
 template <typename StateType, typename TransitionType = double>
-using Edge_t = Edge<Vertex_t<StateType, TransitionType> *, TransitionType>;
+class Edge_t;
 
 template <typename StateType>
 using Path_t = std::vector<StateType>;
@@ -97,7 +97,7 @@ public:
   bool RemoveUndirectedEdge(StateType src_node, StateType dst_node);
 
   /// This functions is used to access all edges of a graph
-  std::vector<edge_iterator> GetAllEdges() const
+  inline std::vector<edge_iterator> GetAllEdges() const
   {
     std::vector<edge_iterator> edges;
     for (auto &vertex_pair : vertex_map_)
@@ -177,7 +177,7 @@ public:
   vertex_iterator vertex_end() { return vertex_iterator(vertex_map_.end()); }
 
   /// This function return the vertex iterator with specified id
-  vertex_iterator FindVertex(int64_t vertex_id)
+  inline vertex_iterator FindVertex(int64_t vertex_id)
   {
     return vertex_iterator(vertex_map_.find(vertex_id));
   }

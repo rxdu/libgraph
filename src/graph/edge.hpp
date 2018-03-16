@@ -15,21 +15,30 @@
 namespace librav
 {
 
+// Forward declaration
+template <typename StateType, typename TransitionType>
+class Graph_t;
+
+template <typename StateType, typename TransitionType>
+class Vertex_t;
+
 /****************************************************************************/
-/*								 Edge  										*/
+/*								 Edge_t  										*/
 /****************************************************************************/
 /// An edge data structure template.
-template <typename VertexPtrType, typename TransitionType>
-class Edge
+template <typename StateType, typename TransitionType>
+class Edge_t
 {
+	using VertexPtrType = Vertex_t<StateType, TransitionType> *;
+
   public:
 	/**
 	 * @param src a pointer to the source vertex of the edge
 	 * @param dst a pointer to the destination vertex of the edge
 	 * @param c cost associated with the edge
 	 */
-	Edge(VertexPtrType src, VertexPtrType dst, TransitionType c) : src_(src), dst_(dst), cost_(c){};
-	~Edge() = default;
+	Edge_t(VertexPtrType src, VertexPtrType dst, TransitionType c) : src_(src), dst_(dst), cost_(c){};
+	~Edge_t() = default;
 
 	VertexPtrType src_;
 	VertexPtrType dst_;
@@ -39,25 +48,13 @@ class Edge
 	 * == operator overloading. If two edges connect the same pair of vertices, they're
 	 * regarded as equal.
 	 */
-	bool operator==(const Edge<VertexPtrType, TransitionType> &other)
-	{
-		if (src_->vertex_id_ == other.src_->vertex_id_ && dst_->vertex_id_ == other.dst_->vertex_id_)
-			return true;
-		else
-			return false;
-	};
+	bool operator==(const Edge_t<StateType, TransitionType> &other);
 
 	/**
 	 * This operation checks if two edges connect the same vertex pair.
 	 * If two edges connect the same pair of vertices, return true, otherwise false.
 	 */
-	bool operator-=(const Edge<VertexPtrType, TransitionType> &other)
-	{
-		if ((src_->vertex_id_ == other.src_->vertex_id_ && dst_->vertex_id_ == other.dst_->vertex_id_) || (src_->vertex_id_ == other.dst_->vertex_id_ && dst_->vertex_id_ == other.src_->vertex_id_))
-			return true;
-		else
-			return false;
-	};
+	bool operator-=(const Edge_t<StateType, TransitionType> &other);
 
 	/**
 	 * Print edge information: start vertex id, destination vertex id, edge cost.

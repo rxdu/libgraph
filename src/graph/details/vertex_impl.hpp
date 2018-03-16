@@ -45,7 +45,7 @@ void Vertex_t<StateType, TransitionType>::ClearVertexSearchInfo()
 
 /// == operator overloading. If two vertices have the same id, they're regarded as equal.
 template <typename StateType, typename TransitionType>
-bool Vertex_t<StateType, TransitionType>::operator==(const Vertex_t<StateType, TransitionType> &other) const
+bool Vertex_t<StateType, TransitionType>::operator==(const VertexType &other) const
 {
 	if (vertex_id_ == other.vertex_id_)
 		return true;
@@ -56,18 +56,13 @@ bool Vertex_t<StateType, TransitionType>::operator==(const Vertex_t<StateType, T
 /// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
 ///		the two vertices exists.
 template <typename StateType, typename TransitionType>
-TransitionType Vertex_t<StateType, TransitionType>::GetEdgeCost(const Vertex_t<StateType, TransitionType> &dst_node) const
+TransitionType Vertex_t<StateType, TransitionType>::GetEdgeCost(const VertexType *dst_node) const
 {
-	TransitionType cost;
+	TransitionType cost = {-1};
 
 	for (const auto &it : edges_to_)
-	{
-		if (it.dst_.vertex_id_ == dst_node.vertex_id_)
-		{
-			cost = it.cost_;
-			break;
-		}
-	}
+		if (it.dst_->vertex_id_ == dst_node->vertex_id_)
+			return it.cost_;
 
 	return cost;
 }
@@ -76,7 +71,7 @@ TransitionType Vertex_t<StateType, TransitionType>::GetEdgeCost(const Vertex_t<S
 template <typename StateType, typename TransitionType>
 std::vector<Vertex_t<StateType, TransitionType> *> Vertex_t<StateType, TransitionType>::GetNeighbours()
 {
-	std::vector<Vertex_t<StateType, TransitionType> *> neighbours;
+	std::vector<VertexType *> neighbours;
 
 	for (const auto &edge : edges_to_)
 		neighbours.push_back(edge.dst_);
@@ -86,16 +81,13 @@ std::vector<Vertex_t<StateType, TransitionType> *> Vertex_t<StateType, Transitio
 
 /// Check if a given vertex is the neighbor of current vertex.
 template <typename StateType, typename TransitionType>
-bool Vertex_t<StateType, TransitionType>::CheckNeighbour(Vertex_t<StateType, TransitionType> *dst_node)
+bool Vertex_t<StateType, TransitionType>::CheckNeighbour(VertexType *dst_node)
 {
-	std::vector<Vertex_t<StateType, TransitionType> *> neighbours = GetNeighbours();
+	auto neighbours = GetNeighbours();
 
 	auto it = find(neighbours.begin(), neighbours.end(), dst_node);
 
-	if (it != neighbours.end())
-		return true;
-	else
-		return false;
+	return (it != neighbours.end()? true : false);
 }
 }
 
