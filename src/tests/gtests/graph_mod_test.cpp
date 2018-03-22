@@ -124,3 +124,35 @@ TEST_F(GraphModificationTest, ClearVertexEdge)
 
 	ASSERT_TRUE(graph.GetGraphVertexNumber() == 0 && graph.GetGraphEdgeNumber() == 0) << "Graph should be empty now";
 }
+
+TEST_F(GraphModificationTest, VertexAccessEdge)
+{
+	Graph_t<TestState *> graph;
+
+	graph.AddEdge(nodes[0], nodes[1], 1.2);
+	graph.AddEdge(nodes[0], nodes[2], 1.5);
+	graph.AddEdge(nodes[0], nodes[3], 1.8);
+
+	std::vector<int64_t> nc = {1, 2, 3};
+
+	auto neighbours = graph.FindVertex(0)->GetNeighbours();
+	std::vector<int64_t> nids2;
+	for (auto &n : neighbours)
+		nids2.push_back(n->vertex_id_);
+	ASSERT_TRUE(nids2 == nc) << "Graph should have 3 neighbors (checked from vertex pointer)";
+
+	auto nids = graph.FindVertex(0)->GetNeighbourIDs();
+	ASSERT_TRUE(nids.size() == 3) << "Graph should have 3 neighbors";
+	ASSERT_TRUE(nids == nc) << "Graph should have 3 neighbors";
+
+	auto edge_cost1 = graph.FindVertex(0)->GetEdgeCost(1);
+	auto edge_cost2 = graph.FindVertex(0)->GetEdgeCost(2);
+	auto edge_cost3 = graph.FindVertex(0)->GetEdgeCost(3);
+
+	ASSERT_TRUE(edge_cost1 == 1.2) << "Edge cost to vertex 1 should be 1.2";
+	ASSERT_TRUE(edge_cost2 == 1.5) << "Edge cost to vertex 2 should be 1.5";
+	ASSERT_TRUE(edge_cost3 == 1.8) << "Edge cost to vertex 3 should be 1.8";
+
+	bool check_neighbour = graph.FindVertex(0)->CheckNeighbour(1) && graph.FindVertex(0)->CheckNeighbour(2) && graph.FindVertex(0)->CheckNeighbour(3);
+	ASSERT_TRUE(check_neighbour) << "Vertex 0 and 1,2,3 should be neighbours";
+}

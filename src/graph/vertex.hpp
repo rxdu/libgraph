@@ -57,13 +57,26 @@ class Vertex_t
 	/// == operator overloading. If two vertices have the same id, they're regarded as equal.
 	bool operator==(const VertexType &other) const;
 
+	/// Get all neighbor vertices of this vertex.
+	std::vector<VertexType *> GetNeighbours();
+
+	/// Get IDs of all neighbor vertices of this vertex.
+	std::vector<int64_t> GetNeighbourIDs();
+
+	/// Get edge cost from current vertex to given vertex id. -1 is returned if no edge between
+	///		the two vertices exists.
+	TransitionType GetEdgeCost(int64_t dst_id) const;
+
+	/// Check if a given vertex is the neighbor of current vertex.
+	bool CheckNeighbour(int64_t dst_id);
+
   private:
 	// edges connecting to other vertices
 	EdgeListType edges_to_;
 
 	// vertices that contain edges connecting to current vertex,
 	//	used to cleanup edges in other vertices if current vertex is deleted
-	std::vector<VertexType*> vertices_from_;
+	std::vector<VertexType *> vertices_from_;
 
 	// attributes for A* search
 	bool is_checked_ = false;
@@ -76,9 +89,6 @@ class Vertex_t
 	/// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
 	///		the two vertices exists.
 	TransitionType GetEdgeCost(const VertexType *dst_node) const;
-
-	/// Get all neighbor vertices of this vertex.
-	std::vector<VertexType *> GetNeighbours();
 
 	/// Check if a given vertex is the neighbor of current vertex.
 	bool CheckNeighbour(VertexType *dst_node);

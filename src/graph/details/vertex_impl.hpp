@@ -53,18 +53,24 @@ bool Vertex_t<StateType, TransitionType>::operator==(const VertexType &other) co
 		return false;
 }
 
+template <typename StateType, typename TransitionType>
+TransitionType Vertex_t<StateType, TransitionType>::GetEdgeCost(int64_t dst_id) const
+{
+	TransitionType cost = {-1};
+
+	for (const auto &it : edges_to_)
+		if (it.dst_->vertex_id_ == dst_id)
+			return it.cost_;
+
+	return cost;
+}
+
 /// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
 ///		the two vertices exists.
 template <typename StateType, typename TransitionType>
 TransitionType Vertex_t<StateType, TransitionType>::GetEdgeCost(const VertexType *dst_node) const
 {
-	TransitionType cost = {-1};
-
-	for (const auto &it : edges_to_)
-		if (it.dst_->vertex_id_ == dst_node->vertex_id_)
-			return it.cost_;
-
-	return cost;
+	return GetEdgeCost(dst_node->vertex_id_);
 }
 
 /// Get all neighbor vertices of this vertex.
@@ -79,6 +85,28 @@ std::vector<Vertex_t<StateType, TransitionType> *> Vertex_t<StateType, Transitio
 	return neighbours;
 }
 
+template <typename StateType, typename TransitionType>
+std::vector<int64_t> Vertex_t<StateType, TransitionType>::GetNeighbourIDs()
+{
+	std::vector<int64_t> neighbours;
+
+	for (const auto &edge : edges_to_)
+		neighbours.push_back(edge.dst_->vertex_id_);
+
+	return neighbours;
+}
+
+/// Check if a given vertex is the neighbor of current vertex.
+template <typename StateType, typename TransitionType>
+bool Vertex_t<StateType, TransitionType>::CheckNeighbour(int64_t dst_id)
+{
+	std::vector<int64_t> neighbours = GetNeighbourIDs();
+
+	auto it = find(neighbours.begin(), neighbours.end(), dst_id);
+
+	return (it != neighbours.end() ? true : false);
+}
+
 /// Check if a given vertex is the neighbor of current vertex.
 template <typename StateType, typename TransitionType>
 bool Vertex_t<StateType, TransitionType>::CheckNeighbour(VertexType *dst_node)
@@ -87,7 +115,7 @@ bool Vertex_t<StateType, TransitionType>::CheckNeighbour(VertexType *dst_node)
 
 	auto it = find(neighbours.begin(), neighbours.end(), dst_node);
 
-	return (it != neighbours.end()? true : false);
+	return (it != neighbours.end() ? true : false);
 }
 }
 
