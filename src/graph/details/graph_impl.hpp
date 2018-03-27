@@ -95,8 +95,13 @@ void Graph_t<StateType, TransitionType>::AddUndirectedEdge(StateType src_node, S
 template <typename StateType, typename TransitionType>
 bool Graph_t<StateType, TransitionType>::RemoveUndirectedEdge(StateType src_node, StateType dst_node)
 {
-	RemoveEdge(src_node, dst_node);
-	RemoveEdge(dst_node, src_node);
+	bool edge1 = RemoveEdge(src_node, dst_node);
+	bool edge2 = RemoveEdge(dst_node, src_node);
+
+	if (edge1 || edge2)
+		return true;
+	else
+		return false;
 }
 
 /// This function creates a vertex in the graph that associates with the given node.
