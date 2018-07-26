@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.0.2)
-project(astar_search)
+cmake_minimum_required(VERSION 3.1.0)
+project(libgraph)
 
 ## Put all binary files into /bin and libraries into /lib
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
@@ -21,15 +21,13 @@ else()
 	message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++14 or C++11 support. Please use a different C++ compiler.")
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 set(BUILD_TEST on)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-
 ## Add sub source directories
-add_subdirectory(demo)
+add_subdirectory(src/demo)
+add_subdirectory(src/libgraph)
 
 if(BUILD_TEST)
-	add_subdirectory(tests)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+	add_subdirectory(src/tests)
 endif(BUILD_TEST)

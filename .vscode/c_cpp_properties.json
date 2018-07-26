@@ -53,7 +53,8 @@
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
-            }
+            },
+            "configurationProvider": "vector-of-bool.cmake-tools"
         },
         {
             "name": "Win32",
@@ -76,5 +77,5 @@
             }
         }
     ],
-    "version": 3
+    "version": 4
 }

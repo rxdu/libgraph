@@ -42,5 +42,6 @@
         "*.ipp": "cpp",
         "hash_map": "cpp",
         "hash_set": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": true
 }
