@@ -10,8 +10,6 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#define USE_UNORDERED_MAP
-
 #ifndef USE_UNORDERED_MAP
 #include <map>
 #else
