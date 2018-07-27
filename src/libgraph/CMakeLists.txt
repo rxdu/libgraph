@@ -15,7 +15,7 @@ target_sources(graph INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/graph/algorithms/astar.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/graph/algorithms/dijkstra.hpp
 	)
-target_compile_definitions(graph INTERFACE -DUSE_UNORDERED_MAP)
+target_compile_definitions(graph INTERFACE -DUSE_UNORDERED_MAP -DMINIMAL_PRINTOUT)
 target_include_directories(graph INTERFACE
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:include>)

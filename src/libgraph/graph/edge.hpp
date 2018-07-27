@@ -25,7 +25,7 @@ class Vertex_t;
 /****************************************************************************/
 /*								 Edge_t  										*/
 /****************************************************************************/
-/// An edge data structure template.
+/// Edge class template.
 template <typename StateType, typename TransitionType>
 class Edge_t
 {
