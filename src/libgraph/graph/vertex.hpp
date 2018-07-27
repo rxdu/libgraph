@@ -21,7 +21,7 @@ namespace librav
 /****************************************************************************/
 /*								 Vertex_t										*/
 /****************************************************************************/
-/// A vertex data structure template.
+/// Vertex class template.
 template <typename StateType, typename TransitionType>
 class Vertex_t
 {
@@ -38,15 +38,23 @@ class Vertex_t
 
 	~Vertex_t() = default;
 
-	// friends
-	template <typename T1, typename T2>
-	friend class Graph_t;
-	friend class AStar;
-	friend class Dijkstra;
-
 	// generic attributes
 	StateType state_;
 	const uint64_t vertex_id_;
+
+	// edges connecting to other vertices
+	EdgeListType edges_to_;
+
+	// vertices that contain edges connecting to current vertex
+	std::vector<VertexType *> vertices_from_;
+
+	// attributes for search algorithms
+	bool is_checked_ = false;
+	bool is_in_openlist_ = false;
+	double f_cost_ = 0.0;
+	double g_cost_ = 0.0;
+	double h_cost_ = 0.0;
+	VertexType *search_parent_ = nullptr;
 
 	// edge iterator for easy access
 	typedef typename EdgeListType::iterator edge_iterator;
@@ -67,36 +75,20 @@ class Vertex_t
 	///		the two vertices exists.
 	TransitionType GetEdgeCost(int64_t dst_id) const;
 
-	/// Check if a given vertex is the neighbor of current vertex.
-	bool CheckNeighbour(int64_t dst_id);
-
-  private:
-	// edges connecting to other vertices
-	EdgeListType edges_to_;
-
-	// vertices that contain edges connecting to current vertex,
-	//	used to cleanup edges in other vertices if current vertex is deleted
-	std::vector<VertexType *> vertices_from_;
-
-	// attributes for A* search
-	bool is_checked_ = false;
-	bool is_in_openlist_ = false;
-	double f_astar_ = 0.0;
-	double g_astar_ = 0.0;
-	double h_astar_ = 0.0;
-	VertexType *search_parent_ = nullptr;
-
 	/// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
 	///		the two vertices exists.
 	TransitionType GetEdgeCost(const VertexType *dst_node) const;
 
 	/// Check if a given vertex is the neighbor of current vertex.
-	bool CheckNeighbour(VertexType *dst_node);
+	bool CheckNeighbour(int64_t dst_id);
+
+	/// Check if a given vertex is the neighbor of current vertex.
+	bool CheckNeighbour(const VertexType *dst_node);
 
 	/// Clear exiting search info before a new search
 	void ClearVertexSearchInfo();
 };
-}
+} // namespace librav
 
 #include "graph/details/vertex_impl.hpp"
 

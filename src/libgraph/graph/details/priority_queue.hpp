@@ -16,7 +16,7 @@
 namespace librav
 {
 
-/// A simple priority queue structure used as A* open list.
+/// A simple priority queue implementation.
 // Source: http://www.redblobgames.com/pathfinding/a-star/implementation.html
 template <typename T, typename Number = double>
 struct PriorityQueue
@@ -42,8 +42,8 @@ struct PriorityQueue
 	}
 };
 
-/// A priority queue structure that supports element priority update
-// TO BE FINISHED
+/// A priority queue implementation that supports element priority update. (TODO)
+// TODO
 template <typename ElmentType, typename PriorityType = double>
 struct PriorityQueue2
 {
