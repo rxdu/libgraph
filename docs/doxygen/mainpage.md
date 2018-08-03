@@ -21,9 +21,9 @@ Graph is a type of data structure that can be used to represent pairwise relatio
     * ...
     * Edge n_m
 
-A "Graph" consists of a list of "Vertex", each of which has an unique ID and a list of "Edge". To perform A* search in the graph, we also need to add a few more attributes, such as edge cost, heuristics, flags to corresponding data structures. This part is generic to all graph and A* related application.
+A "Graph" consists of a list of "Vertex", each of which has an unique ID and a list of "Edge". To perform search (such as A* and Dijkstra) in the graph, we also need to add a few more attributes, such as edge cost, heuristics, flags to corresponding data structures. This part is generic to all graph applications.
 
-In practice, we usually want to associate even more attributes to the vertex so that it can be meaningful for a specific application. For example when we use a graph to represent a square grid (created from a map), a square cell can be modeled as a vertex, and the connectivities of a cell with its neighbour cells can be represented as edges. In this case, a square cell (Vertex) may have attributes such as the coordinates in the grid and the occupancy type (cell filled with obstacle or not). Those attributes can be very different across different applications, thus they are not modeled directly in the "Vertex" data structure. Instead, the "additional information" is grouped into a separate concept (called a **State** in this design) and we uniquely associate a state data structure with a vertex. Similarly we can associate a **Transition** data structure to a Edge. By default the **Transition** type is double.
+In practice, we usually want to associate even more attributes to the vertex so that it can be meaningful for a specific application. For example when we use a graph to represent a square grid (created from a map), a square cell can be modeled as a vertex, and the connectivities of a cell with its neighbour cells can be represented as edges. In this case, a square cell (Vertex) may have attributes such as the coordinates in the grid and the occupancy type (cell filled with obstacle or not). Those attributes can be very different across different applications, thus they are not modeled directly in the "Vertex" data structure. Instead, the "additional information" is grouped into a separate concept (called a **State** in this design) and we uniquely associate a state data structure with a vertex. Similarly we can associate a **Transition** data structure to an Edge. By default the **Transition** type is double.
 
 ### b. Constructing a Graph
 
@@ -136,4 +136,4 @@ An detailed example of the graph and path search can be found in "demo/simple_gr
 
 ### d. Notes on Graph
 
-* When constructing a graph, you don't always need to explicitly create objects of "Vertex". By calling member function **AddEdge(src_node, dst_node, cost)** of the graph, vertices can be created and associated with the according State internally. Otherwise, if you only want to add a vertex to the graph, then you can use **AddVertex(state)**.
+* When constructing a graph, you don't need to explicitly create objects of "Vertex" for a state. By calling member function **AddEdge(src_node, dst_node, cost)** of the graph, vertices can be created and associated with the according State internally. In certain cases when you want to add a vertex to the graph only, you can use **AddVertex(state)**.

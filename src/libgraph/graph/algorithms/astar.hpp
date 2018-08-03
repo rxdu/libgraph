@@ -28,8 +28,6 @@
 #include "graph/graph.hpp"
 #include "graph/details/priority_queue.hpp"
 
-#define MINIMAL_PRINTOUT 1
-
 namespace librav
 {
 
@@ -51,8 +49,8 @@ class AStar
 		// reset last search information
 		graph->ResetGraphVertices();
 
-		auto start = graph->GetVertexFromID(start_id);
-		auto goal = graph->GetVertexFromID(goal_id);
+		auto start = graph->GetVertex(start_id);
+		auto goal = graph->GetVertex(goal_id);
 
 		Path_t<StateType> empty;
 
@@ -69,8 +67,8 @@ class AStar
 		// reset last search information
 		graph->ResetGraphVertices();
 
-		auto start = graph->GetVertexFromID(start_id);
-		auto goal = graph->GetVertexFromID(goal_id);
+		auto start = graph->GetVertex(start_id);
+		auto goal = graph->GetVertex(goal_id);
 
 		Path_t<StateType> empty;
 
@@ -100,7 +98,7 @@ class AStar
 		// begin with start vertex
 		openlist.put(start_vtx, 0);
 		start_vtx->is_in_openlist_ = true;
-		start_vtx->g_astar_ = 0;
+		start_vtx->g_cost_ = 0;
 
 		// start search iterations
 		bool found_path = false;
@@ -131,22 +129,22 @@ class AStar
 				// check if the vertex has been checked (in closed list)
 				if (successor->is_checked_ == false)
 				{
-					auto new_cost = current_vertex->g_astar_ + edge.cost_;
+					auto new_cost = current_vertex->g_cost_ + edge.cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost
-					if (successor->is_in_openlist_ == false || new_cost < successor->g_astar_)
+					if (successor->is_in_openlist_ == false || new_cost < successor->g_cost_)
 					{
 						// first set the parent of the adjacent vertex to be the current vertex
 						successor->search_parent_ = current_vertex;
 
 						// update costs
-						successor->g_astar_ = new_cost;
-						successor->h_astar_ = calc_heuristic(successor->state_, goal_vtx->state_);
-						successor->f_astar_ = successor->g_astar_ + successor->h_astar_;
+						successor->g_cost_ = new_cost;
+						successor->h_cost_ = calc_heuristic(successor->state_, goal_vtx->state_);
+						successor->f_cost_ = successor->g_cost_ + successor->h_cost_;
 
 						// put vertex into open list
-						openlist.put(successor, successor->f_astar_);
+						openlist.put(successor, successor->f_cost_);
 						successor->is_in_openlist_ = true;
 					}
 				}
@@ -157,7 +155,7 @@ class AStar
 		Path_t<StateType> path;
 		if (found_path)
 		{
-			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
+			std::cout << "path found with cost " << goal_vtx->g_cost_ << std::endl;
 			auto path_vtx = ReconstructPath(start_vtx, goal_vtx);
 			for (const auto &wp : path_vtx)
 				path.push_back(wp->state_);
@@ -180,7 +178,7 @@ class AStar
 		// begin with start vertex
 		openlist.put(start_vtx, 0);
 		start_vtx->is_in_openlist_ = true;
-		start_vtx->g_astar_ = 0;
+		start_vtx->g_cost_ = 0;
 
 		// start search iterations
 		bool found_path = false;
@@ -207,22 +205,22 @@ class AStar
 				// check if the vertex has been checked (in closed list)
 				if (successor->is_checked_ == false)
 				{
-					auto new_cost = current_vertex->g_astar_ + edge.cost_;
+					auto new_cost = current_vertex->g_cost_ + edge.cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost
-					if (successor->is_in_openlist_ == false || new_cost < successor->g_astar_)
+					if (successor->is_in_openlist_ == false || new_cost < successor->g_cost_)
 					{
 						// first set the parent of the adjacent vertex to be the current vertex
 						successor->search_parent_ = current_vertex;
 
 						// update costs
-						successor->g_astar_ = new_cost;
-						successor->h_astar_ = CalcHeuristic(successor->state_, goal_vtx->state_);
-						successor->f_astar_ = successor->g_astar_ + successor->h_astar_;
+						successor->g_cost_ = new_cost;
+						successor->h_cost_ = CalcHeuristic(successor->state_, goal_vtx->state_);
+						successor->f_cost_ = successor->g_cost_ + successor->h_cost_;
 
 						// put vertex into open list
-						openlist.put(successor, successor->f_astar_);
+						openlist.put(successor, successor->f_cost_);
 						successor->is_in_openlist_ = true;
 					}
 				}
@@ -233,7 +231,7 @@ class AStar
 		Path_t<StateType> path;
 		if (found_path)
 		{
-			std::cout << "path found with cost " << goal_vtx->g_astar_ << std::endl;
+			std::cout << "path found with cost " << goal_vtx->g_cost_ << std::endl;
 			auto path_vtx = ReconstructPath(start_vtx, goal_vtx);
 			for (const auto &wp : path_vtx)
 				path.push_back(wp->state_);
@@ -264,7 +262,7 @@ class AStar
 		std::cout << "starting vertex id: " << (*traj_s)->vertex_id_ << std::endl;
 		std::cout << "finishing vertex id: " << (*traj_e)->vertex_id_ << std::endl;
 		std::cout << "path length: " << path.size() << std::endl;
-		std::cout << "total cost: " << path.back()->g_astar_ << std::endl;
+		std::cout << "total cost: " << path.back()->g_cost_ << std::endl;
 #endif
 		return path;
 	}

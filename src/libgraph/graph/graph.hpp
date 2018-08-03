@@ -10,8 +10,6 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#define USE_UNORDERED_MAP
-
 #ifndef USE_UNORDERED_MAP
 #include <map>
 #else
@@ -41,12 +39,12 @@ class Edge_t;
 template <typename StateType>
 using Path_t = std::vector<StateType>;
 
-/// A graph data structure template.
+/// Graph class template.
 template <typename StateType, typename TransitionType>
 class Graph_t
 {
 public:
-  /// Graph_t constructor.
+  /// Default Graph_t constructor.
   /// StateType must provide a function with the signature: int64_t GetUniqueID() const
   Graph_t()
   {
@@ -55,7 +53,7 @@ public:
     static_assert(!std::is_reference<StateType>::value, "Graph_t with reference type template parameter is not allowed");
   }
 
-  /// Graph_t destructor. Graph_t class is only responsible for the memory recycling of Vertex_t and Edge_t
+  /// Default Graph_t destructor. Graph_t class is only responsible for the memory recycling of Vertex_t and Edge_t
   /// objects. The node, such as a quadtree node or a square cell, which each vertex is associated
   ///  with needs to be recycled separately, for example by the quadtree/square_grid class.
   ~Graph_t();
@@ -69,12 +67,8 @@ public:
   class vertex_iterator;
   typedef typename VertexType::edge_iterator edge_iterator;
 
-  friend class AStar;
-  friend class Dijkstra;
-
 public:
   /// This function creates a vertex in the graph that associates with the given node.
-  // template <class T = StateType, typename std::enable_if<std::is_pointer<T>::value>::type * = nullptr>
   void AddVertex(StateType state);
 
   /// This function checks if a vertex exists in the graph and remove it if presents.
@@ -82,15 +76,28 @@ public:
   void RemoveVertex(StateType state);
   void RemoveVertex(int64_t state_id);
 
+  /// This function return the vertex pointer with specified id
+  inline VertexType *GetVertex(int64_t vertex_id)
+  {
+    return GetVertexFromID(vertex_id);
+  }
+
+    /// This function return the vertex pointer with specified state
+  template <class T = StateType, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
+  inline VertexType *GetVertex(T state)
+  {
+    return GetVertexFromState(state);
+  }
+
   /* Directed Graph */
-  /// This function is used to create a graph by adding directed edges connecting two nodes
+  /// This function is used to add a directed edge connecting two nodes
   void AddEdge(StateType src_node, StateType dst_node, TransitionType cost);
 
-  /// This function is used to remove the edge from src_node to dst_node.
+  /// This function is used to remove the directed edge from src_node to dst_node.
   bool RemoveEdge(StateType src_node, StateType dst_node);
 
   /* Undirected Graph */
-  /// This function is used to create a graph by adding directed edges connecting two nodes
+  /// This function is used to add an undirected edge connecting two nodes
   void AddUndirectedEdge(StateType src_node, StateType dst_node, TransitionType cost);
 
   /// This function is used to remove the edge from src_node to dst_node.
@@ -116,6 +123,9 @@ public:
   int64_t GetGraphEdgeNumber() const { return GetAllEdges().size(); }
 
   /* Utility functions */
+  /// This function is used to reset states of all vertice for a new search
+  void ResetGraphVertices();
+
   /// This function removes all edges and vertices in the graph
   void ClearGraph();
 
@@ -129,20 +139,20 @@ private:
 #endif
   VertexMapType vertex_map_;
 
-  /// This function is used to reset states of all vertice for a new search
-  void ResetGraphVertices();
+  /// This function returns the vertex associated with the given state.
+  ///	If a vertex has already been created for this state, the functions
+  ///   returns the pointer of the existing vertex.
+  /// Otherwise, it creates a new vertex.
+  VertexType *FindOrCreateVertex(StateType state);
 
-  /// This function return the vertex with specified id
+  /// This function finds and returns the vertex with specified id.
+  ///	If exists, the functions returns the pointer of the existing vertex.
+  ///	Otherwise, it returns nullptr.
   VertexType *GetVertexFromID(int64_t vertex_id);
 
-  /// This function checks if a vertex already exists in the graph.
-  ///	If exists, the functions returns the pointer of the existing vertex,
-  ///	otherwise it creates a new vertex.
-  VertexType *GetVertex(StateType state);
-
-  /// This function checks if a vertex exists in the graph.
-  ///	If exists, the functions returns the pointer of the existing vertex,
-  ///	otherwise it returns nullptr.
+  /// This function finds and returns the vertex with specified state.
+  ///	If exists, the functions returns the pointer of the existing vertex.
+  ///	Otherwise, it returns nullptr.
   VertexType *GetVertexFromState(StateType state);
 
   /// This function returns the unique ID of given state.
@@ -177,18 +187,18 @@ public:
   vertex_iterator vertex_end() { return vertex_iterator(vertex_map_.end()); }
 
   /// This function return the vertex iterator with specified id
-  inline vertex_iterator FindVertex(int64_t vertex_id)
+  inline vertex_iterator find(int64_t vertex_id)
   {
     return vertex_iterator(vertex_map_.find(vertex_id));
   }
 
   template <class T = StateType, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-  vertex_iterator FindVertex(T state)
+  inline vertex_iterator find(T state)
   {
     return vertex_iterator(vertex_map_.find(GetStateID(state)));
   }
 };
-}
+} // namespace librav
 
 #include "graph/details/graph_impl.hpp"
 

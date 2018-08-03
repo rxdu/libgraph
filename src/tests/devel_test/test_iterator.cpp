@@ -84,7 +84,7 @@ int main(int argc, char **argv)
     std::vector<Graph_t<BasicState *>::vertex_iterator> vextices;
     std::vector<Graph_t<BasicState *>::edge_iterator> edges;
 
-    auto vtx = graph.FindVertex(1);
+    auto vtx = graph.find(1);
     for (auto it = vtx->edge_begin(); it != vtx->edge_end(); ++it)
     {
         std::cout << "edge iterator * : " << (*it).dst_->vertex_id_ << std::endl;

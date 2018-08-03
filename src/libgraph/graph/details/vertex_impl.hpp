@@ -38,9 +38,9 @@ void Vertex_t<StateType, TransitionType>::ClearVertexSearchInfo()
 	is_in_openlist_ = false;
 	search_parent_ = nullptr;
 
-	f_astar_ = 0.0;
-	g_astar_ = 0.0;
-	h_astar_ = 0.0;
+	f_cost_ = 0.0;
+	g_cost_ = 0.0;
+	h_cost_ = 0.0;
 }
 
 /// == operator overloading. If two vertices have the same id, they're regarded as equal.
@@ -109,7 +109,7 @@ bool Vertex_t<StateType, TransitionType>::CheckNeighbour(int64_t dst_id)
 
 /// Check if a given vertex is the neighbor of current vertex.
 template <typename StateType, typename TransitionType>
-bool Vertex_t<StateType, TransitionType>::CheckNeighbour(VertexType *dst_node)
+bool Vertex_t<StateType, TransitionType>::CheckNeighbour(const VertexType *dst_node)
 {
 	auto neighbours = GetNeighbours();
 
