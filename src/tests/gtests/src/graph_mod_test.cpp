@@ -90,7 +90,13 @@ TEST_F(GraphModificationTest, EdgeMod)
 	ASSERT_EQ(edges.front()->dst_->vertex_id_, 1) << "Wrong dst of directed edges added to vertex in pointer-type graph";
 	ASSERT_EQ(edges.front()->cost_, 1.2) << "Wrong cost of directed edges added to vertex in pointer-type graph";
 
+	ASSERT_EQ(graph.GetVertex(nodes[1])->edges_to_.size(), 1) << "Failed to add edge to vertex";
+	ASSERT_EQ(graph.GetVertex(nodes[2])->vertices_from_.size(), 1) << "Failed to maintain list of vertices_from_";
+
 	graph.RemoveEdge(nodes[1], nodes[2]);
+
+	ASSERT_EQ(graph.GetVertex(nodes[1])->edges_to_.size(), 0) << "Failed to remove edge frome vertex";
+	ASSERT_EQ(graph.GetVertex(nodes[2])->vertices_from_.size(), 0) << "Failed to maintain list of vertices_from_";
 
 	ASSERT_EQ(graph.GetGraphEdgeNumber(), 1) << "Failed to remove a directed edge from pointer-type graph";
 

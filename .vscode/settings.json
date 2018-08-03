@@ -45,7 +45,21 @@
         "deque": "cpp",
         "forward_list": "cpp",
         "list": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "strstream": "cpp",
+        "bitset": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "iomanip": "cpp",
+        "istream": "cpp",
+        "numeric": "cpp",
+        "optional": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "streambuf": "cpp",
+        "cinttypes": "cpp",
+        "typeindex": "cpp",
+        "algorithm": "cpp"
     },
     "cmake.configureOnOpen": true,
     "C_Cpp.configurationWarnings": "Disabled"
