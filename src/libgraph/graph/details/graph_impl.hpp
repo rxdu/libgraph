@@ -10,6 +10,8 @@
 #ifndef GRAPH_IMPL_HPP
 #define GRAPH_IMPL_HPP
 
+#include <algorithm>
+
 namespace librav
 {
 
@@ -64,14 +66,20 @@ bool Graph_t<StateType, TransitionType>::RemoveEdge(StateType src_node, StateTyp
 		auto idx = src_vertex->edges_to_.end();
 		bool found_edge = false;
 		for (auto it = src_vertex->edges_to_.begin(); it != src_vertex->edges_to_.end(); it++)
+		{
 			if ((*it).dst_ == dst_vertex)
 			{
 				idx = it;
 				found_edge = true;
+				break;
 			}
+		}
 
 		if (found_edge)
+		{
 			src_vertex->edges_to_.erase(idx);
+			dst_vertex->vertices_from_.erase(std::remove(dst_vertex->vertices_from_.begin(), dst_vertex->vertices_from_.end(), src_vertex), dst_vertex->vertices_from_.end());
+		}
 
 		return found_edge;
 	}
@@ -92,7 +100,7 @@ bool Graph_t<StateType, TransitionType>::RemoveUndirectedEdge(StateType src_node
 	bool edge1 = RemoveEdge(src_node, dst_node);
 	bool edge2 = RemoveEdge(dst_node, src_node);
 
-	if (edge1 || edge2)
+	if (edge1 && edge2)
 		return true;
 	else
 		return false;
@@ -175,6 +183,6 @@ Vertex_t<StateType, TransitionType> *Graph_t<StateType, TransitionType>::GetVert
 	else
 		return nullptr;
 }
-}
+} // namespace librav
 
 #endif /* GRAPH_IMPL_HPP */
