@@ -29,6 +29,8 @@ struct PriorityQueue
 
 	inline bool empty() const { return elements.empty(); }
 
+	inline size_t size() const { return elements.size(); }
+
 	inline void put(T item, Number priority)
 	{
 		elements.emplace(priority, item);
@@ -67,6 +69,6 @@ struct PriorityQueue2
 		return best_item;
 	}
 };
-}
+} // namespace librav
 
 #endif /* PRIORITY_QUEUE_HPP */

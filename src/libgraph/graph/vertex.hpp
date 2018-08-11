@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <algorithm>
+#include <limits>
 
 #include "graph/edge.hpp"
 
@@ -51,9 +52,9 @@ class Vertex_t
 	// attributes for search algorithms
 	bool is_checked_ = false;
 	bool is_in_openlist_ = false;
-	double f_cost_ = 0.0;
-	double g_cost_ = 0.0;
-	double h_cost_ = 0.0;
+	double f_cost_ = std::numeric_limits<double>::max();
+	double g_cost_ = std::numeric_limits<double>::max();
+	double h_cost_ = std::numeric_limits<double>::max();
 	VertexType *search_parent_ = nullptr;
 
 	// edge iterator for easy access
