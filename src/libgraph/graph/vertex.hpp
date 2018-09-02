@@ -66,6 +66,9 @@ class Vertex_t
 	/// == operator overloading. If two vertices have the same id, they're regarded as equal.
 	bool operator==(const VertexType &other) const;
 
+	/// Get depth from root, valid when the vertex is used in a tree-like structure
+	std::size_t GetDepth() const;
+
 	/// Get all neighbor vertices of this vertex.
 	std::vector<VertexType *> GetNeighbours();
 

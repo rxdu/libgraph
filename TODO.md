@@ -1,5 +1,6 @@
 # TODO List
 
+- [] Issue: state type cannot be std::shared_ptr<T>
 - [] Priority queue that supports updating priority of element (and re-arrange the queue)
 - [] Improve unit test coverage
 - [] A* and Dijkstra algorithms currently assume double type cost. Generic type cost with proper comparator defined should also be accepted.

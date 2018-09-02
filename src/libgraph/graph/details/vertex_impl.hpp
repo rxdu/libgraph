@@ -73,6 +73,22 @@ TransitionType Vertex_t<StateType, TransitionType>::GetEdgeCost(const VertexType
 	return GetEdgeCost(dst_node->vertex_id_);
 }
 
+template <typename StateType, typename TransitionType>
+std::size_t Vertex_t<StateType, TransitionType>::GetDepth() const
+{
+	if (this->search_parent_ == nullptr)
+		return 0;
+
+	size_t depth_count = 1;
+	VertexType *cvp = cvp->search_parent_;
+	while (cvp->search_parent_ != nullptr)
+	{
+		++depth_count;
+		cvp = cvp->search_parent_;
+	}
+	return depth_count;
+}
+
 /// Get all neighbor vertices of this vertex.
 template <typename StateType, typename TransitionType>
 std::vector<Vertex_t<StateType, TransitionType> *> Vertex_t<StateType, TransitionType>::GetNeighbours()
@@ -117,6 +133,6 @@ bool Vertex_t<StateType, TransitionType>::CheckNeighbour(const VertexType *dst_n
 
 	return (it != neighbours.end() ? true : false);
 }
-}
+} // namespace librav
 
 #endif /* VERTEX_IMPL_HPP */
