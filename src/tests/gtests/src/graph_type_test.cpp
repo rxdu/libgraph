@@ -13,19 +13,20 @@
 #include "gtest/gtest.h"
 
 #include "graph/graph.hpp"
-#include "graph/algorithms/astar.hpp"
 
 using namespace librav;
 
 struct TestState
 {
-	TestState(uint64_t id) : any_unique_id_(id){};
+	TestState(uint64_t id) : id_(id){};
 
-	int64_t any_unique_id_;
+	int64_t id_;
 
-	int64_t GetUniqueID() const
+	bool operator==(const TestState &other)
 	{
-		return any_unique_id_;
+		if (id_ == other.id_)
+			return true;
+		return false;
 	}
 };
 
@@ -51,7 +52,7 @@ struct GraphTypeTest : testing::Test
 TEST_F(GraphTypeTest, ValueType)
 {
 	// create a graph
-	Graph_t<TestState> graph;
+	Graph<TestState> graph;
 
 	graph.AddEdge(*(nodes[0]), *(nodes[1]), 1.0);
 	graph.AddEdge(*(nodes[0]), *(nodes[3]), 1.5);
@@ -80,7 +81,7 @@ TEST_F(GraphTypeTest, ValueType)
 
 TEST_F(GraphTypeTest, PointerType)
 {
-	Graph_t<TestState *> graph;
+	Graph<TestState *> graph;
 
 	graph.AddEdge((nodes[0]), (nodes[1]), 1.0);
 	graph.AddEdge((nodes[0]), (nodes[3]), 1.5);

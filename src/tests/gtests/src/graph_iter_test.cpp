@@ -14,26 +14,27 @@
 #include "gtest/gtest.h"
 
 #include "graph/graph.hpp"
-#include "graph/algorithms/astar.hpp"
 
 using namespace librav;
 
 struct TestState
 {
-	TestState(uint64_t id) : any_unique_id_(id){};
+	TestState(uint64_t id) : id_(id){};
 
-	int64_t any_unique_id_;
+	int64_t id_;
 
-	int64_t GetUniqueID() const
+	bool operator==(const TestState &other)
 	{
-		return any_unique_id_;
+		if (id_ == other.id_)
+			return true;
+		return false;
 	}
 };
 
 struct GraphIteratorTest : testing::Test
 {
 	std::vector<TestState *> nodes;
-	Graph_t<TestState *> graph;
+	Graph<TestState *> graph;
 
 	std::set<int64_t> vertex_id_set;
 	std::set<double> edge_cost_set;

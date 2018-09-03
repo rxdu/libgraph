@@ -13,7 +13,6 @@
  * [1] https://stackoverflow.com/a/16527081/2200873
  * [2] https://stackoverflow.com/questions/1443793/iterate-keys-in-a-c-map/35262398#35262398
  * 
- * 
  */
 
 #ifndef GRAPH_HPP
@@ -28,9 +27,9 @@
 #include <vector>
 #include <cstdint>
 #include <limits>
+#include <algorithm>
 #include <type_traits>
 
-// #include "graph/details/helper_func.hpp"
 #include "graph/details/default_indexer.hpp"
 
 namespace librav
@@ -84,7 +83,7 @@ public:
 
   struct Edge
   {
-    Edge(vertex_iterator src, vertex_iterator dst, Transition c) : src_(src), dst_(dst), cost_(c){};
+    Edge(vertex_iterator src, vertex_iterator dst, Transition c) : src_(src), dst_(dst), trans_(c){};
     ~Edge() = default;
 
     Edge(const Edge &other) = default;
@@ -94,18 +93,18 @@ public:
 
     vertex_iterator src_;
     vertex_iterator dst_;
-    Transition cost_;
+    Transition trans_;
 
-    /// Returns true if the edge is identical to the other (all src_, dst_, cost_).
+    /// Returns true if the edge is identical to the other (all src_, dst_, trans_).
     /// Otherwise, return false.
     bool operator==(const Edge &other)
     {
-      if (src_ == other.src_ && dst_ == other.dst_ && cost_ == other.cost_)
+      if (src_ == other.src_ && dst_ == other.dst_ && trans_ == other.trans_)
         return true;
       return false;
     }
 
-    void PrintEdge() { std::cout << "Edge_t: src - " << src_->GetVertexID() << " , dst - " << dst_->GetVertexID() << " , cost - " << cost_ << std::endl; }
+    void PrintEdge() { std::cout << "Edge_t: src - " << src_->GetVertexID() << " , dst - " << dst_->GetVertexID() << " , cost - " << trans_ << std::endl; }
   };
 
   /*---------------------------------------------------------------------------------*/
@@ -159,43 +158,53 @@ public:
       return false;
     }
 
-    // /// Get depth from root, valid when the vertex is used in a tree-like structure
-    // std::size_t GetDepth() const;
-
-    // /// Get all neighbor vertices of this vertex.
-    // std::vector<Vertex *> GetNeighbours();
-
-    // /// Get IDs of all neighbor vertices of this vertex.
-    // std::vector<int64_t> GetNeighbourIDs();
-
-    // /// Get edge cost from current vertex to given vertex id. -1 is returned if no edge between
-    // ///		the two vertices exists.
-    // Transition GetEdgeCost(int64_t dst_id) const;
-
-    // /// Get edge cost from current vertex to given vertex. -1 is returned if no edge between
-    // ///		the two vertices exists.
-    // Transition GetEdgeCost(const Vertex *dst_node) const;
-
-    /// Check if a given vertex is the neighbor of current vertex.
-    bool CheckNeighbour(int64_t dst_id)
+    /// Get all neighbor vertices of this vertex.
+    std::vector<vertex_iterator> GetNeighbours()
     {
-      for (const auto &edge : edges_to_)
+      std::vector<vertex_iterator> nbs;
+      for (auto it = edge_begin(); it != edge_end(); ++it)
+        nbs.push_back(it->dst_);
+      return nbs;
+    }
+
+    edge_iterator FindEdge(int64_t dst_id)
+    {
+      edge_iterator it;
+      for (it = edge_begin(); it != edge_end(); ++it)
       {
-        if (edge->dst_->vertex_id_ == dst_id)
-          return true;
+        if (it->dst_->vertex_id_ == dst_id)
+          return it;
       }
-      return false;
+      return it;
     }
 
-    /// Check if a given vertex is the neighbor of current vertex.
-    bool CheckNeighbour(State *dst_node)
+    template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
+    edge_iterator FindEdge(T dst_state)
     {
-
+      edge_iterator it;
+      for (it = edge_begin(); it != edge_end(); ++it)
+      {
+        if (it->dst_->state_ == dst_state)
+          return it;
+      }
+      return it;
     }
 
-    // /// Clear exiting search info before a new search
-    // void ClearVertexSearchInfo();
+    /// Clear exiting search info before a new search
+    void ClearVertexSearchInfo()
+    {
+      is_checked_ = false;
+      is_in_openlist_ = false;
+      search_parent_ = vertex_iterator();
+
+      f_cost_ = 0.0;
+      g_cost_ = 0.0;
+      h_cost_ = 0.0;
+    }
   };
+
+  typedef typename Vertex::edge_iterator edge_iterator;
+  typedef typename Vertex::const_edge_iterator const_edge_iterator;
 
   /*---------------------------------------------------------------------------------*/
 
@@ -221,29 +230,149 @@ public:
   //  for the state object will not be managed by the graph and needs to be recycled separately.
   ~Graph(){};
 
+  /// Create a vertex in the graph that associates with the given node.
+  vertex_iterator AddVertex(State state)
+  {
+    return ObtainVertexFromVertexMap(state);
+  }
+
+  /// This function checks if a vertex exists in the graph and remove it if presents.
+  void RemoveVertex(int64_t state_id)
+  {
+    auto it = vertex_map_.find(state_id);
+
+    // unknown vertex, no need to remove
+    if (it == vertex_map_.end())
+      return;
+
+    // remove from other vertices that connect to the vertex to be deleted
+    for (auto &asv : it->second->vertices_from_)
+      for (auto eit = asv->edges_to_.begin(); eit != asv->edges_to_.end(); eit++)
+        if ((*eit).dst_ == it->second)
+        {
+          asv->edges_to_.erase(eit);
+          break;
+        }
+
+    // remove from vertex map
+    auto vptr = it->second;
+    vertex_map_.erase(it);
+    delete vptr;
+  }
+
+  template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
+  void RemoveVertex(State state)
+  {
+    int64_t state_id = GetStateIndex(state);
+    RemoveVertex(state_id);
+  }
+
+  /// Add an edge between the vertices associated with the given two states.
+  /// Update the transition if edge already exists.
   void AddEdge(State sstate, State dstate, Transition trans)
   {
     auto src_vertex = ObtainVertexFromVertexMap(sstate);
     auto dst_vertex = ObtainVertexFromVertexMap(dstate);
 
-    // if (src_vertex->CheckNeighbour(dst_vertex))
-    //   return;
+    // update transition if edge already exists
+    auto it = src_vertex->FindEdge(dstate);
+    if (it != src_vertex->edge_end())
+    {
+      it->trans_ = trans;
+      return;
+    }
 
-    // store information for deleting vertex
     dst_vertex->vertices_from_.push_back(src_vertex);
     src_vertex->edges_to_.emplace_back(src_vertex, dst_vertex, trans);
   }
 
+  /// This function is used to remove the directed edge from src_node to dst_node.
+  bool RemoveEdge(State sstate, State dstate)
+  {
+    auto src_vertex = FindVertex(sstate);
+    auto dst_vertex = FindVertex(dstate);
+
+    if ((src_vertex != vertex_end()) && (dst_vertex != vertex_end()))
+    {
+      for (auto it = src_vertex->edges_to_.begin(); it != src_vertex->edges_to_.end(); ++it)
+      {
+        if (it->dst_ == dst_vertex)
+        {
+          src_vertex->edges_to_.erase(it);
+          dst_vertex->vertices_from_.erase(std::remove(dst_vertex->vertices_from_.begin(), dst_vertex->vertices_from_.end(), src_vertex), dst_vertex->vertices_from_.end());
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /* Undirected Graph */
+  /// This function is used to add an undirected edge connecting two nodes
+  void AddUndirectedEdge(State sstate, State dstate, Transition trans)
+  {
+    AddEdge(sstate, dstate, trans);
+    AddEdge(dstate, sstate, trans);
+  }
+
+  /// This function is used to remove the edge from src_node to dst_node.
+  bool RemoveUndirectedEdge(State src_node, State dst_node)
+  {
+    bool edge1 = RemoveEdge(src_node, dst_node);
+    bool edge2 = RemoveEdge(dst_node, src_node);
+
+    if (edge1 && edge2)
+      return true;
+    else
+      return false;
+  }
+
+  /// This functions is used to access all edges of a graph
+  std::vector<edge_iterator> GetAllEdges() const
+  {
+    std::vector<edge_iterator> edges;
+    for (auto &vertex_pair : vertex_map_)
+    {
+      auto vertex = vertex_pair.second;
+      for (auto it = vertex->edge_begin(); it != vertex->edge_end(); ++it)
+        edges.push_back(it);
+    }
+    return edges;
+  }
+
   /// This function return the vertex iterator with specified id
-  inline vertex_iterator find(int64_t vertex_id)
+  inline vertex_iterator FindVertex(int64_t vertex_id)
   {
     return vertex_iterator(vertex_map_.find(vertex_id));
   }
 
   template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-  inline vertex_iterator find(T state)
+  inline vertex_iterator FindVertex(T state)
   {
     return vertex_iterator(vertex_map_.find(GetStateIndex(state)));
+  }
+
+  /// Get total number of vertices in the graph
+  int64_t GetGraphVertexNumber() const { return vertex_map_.size(); }
+
+  /// Get total number of edges in the graph
+  int64_t GetGraphEdgeNumber() const { return GetAllEdges().size(); }
+
+  /* Utility functions */
+  /// This function is used to reset states of all vertice for a new search
+  void ResetGraphVertices()
+  {
+    for (auto &vertex_pair : vertex_map_)
+      vertex_pair.second->ClearVertexSearchInfo();
+  }
+
+  /// This function removes all edges and vertices in the graph
+  void ClearGraph()
+  {
+    for (auto &vertex_pair : vertex_map_)
+      delete vertex_pair.second;
+    vertex_map_.clear();
   }
 
 private:

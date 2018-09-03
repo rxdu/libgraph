@@ -85,12 +85,12 @@ void PointerTypeGraphDemo()
 
 	graph_ptr.AddEdge(nodes[0], nodes[1], 1.0);
 	graph_ptr.AddEdge(nodes[0], nodes[3], 1.5);
-	// graph_ptr.AddEdge(nodes[1], nodes[0], 2.0);
+	graph_ptr.AddEdge(nodes[1], nodes[0], 2.0);
 	// graph_ptr.AddEdge(nodes[1], nodes[4], 2.5);
 	// graph_ptr.AddEdge(nodes[1], nodes[2], 1.0);
 	// graph_ptr.AddEdge(nodes[2], nodes[1], 1.5);
 	// graph_ptr.AddEdge(nodes[2], nodes[5], 2.0);
-	// graph_ptr.AddEdge(nodes[3], nodes[0], 2.5);
+	graph_ptr.AddEdge(nodes[3], nodes[0], 2.5);
 	// graph_ptr.AddEdge(nodes[3], nodes[4], 2.5);
 	// graph_ptr.AddEdge(nodes[4], nodes[1], 2.5);
 	// graph_ptr.AddEdge(nodes[4], nodes[3], 2.5);
@@ -109,8 +109,24 @@ void PointerTypeGraphDemo()
 	// 	e->PrintEdge();
 
 	for (auto it = graph_ptr.vertex_begin(); it != graph_ptr.vertex_end(); ++it)
+	{
 		for (auto eit = it->edge_begin(); eit != it->edge_end(); ++eit)
+		{
 			eit->PrintEdge();
+		}
+	}
+
+	graph_ptr.RemoveEdge(nodes[3], nodes[0]);
+
+	std::cout << "after change" << std::endl;
+
+	for (auto it = graph_ptr.vertex_begin(); it != graph_ptr.vertex_end(); ++it)
+	{
+		for (auto eit = it->edge_begin(); eit != it->edge_end(); ++eit)
+		{
+			eit->PrintEdge();
+		}
+	}
 
 	// need to delete all nodes, the graph only maintains pointers to these nodes
 	for (auto e : nodes)

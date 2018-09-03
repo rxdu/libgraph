@@ -18,13 +18,15 @@ using namespace librav;
 
 struct TestState
 {
-	TestState(uint64_t id) : any_unique_id_(id){};
+	TestState(uint64_t id) : id_(id){};
 
-	int64_t any_unique_id_;
+	int64_t id_;
 
-	int64_t GetUniqueID() const
+	bool operator==(const TestState &other)
 	{
-		return any_unique_id_;
+		if (id_ == other.id_)
+			return true;
+		return false;
 	}
 };
 
@@ -48,7 +50,7 @@ struct GraphModificationTest : testing::Test
 TEST_F(GraphModificationTest, VertexMod)
 {
 	// create a graph
-	Graph_t<TestState *> graph;
+	Graph<TestState *> graph;
 
 	ASSERT_EQ(graph.GetGraphVertexNumber(), 0) << "Graph should have no vertex now";
 
@@ -57,24 +59,24 @@ TEST_F(GraphModificationTest, VertexMod)
 
 	ASSERT_EQ(graph.GetGraphVertexNumber(), 2) << "Failed to add vertices to pointer-type graph ";
 
-	ASSERT_EQ(graph.find(0)->vertex_id_, 0) << "Failed to find added vertex by associated state ID from pointer-type graph ";
-	ASSERT_EQ(graph.find(nodes[1])->vertex_id_, 1) << "Failed to find added vertex by associated state from pointer-type graph ";
+	ASSERT_EQ(graph.FindVertex(0)->vertex_id_, 0) << "Failed to find added vertex by associated state ID from pointer-type graph ";
+	ASSERT_EQ(graph.FindVertex(nodes[1])->vertex_id_, 1) << "Failed to find added vertex by associated state from pointer-type graph ";
 
 	graph.RemoveVertex(0);
 
 	ASSERT_EQ(graph.GetGraphVertexNumber(), 1) << "Failed to remove vertex by associated state ID from pointer-type graph ";
-	ASSERT_TRUE(graph.find(0) == graph.vertex_end()) << "Failed to remove vertex by associated state ID from pointer-type graph ";
-	ASSERT_EQ(graph.find(1)->vertex_id_, 1) << "Removed wrong vertex by associated state ID from pointer-type graph ";
+	ASSERT_TRUE(graph.FindVertex(0) == graph.vertex_end()) << "Failed to remove vertex by associated state ID from pointer-type graph ";
+	ASSERT_EQ(graph.FindVertex(1)->vertex_id_, 1) << "Removed wrong vertex by associated state ID from pointer-type graph ";
 
 	graph.RemoveVertex(nodes[1]);
 
 	ASSERT_EQ(graph.GetGraphVertexNumber(), 0) << "Failed to remove vertex by associated state from pointer-type graph ";
-	ASSERT_TRUE(graph.find(1) == graph.vertex_end()) << "Failed to remove vertex by associated state from pointer-type graph ";
+	ASSERT_TRUE(graph.FindVertex(1) == graph.vertex_end()) << "Failed to remove vertex by associated state from pointer-type graph ";
 }
 
 TEST_F(GraphModificationTest, EdgeMod)
 {
-	Graph_t<TestState *> graph;
+	Graph<TestState *> graph;
 
 	ASSERT_EQ(graph.GetGraphEdgeNumber(), 0) << "Graph should have no edge now";
 
@@ -82,8 +84,8 @@ TEST_F(GraphModificationTest, EdgeMod)
 	graph.AddEdge(nodes[1], nodes[2], 1.5);
 
 	ASSERT_EQ(graph.GetGraphEdgeNumber(), 2) << "Failed to add directed edges to pointer-type graph";
-	std::vector<Graph_t<TestState *>::edge_iterator> edges;
-	for (auto it = graph.find(0)->edge_begin(); it != graph.find(0)->edge_end(); ++it)
+	std::vector<Graph<TestState *>::edge_iterator> edges;
+	for (auto it = graph.FindVertex(0)->edge_begin(); it != graph.FindVertex(0)->edge_end(); ++it)
 		edges.push_back(it);
 	ASSERT_EQ(edges.size(), 1) << "Wrong number of directed edges added to vertex in pointer-type graph";
 	ASSERT_EQ(edges.front()->src_->vertex_id_, 0) << "Wrong src of directed edges added to vertex in pointer-type graph";
@@ -101,7 +103,7 @@ TEST_F(GraphModificationTest, EdgeMod)
 	ASSERT_EQ(graph.GetGraphEdgeNumber(), 1) << "Failed to remove a directed edge from pointer-type graph";
 
 	edges.clear();
-	for (auto it = graph.find(0)->edge_begin(); it != graph.find(0)->edge_end(); ++it)
+	for (auto it = graph.FindVertex(0)->edge_begin(); it != graph.FindVertex(0)->edge_end(); ++it)
 		edges.push_back(it);
 	bool edge_intact = (edges.size() == 1) && (edges.front()->src_->vertex_id_ == 0) && (edges.front()->dst_->vertex_id_ == 1) && (edges.front()->cost_ == 1.2);
 	ASSERT_TRUE(edge_intact) << "A wrong edge is removed from pointer-type graph";
@@ -116,7 +118,7 @@ TEST_F(GraphModificationTest, EdgeMod)
 
 TEST_F(GraphModificationTest, ClearVertexEdge)
 {
-	Graph_t<TestState *> graph;
+	Graph<TestState *> graph;
 
 	ASSERT_EQ(graph.GetGraphVertexNumber(), 0) << "Graph should have no vertex at beginning";
 	ASSERT_EQ(graph.GetGraphEdgeNumber(), 0) << "Graph should have no edge at beginning";
@@ -133,7 +135,7 @@ TEST_F(GraphModificationTest, ClearVertexEdge)
 
 TEST_F(GraphModificationTest, VertexAccessEdge)
 {
-	Graph_t<TestState *> graph;
+	Graph<TestState *> graph;
 
 	graph.AddEdge(nodes[0], nodes[1], 1.2);
 	graph.AddEdge(nodes[0], nodes[2], 1.5);
@@ -141,24 +143,24 @@ TEST_F(GraphModificationTest, VertexAccessEdge)
 
 	std::vector<int64_t> nc = {1, 2, 3};
 
-	auto neighbours = graph.find(0)->GetNeighbours();
+	auto neighbours = graph.FindVertex(0)->GetNeighbours();
 	std::vector<int64_t> nids2;
 	for (auto &n : neighbours)
 		nids2.push_back(n->vertex_id_);
 	ASSERT_TRUE(nids2 == nc) << "Graph should have 3 neighbors (checked from vertex pointer)";
 
-	auto nids = graph.find(0)->GetNeighbourIDs();
+	auto nids = graph.FindVertex(0)->GetNeighbourIDs();
 	ASSERT_TRUE(nids.size() == 3) << "Graph should have 3 neighbors";
 	ASSERT_TRUE(nids == nc) << "Graph should have 3 neighbors";
 
-	auto edge_cost1 = graph.find(0)->GetEdgeCost(1);
-	auto edge_cost2 = graph.find(0)->GetEdgeCost(2);
-	auto edge_cost3 = graph.find(0)->GetEdgeCost(3);
+	auto edge_cost1 = graph.FindVertex(0)->GetEdgeCost(1);
+	auto edge_cost2 = graph.FindVertex(0)->GetEdgeCost(2);
+	auto edge_cost3 = graph.FindVertex(0)->GetEdgeCost(3);
 
 	ASSERT_TRUE(edge_cost1 == 1.2) << "Edge cost to vertex 1 should be 1.2";
 	ASSERT_TRUE(edge_cost2 == 1.5) << "Edge cost to vertex 2 should be 1.5";
 	ASSERT_TRUE(edge_cost3 == 1.8) << "Edge cost to vertex 3 should be 1.8";
 
-	bool check_neighbour = graph.find(0)->CheckNeighbour(1) && graph.find(0)->CheckNeighbour(2) && graph.find(0)->CheckNeighbour(3);
+	bool check_neighbour = graph.FindVertex(0)->CheckNeighbour(1) && graph.FindVertex(0)->CheckNeighbour(2) && graph.FindVertex(0)->CheckNeighbour(3);
 	ASSERT_TRUE(check_neighbour) << "Vertex 0 and 1,2,3 should be neighbours";
 }
