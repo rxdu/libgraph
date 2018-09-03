@@ -23,11 +23,12 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(BUILD_TEST on)
+set(BUILD_TEST off)
 
 ## Add sub source directories
-add_subdirectory(src/demo)
-add_subdirectory(src/libgraph)
+# add_subdirectory(src/demo)
+# add_subdirectory(src/libgraph)
+add_subdirectory(src/graph)
 
 if(BUILD_TEST)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
