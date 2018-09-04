@@ -35,14 +35,13 @@
 namespace librav
 {
 /// Graph class template.
-template <typename State, typename Transition = double, typename StateIndexer = DefaultIndexer<State>, typename Allocator = std::allocator<State>>
+template <typename State, typename Transition = double, typename StateIndexer = DefaultIndexer<State>>
 class Graph
 {
 public:
   class Edge;
   class Vertex;
-
-  using GraphType = Graph<State, Transition, StateIndexer, Allocator>;
+  using GraphType = Graph<State, Transition, StateIndexer>;
 
 #ifndef USE_UNORDERED_MAP
   typedef std::map<int64_t, Vertex *> VertexMapType;
@@ -52,6 +51,11 @@ public:
   typedef typename VertexMapType::iterator VertexMapTypeIterator;
 
 public:
+  /*---------------------------------------------------------------------------------*/
+  /*                             Vertex Iterator                                     */
+  /*---------------------------------------------------------------------------------*/
+
+  ///@{
   /// Vertex iterator for unified access.
   /// Wraps the "value" part of VertexMapType::iterator
   class const_vertex_iterator : public VertexMapTypeIterator
@@ -73,14 +77,12 @@ public:
     Vertex *operator->() { return (Vertex *const)(VertexMapTypeIterator::operator->()->second); }
     Vertex &operator*() { return *(VertexMapTypeIterator::operator*().second); }
   };
-
-  vertex_iterator vertex_begin() { return vertex_iterator(vertex_map_.begin()); }
-  vertex_iterator vertex_end() { return vertex_iterator(vertex_map_.end()); }
-  const_vertex_iterator vertex_begin() const { return vertex_iterator(vertex_map_.begin()); }
-  const_vertex_iterator vertex_end() const { return vertex_iterator(vertex_map_.end()); }
+  ///@}
 
   /*---------------------------------------------------------------------------------*/
-
+  /*                              Edge Template                                      */
+  /*---------------------------------------------------------------------------------*/
+  ///@{
   struct Edge
   {
     Edge(vertex_iterator src, vertex_iterator dst, Transition c) : src_(src), dst_(dst), trans_(c){};
@@ -106,9 +108,12 @@ public:
 
     void PrintEdge() { std::cout << "Edge_t: src - " << src_->GetVertexID() << " , dst - " << dst_->GetVertexID() << " , cost - " << trans_ << std::endl; }
   };
+  ///@}
 
   /*---------------------------------------------------------------------------------*/
-
+  /*                              Vertex Template                                    */
+  /*---------------------------------------------------------------------------------*/
+  ///@{
   /// Vertex class template.
   struct Vertex
   {
@@ -124,8 +129,7 @@ public:
 
     // generic attributes
     State state_;
-    int64_t vertex_id_;
-    int64_t GetVertexID() const { return vertex_id_; }
+    const int64_t vertex_id_;
 
     // edges connecting to other vertices
     typedef std::vector<Edge> EdgeListType;
@@ -158,14 +162,7 @@ public:
       return false;
     }
 
-    /// Get all neighbor vertices of this vertex.
-    std::vector<vertex_iterator> GetNeighbours()
-    {
-      std::vector<vertex_iterator> nbs;
-      for (auto it = edge_begin(); it != edge_end(); ++it)
-        nbs.push_back(it->dst_);
-      return nbs;
-    }
+    int64_t GetVertexID() const { return vertex_id_; }
 
     edge_iterator FindEdge(int64_t dst_id)
     {
@@ -190,6 +187,24 @@ public:
       return it;
     }
 
+    template <typename T>
+    bool CheckNeighbour(T dst)
+    {
+      auto res = FindEdge(dst);
+      if (res != edge_end())
+        return true;
+      return false;
+    }
+
+    /// Get all neighbor vertices of this vertex.
+    std::vector<vertex_iterator> GetNeighbours()
+    {
+      std::vector<vertex_iterator> nbs;
+      for (auto it = edge_begin(); it != edge_end(); ++it)
+        nbs.push_back(it->dst_);
+      return nbs;
+    }
+
     /// Clear exiting search info before a new search
     void ClearVertexSearchInfo()
     {
@@ -205,21 +220,40 @@ public:
 
   typedef typename Vertex::edge_iterator edge_iterator;
   typedef typename Vertex::const_edge_iterator const_edge_iterator;
+  ///@}
 
   /*---------------------------------------------------------------------------------*/
-
+  /*                               Graph Template                                    */
+  /*---------------------------------------------------------------------------------*/
 public:
+  /** @name Big Five
+   *  Constructor, copy/move constructor, copy/move assignment operator, destructor. 
+   */
+  ///@{
   /// Default Graph constructor.
-  Graph() {}
+  Graph() = default;
 
   /// Copy constructor.
-  Graph(const GraphType &other) {}
+  Graph(const GraphType &other) 
+  {
+    for(auto& pair:vertex_map_)
+    {
+      auto vertex = pair.second;
+      for(auto& edge : vertex->edges_to_)
+        this->AddEdge(edge.src_->state_, edge.dst_->state_, edge.trans_);
+    }
+  }
 
   /// Move constructor
   Graph(GraphType &&other) {}
 
   /// Assignment operator
-  GraphType &operator=(const GraphType &other) {}
+  GraphType &operator=(const GraphType &other) 
+  {
+    GraphType temp = other;
+    std::swap(*this, temp);
+    return *this;
+  }
 
   /// Move assignment operator
   GraphType &operator=(GraphType &&other) {}
@@ -228,8 +262,27 @@ public:
   /// Graph class is only responsible for the memory recycling of its internal objects, such as
   /// vertices and edges. If a state is associated with a vertex by its pointer, the memory allocated
   //  for the state object will not be managed by the graph and needs to be recycled separately.
-  ~Graph(){};
+  ~Graph()
+  {
+    for (auto &vertex_pair : vertex_map_)
+      delete vertex_pair.second;
+  };
+  ///@}
 
+  /** @name Vertex Access
+   *  Vertex iterators to access vertices in the graph.
+   */
+  ///@{
+  vertex_iterator vertex_begin() { return vertex_iterator(vertex_map_.begin()); }
+  vertex_iterator vertex_end() { return vertex_iterator(vertex_map_.end()); }
+  const_vertex_iterator vertex_begin() const { return vertex_iterator(vertex_map_.begin()); }
+  const_vertex_iterator vertex_end() const { return vertex_iterator(vertex_map_.end()); }
+  ///@}
+
+  /** @name Graph Operations
+   *  Modify vertex or edge of the graph. 
+   */
+  ///@{
   /// Create a vertex in the graph that associates with the given node.
   vertex_iterator AddVertex(State state)
   {
@@ -241,23 +294,24 @@ public:
   {
     auto it = vertex_map_.find(state_id);
 
-    // unknown vertex, no need to remove
-    if (it == vertex_map_.end())
-      return;
+    // remove if specified vertex exists
+    if (it != vertex_map_.end())
+    {
+      // remove from other vertices that connect to the vertex to be deleted
+      auto vtx = vertex_iterator(it);
+      for (auto &asv : vtx->vertices_from_)
+        for (auto eit = asv->edges_to_.begin(); eit != asv->edges_to_.end(); eit++)
+          if ((*eit).dst_ == vtx)
+          {
+            asv->edges_to_.erase(eit);
+            break;
+          }
 
-    // remove from other vertices that connect to the vertex to be deleted
-    for (auto &asv : it->second->vertices_from_)
-      for (auto eit = asv->edges_to_.begin(); eit != asv->edges_to_.end(); eit++)
-        if ((*eit).dst_ == it->second)
-        {
-          asv->edges_to_.erase(eit);
-          break;
-        }
-
-    // remove from vertex map
-    auto vptr = it->second;
-    vertex_map_.erase(it);
-    delete vptr;
+      // remove from vertex map
+      auto vptr = it->second;
+      vertex_map_.erase(it);
+      delete vptr;
+    }
   }
 
   template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
@@ -374,8 +428,15 @@ public:
       delete vertex_pair.second;
     vertex_map_.clear();
   }
+  ///@}
 
 private:
+  /** @name Internal variables and functions.
+   *  Internal variables and functions.
+   */
+  ///@{
+  /// This function returns an index of the give state.
+  /// The default indexer returns member variable "id_", assuming it exists. 
   StateIndexer GetStateIndex;
   VertexMapType vertex_map_;
 
@@ -399,6 +460,7 @@ private:
 
     return vertex_iterator(it);
   }
+  ///@}
 };
 } // namespace librav
 

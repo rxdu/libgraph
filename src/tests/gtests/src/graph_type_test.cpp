@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <memory>
 
 #include "gtest/gtest.h"
 
@@ -33,12 +34,14 @@ struct TestState
 struct GraphTypeTest : testing::Test
 {
 	std::vector<TestState *> nodes;
+	std::vector<std::shared_ptr<TestState>> shared_nodes;
 
 	GraphTypeTest()
 	{
 		for (int i = 0; i < 9; i++)
 		{
 			nodes.push_back(new TestState(i));
+			shared_nodes.push_back(std::make_shared<TestState>(i));
 		}
 	}
 
@@ -103,6 +106,35 @@ TEST_F(GraphTypeTest, PointerType)
 	graph.AddEdge((nodes[7]), (nodes[8]), 10.0);
 	graph.AddEdge((nodes[8]), (nodes[5]), 10.5);
 	graph.AddEdge((nodes[8]), (nodes[7]), 11.0);
+
+	ASSERT_EQ(graph.GetGraphVertexNumber(), 9) << "Failed to add vertices to pointer-type graph ";
+	ASSERT_EQ(graph.GetGraphEdgeNumber(), 20) << "Failed to add vertices to pointer-type graph ";
+}
+
+TEST_F(GraphTypeTest, SharedPointerType)
+{
+	Graph<std::shared_ptr<TestState>> graph;
+
+	graph.AddEdge((shared_nodes[0]), (shared_nodes[1]), 1.0);
+	graph.AddEdge((shared_nodes[0]), (shared_nodes[3]), 1.5);
+	graph.AddEdge((shared_nodes[1]), (shared_nodes[0]), 2.0);
+	graph.AddEdge((shared_nodes[1]), (shared_nodes[4]), 2.5);
+	graph.AddEdge((shared_nodes[1]), (shared_nodes[2]), 3.0);
+	graph.AddEdge((shared_nodes[2]), (shared_nodes[1]), 3.5);
+	graph.AddEdge((shared_nodes[2]), (shared_nodes[5]), 4.0);
+	graph.AddEdge((shared_nodes[3]), (shared_nodes[0]), 4.5);
+	graph.AddEdge((shared_nodes[3]), (shared_nodes[4]), 5.0);
+	graph.AddEdge((shared_nodes[4]), (shared_nodes[1]), 5.5);
+	graph.AddEdge((shared_nodes[4]), (shared_nodes[3]), 6.0);
+	graph.AddEdge((shared_nodes[4]), (shared_nodes[5]), 6.5);
+	graph.AddEdge((shared_nodes[5]), (shared_nodes[2]), 7.0);
+	graph.AddEdge((shared_nodes[5]), (shared_nodes[4]), 7.5);
+	graph.AddEdge((shared_nodes[5]), (shared_nodes[8]), 8.0);
+	graph.AddEdge((shared_nodes[5]), (shared_nodes[6]), 9.0);
+	graph.AddEdge((shared_nodes[7]), (shared_nodes[4]), 9.5);
+	graph.AddEdge((shared_nodes[7]), (shared_nodes[8]), 10.0);
+	graph.AddEdge((shared_nodes[8]), (shared_nodes[5]), 10.5);
+	graph.AddEdge((shared_nodes[8]), (shared_nodes[7]), 11.0);
 
 	ASSERT_EQ(graph.GetGraphVertexNumber(), 9) << "Failed to add vertices to pointer-type graph ";
 	ASSERT_EQ(graph.GetGraphEdgeNumber(), 20) << "Failed to add vertices to pointer-type graph ";
