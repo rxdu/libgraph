@@ -45,7 +45,8 @@ struct PriorityQueue
 };
 
 /// A priority queue implementation that supports element priority update.
-// TODO
+// Reference:
+// [1] https://github.com/csbence/DynamicPriorityQueue
 template <typename ElmentType, typename PriorityType = double>
 struct DynamicPriorityQueue
 {
