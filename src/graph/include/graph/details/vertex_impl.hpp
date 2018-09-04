@@ -39,7 +39,7 @@ typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator Graph<Sta
     typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator it;
     for (it = edge_begin(); it != edge_end(); ++it)
     {
-        if (it->dst_->state_ == dst_state)
+        if(this->GetStateIndex(it->dst_->state_) == this->GetStateIndex(dst_state))
             return it;
     }
     return it;

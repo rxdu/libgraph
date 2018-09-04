@@ -21,13 +21,6 @@ struct TestState
 	TestState(uint64_t id) : id_(id){};
 
 	int64_t id_;
-
-	bool operator==(const TestState &other)
-	{
-		if (id_ == other.id_)
-			return true;
-		return false;
-	}
 };
 
 struct GraphModificationTest : testing::Test

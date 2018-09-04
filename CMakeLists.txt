@@ -26,8 +26,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_TEST on)
 
 ## Add sub source directories
-# add_subdirectory(src/demo)
-# add_subdirectory(src/libgraph)
+add_subdirectory(src/demo)
 add_subdirectory(src/graph)
 
 if(BUILD_TEST)

@@ -15,7 +15,6 @@
 
 // user
 #include "graph/graph.hpp"
-#include "graph/algorithms/astar.hpp"
 #include "state_example.hpp"
 
 using namespace librav;
@@ -44,7 +43,7 @@ void ValueTypeGraphDemo()
 	}
 
 	// create a graph
-	Graph_t<StateExample> graph_val;
+	Graph<StateExample> graph_val;
 
 	graph_val.AddEdge(nodes[0], nodes[1], 1.0);
 	graph_val.AddEdge(nodes[0], nodes[3], 1.5);
@@ -84,7 +83,7 @@ void PointerTypeGraphDemo()
 	}
 
 	// create a graph
-	Graph_t<StateExample *> graph_ptr;
+	Graph<StateExample *> graph_ptr;
 
 	graph_ptr.AddEdge(nodes[0], nodes[1], 1.0);
 	graph_ptr.AddEdge(nodes[0], nodes[3], 1.5);

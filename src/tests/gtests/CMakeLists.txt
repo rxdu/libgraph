@@ -11,4 +11,4 @@ set(TESTCASES_SRC
     # src/graph_search_inc_test.cpp
 )
 add_executable(gtest_all src/start_tests.cpp ${TESTCASES_SRC})
-target_link_libraries(gtest_all gtest graph2)
+target_link_libraries(gtest_all gtest graph)

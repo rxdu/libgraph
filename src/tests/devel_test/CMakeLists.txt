@@ -13,3 +13,6 @@ target_link_libraries(test_iterator graph)
 
 add_executable(test_pt_graph test_pt_graph.cpp)
 target_link_libraries(test_pt_graph graph)
+
+add_executable(test_graph_creation test_graph_creation.cpp)
+target_link_libraries(test_graph_creation graph)

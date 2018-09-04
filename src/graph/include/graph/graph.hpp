@@ -125,6 +125,7 @@ public:
     // generic attributes
     State state_;
     const int64_t vertex_id_;
+    StateIndexer GetStateIndex;
 
     // edges connecting to other vertices
     typedef std::vector<Edge> EdgeListType;
