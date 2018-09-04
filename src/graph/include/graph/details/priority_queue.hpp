@@ -44,10 +44,10 @@ struct PriorityQueue
 	}
 };
 
-/// A priority queue implementation that supports element priority update. (TODO)
+/// A priority queue implementation that supports element priority update.
 // TODO
 template <typename ElmentType, typename PriorityType = double>
-struct PriorityQueue2
+struct DynamicPriorityQueue
 {
 	typedef std::pair<ElmentType, PriorityType> PQElement;
 

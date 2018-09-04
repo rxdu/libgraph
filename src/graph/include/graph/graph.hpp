@@ -13,6 +13,13 @@
  * [1] https://stackoverflow.com/a/16527081/2200873
  * [2] https://stackoverflow.com/questions/1443793/iterate-keys-in-a-c-map/35262398#35262398
  * 
+ * Erase–remove idiom:
+ * [3] https://en.wikipedia.org/wiki/Erase%E2%80%93remove_idiom
+ * 
+ * Member detector:
+ * [4] https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector
+ * [5] https://jguegant.github.io/blogs/tech/sfinae-introduction.html
+ * 
  */
 
 #ifndef GRAPH_HPP
@@ -54,7 +61,6 @@ public:
   /*---------------------------------------------------------------------------------*/
   /*                              Vertex Iterator                                    */
   /*---------------------------------------------------------------------------------*/
-
   ///@{
   /// Vertex iterator for unified access.
   /// Wraps the "value" part of VertexMapType::iterator
