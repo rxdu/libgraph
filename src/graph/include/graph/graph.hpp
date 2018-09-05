@@ -93,6 +93,7 @@ public:
   /*                               Edge Template                                     */
   /*---------------------------------------------------------------------------------*/
   ///@{
+  /// Edge class template.
   struct Edge
   {
     Edge(vertex_iterator src, vertex_iterator dst, Transition c) : src_(src), dst_(dst), trans_(c){};
