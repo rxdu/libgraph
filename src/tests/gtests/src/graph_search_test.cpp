@@ -41,6 +41,19 @@ struct SimpleState
 	}
 };
 
+struct SimpleStateIndexer
+{
+	int64_t operator()(SimpleState *state)
+	{
+		return state->row_ * COL_SIZE + state->col_;
+	}
+
+	int64_t operator()(const SimpleState &state)
+	{
+		return state.row_ * COL_SIZE + state.col_;
+	}
+};
+
 double CalcHeuristicPtr(SimpleState *node1, SimpleState *node2)
 {
 	int64_t dist_row = node1->row_ - node2->row_;
@@ -63,8 +76,8 @@ struct GraphSearchTest : testing::Test
 	std::vector<int64_t> spath;
 	std::vector<int64_t> spath2;
 
-	Graph_t<SimpleState> graph_val;
-	Graph_t<SimpleState *> graph_ptr;
+	Graph<SimpleState, double, SimpleStateIndexer> graph_val;
+	Graph<SimpleState *, double, SimpleStateIndexer> graph_ptr;
 
 	GraphSearchTest()
 	{
@@ -143,19 +156,9 @@ struct GraphSearchTest : testing::Test
 	}
 };
 
-TEST_F(GraphSearchTest, ValueTypeAStar)
-{
-	Path_t<SimpleState> path = AStar::Search(&graph_val, 0, 13, CalcHeuristicFunc_t<SimpleState>(CalcHeuristicVal));
-	std::vector<int64_t> path_ids;
-	for (auto &e : path)
-		path_ids.push_back(e.GetUniqueID());
-
-	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by A* in value-type graph is not correct";
-}
-
 TEST_F(GraphSearchTest, ValueTypeDijkstra)
 {
-	Path_t<SimpleState> path = Dijkstra::Search(&graph_val, 0, 13);
+	Path<SimpleState> path = Dijkstra::Search(&graph_val, 0, 13);
 	std::vector<int64_t> path_ids;
 	for (auto &e : path)
 		path_ids.push_back(e.GetUniqueID());
@@ -163,22 +166,32 @@ TEST_F(GraphSearchTest, ValueTypeDijkstra)
 	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by Dijkstra in value-type graph is not correct";
 }
 
-TEST_F(GraphSearchTest, PointerTypeAStar)
-{
-	Path_t<SimpleState*> path = AStar::Search(&graph_ptr, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristicPtr));
-	std::vector<int64_t> path_ids;
-	for (auto &e : path)
-		path_ids.push_back(e->GetUniqueID());
-
-	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by A* in pointer-type graph is not correct";
-}
-
 TEST_F(GraphSearchTest, PointerTypeDijkstra)
 {
-	Path_t<SimpleState*> path = Dijkstra::Search(&graph_ptr, 0, 13);
+	Path<SimpleState *> path = Dijkstra::Search(&graph_ptr, 0, 13);
 	std::vector<int64_t> path_ids;
 	for (auto &e : path)
 		path_ids.push_back(e->GetUniqueID());
 
 	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by Dijkstra in pointer-type graph is not correct";
+}
+
+TEST_F(GraphSearchTest, ValueTypeAStar)
+{
+	Path<SimpleState> path = AStar::Search(&graph_val, 0, 13, CalcHeuristicFunc_t<SimpleState>(CalcHeuristicVal));
+	std::vector<int64_t> path_ids;
+	for (auto &e : path)
+		path_ids.push_back(e.GetUniqueID());
+
+	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by A* in value-type graph is not correct";
+}
+
+TEST_F(GraphSearchTest, PointerTypeAStar)
+{
+	Path<SimpleState*> path = AStar::Search(&graph_ptr, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristicPtr));
+	std::vector<int64_t> path_ids;
+	for (auto &e : path)
+		path_ids.push_back(e->GetUniqueID());
+
+	ASSERT_TRUE(path_ids == spath || path_ids == spath2) << "Path found by A* in pointer-type graph is not correct";
 }

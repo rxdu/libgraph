@@ -25,7 +25,7 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#ifndef USE_UNORDERED_MAP
+#ifdef NOT_USE_UNORDERED_MAP
 #include <map>
 #else
 #include <unordered_map>
@@ -50,7 +50,7 @@ public:
   class Vertex;
   using GraphType = Graph<State, Transition, StateIndexer>;
 
-#ifndef USE_UNORDERED_MAP
+#ifdef NOT_USE_UNORDERED_MAP
   typedef std::map<int64_t, Vertex *> VertexMapType;
 #else
   typedef std::unordered_map<int64_t, Vertex *> VertexMapType;

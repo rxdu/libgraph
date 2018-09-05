@@ -11,7 +11,7 @@ target_sources(graph INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/include/graph/details/vertex_impl.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/graph/details/graph_impl.hpp
 )
-target_compile_definitions(graph INTERFACE -DUSE_UNORDERED_MAP -DMINIMAL_PRINTOUT)
+target_compile_definitions(graph INTERFACE -DMINIMAL_PRINTOUT)
 target_include_directories(graph INTERFACE
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>)
