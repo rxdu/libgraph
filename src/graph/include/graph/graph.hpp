@@ -118,6 +118,10 @@ public:
   /// Vertex class template.
   struct Vertex
   {
+    /** @name Big Five
+     *  Edge iterators to access vertices in the graph.
+     */
+    ///@{
     Vertex(State s, int64_t id) : state_(s), vertex_id_(id) {}
     ~Vertex() = default;
 
@@ -127,7 +131,8 @@ public:
     Vertex &operator=(const State &other) = delete;
     Vertex(State &&other) = delete;
     Vertex &operator=(State &&other) = delete;
-
+    ///@}
+    
     // generic attributes
     State state_;
     const int64_t vertex_id_;
@@ -143,11 +148,15 @@ public:
     // attributes for search algorithms
     bool is_checked_ = false;
     bool is_in_openlist_ = false;
-    double f_cost_ = std::numeric_limits<double>::max();
-    double g_cost_ = std::numeric_limits<double>::max();
-    double h_cost_ = std::numeric_limits<double>::max();
+    Transition f_cost_;// = std::numeric_limits<double>::max();
+    Transition g_cost_;// = std::numeric_limits<double>::max();
+    Transition h_cost_;// = std::numeric_limits<double>::max();
     vertex_iterator search_parent_;
 
+    /** @name Edge access.
+     *  Edge iterators to access vertices in the graph.
+     */
+    ///@{
     // edge iterator for easy access
     typedef typename EdgeListType::iterator edge_iterator;
     typedef typename EdgeListType::const_iterator const_edge_iterator;
@@ -155,7 +164,12 @@ public:
     edge_iterator edge_end() { return edges_to_.end(); }
     const_edge_iterator edge_begin() const { return edges_to_.begin(); }
     const_edge_iterator edge_end() const { return edges_to_.end(); }
+    ///@}
 
+    /** @name Edge Operations
+     *  Modify or query edge information of the vertex.
+     */
+    ///@{
     /// Returns true if two vertices have the same id. Otherwise, return false.
     bool operator==(const Vertex &other);
 

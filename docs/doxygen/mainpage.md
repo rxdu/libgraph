@@ -21,13 +21,13 @@ Graph is a type of data structure that can be used to represent pairwise relatio
     * ...
     * Edge n_m
 
-A "Graph" consists of a list of "Vertex", each of which has an unique ID and a list of "Edge". To perform search (such as A* and Dijkstra) in the graph, we also need to add a few more attributes, such as edge cost, heuristics, flags to corresponding data structures. This part is generic to all graph applications.
+A "Graph" consists of a list of "Vertex", each of which has an unique ID and a list of "Edge". To perform search (such as A* and Dijkstra) in the graph, we also need to add a few more attributes, such as edge cost, heuristics, flags to corresponding data structures. 
 
-In practice, we usually want to associate even more attributes to the vertex so that it can be meaningful for a specific application. For example when we use a graph to represent a square grid (created from a map), a square cell can be modeled as a vertex, and the connectivities of a cell with its neighbour cells can be represented as edges. In this case, a square cell (Vertex) may have attributes such as the coordinates in the grid and the occupancy type (cell filled with obstacle or not). Those attributes can be very different across different applications, thus they are not modeled directly in the "Vertex" data structure. Instead, the "additional information" is grouped into a separate concept (called a **State** in this design) and we uniquely associate a state data structure with a vertex. Similarly we can associate a **Transition** data structure to an Edge. By default the **Transition** type is double.
+In practice, we usually want to associate even more attributes to the vertex so that it can be meaningful for a specific application. For example, when we use a graph to represent a square grid (created from a map), a square cell can be modeled as a vertex, and the connectivities of a cell with its neighbour cells can be represented as edges. In this case, a square cell (Vertex) may have attributes such as the coordinates in the grid and the occupancy type (cell filled with obstacle or not). Those attributes can be very different across different applications, thus they are not modeled directly in the "Vertex" data structure. Instead, the "additional information" is grouped into a separate concept (called a **State** in this design) and we uniquely associate a state data structure with a vertex. Similarly we can associate a **Transition** data structure to an Edge. By default the **Transition** type is double.
 
 ### b. Constructing a Graph
 
-There are 3 class templates defined: **Graph_t**, **Vertex_t**, **Edge_t**. The use of template enables us to associate different types of "State" to a vertex, without modifying the code of the aforementioned 3 classes. In other words, the Graph, Vertex and Edge all have a "type", which is determined by "State" and "Transition" types. With the current implementation, the State has to be defined as a class or struct. **A user-defined State class/struct has to provide a function with the name "int64_t GetUniqueID()const"**. In the graph data structure, the vertex has the same ID with the State it's associated with. This is mainly for easy indexing to find one from the other.
+The "Graph" template allows us to associate different types of "State" to a vertex and "Transition" to an edge. In other words, the Graph, Vertex and Edge all have a "type", which is determined by "State" and "Transition" types. Additionally, we pass in the "StateIndexer" as a template type parameter in order to generate ID for "State". With the current implementation, the State has to be defined as a class or struct. If a user-defined State class/struct has a member variable "int64_t id_", the default state indexer could be used. Otherwise, you have to provide one in the form of a function or functor.** Inside the graph, a Vertex has the same ID with the State it's associated with. 
 
 Here is an example to use the templates.
 
@@ -36,14 +36,9 @@ I. We first define a State type we want to use for constructing the graph.
 ~~~
 struct StateExample
 {
-	StateExample(uint64_t id):any_unique_id_(id){};
+	StateExample(uint64_t id):id_(id){};
 
-	int64_t any_unique_id_;
-
-	int64_t GetUniqueID() const
-	{
-		return any_unique_id_;
-	}
+	int64_t id_;
 };
 ~~~
 
@@ -57,11 +52,11 @@ for(int i = 0; i < 9; i++) {
 	nodes.push_back(new StateExample(i));
 ~~~
 
-III. Now use those nodes to construct a graph. Note that the graph is of type StateExample* in this example.
+III. Now use those nodes to construct a graph. Note that the graph is of type "Graph<StateExample*, double, DefaultStateIndexer<StateExample*>>" in this example. Since the latter two type parameters use the default types, you only need to explicitly specify the first one.
 
 ~~~
 // create a graph
-Graph_t<StateExample*> graph;
+Graph<StateExample*> graph;
 
 // we only store a pointer to the bundled data structure in the graph to avoid duplicating possibly large data
 graph.AddEdge(nodes[0], nodes[1], 1.0);
@@ -108,15 +103,15 @@ You can use A* and Dijkstra algorithms to perform search in the graph.
 // In order to use A* search, you need to specify how to calculate heuristic
 auto path_a = AStar::Search(&graph, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
 for (auto &e : path_a)
-  std::cout << "id: " << e->GetUniqueID() << std::endl;
+  std::cout << "id: " << e->id_ << std::endl;
 
 // Dijkstra search
 auto path_d = Dijkstra::Search(&graph, 0, 13);
 for (auto &e : path_d)
-  std::cout << "id: " << e->GetUniqueID() << std::endl;
+  std::cout << "id: " << e->id_ << std::endl;
 ~~~
 
-In cases when it's unnecessary to build the entire graph for a search ,you can use the incremental version of A* and Dijkstra. See "demo/inc_search_demo.cpp" for an example.
+In cases when it's unnecessary to build the entire graph for a search ,you can use the incremental version of A* and Dijkstra. See "demo/inc_search_demo.cpp" for a working example.
 
 ### d. Memory Management
 
