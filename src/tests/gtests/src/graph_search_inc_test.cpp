@@ -140,22 +140,22 @@ struct GraphIncSearchTest : testing::Test
 	std::vector<int64_t> spath;
 };
 
-TEST_F(GraphIncSearchTest, IncAStar)
-{
-	auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)), CalcHeuristicFunc_t<SquareCell>(CalcHeuristic));
-	std::vector<int64_t> path_ids;
-	for (auto &e : path)
-		path_ids.push_back(e.GetUniqueID());
-
-	ASSERT_TRUE(path_ids == spath) << "Path found by incremental A* in value-type graph is not correct";
-}
-
 TEST_F(GraphIncSearchTest, IncDijkstra)
 {
-	auto path = Dijkstra::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
+	auto path = Dijkstra::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)), DefaultIndexer<SquareCell>());
 	std::vector<int64_t> path_ids;
 	for (auto &e : path)
 		path_ids.push_back(e.GetUniqueID());
 
 	ASSERT_TRUE(path_ids == spath) << "Path found by incremental Dijkstra in value-type graph is not correct";
+}
+
+TEST_F(GraphIncSearchTest, IncAStar)
+{
+	auto path = AStar::IncSearch(cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)), CalcHeuristicFunc_t<SquareCell>(CalcHeuristic), DefaultIndexer<SquareCell>());
+	std::vector<int64_t> path_ids;
+	for (auto &e : path)
+		path_ids.push_back(e.GetUniqueID());
+
+	ASSERT_TRUE(path_ids == spath) << "Path found by incremental A* in value-type graph is not correct";
 }

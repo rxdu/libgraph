@@ -7,4 +7,4 @@ add_subdirectory(googletest-release-1.8.0)
 add_subdirectory(gtests)
 
 # Other tests
-# add_subdirectory(devel_test)
+add_subdirectory(devel_test)

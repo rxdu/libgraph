@@ -1,5 +1,6 @@
-Main Page                         {#mainpage}
-=========
+## Graph Library
+
+C++ class templates for graph construction and search.
 
 ### a. Design
 

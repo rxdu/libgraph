@@ -14,26 +14,20 @@
 #include "gtest/gtest.h"
 
 #include "graph/graph.hpp"
-#include "graph/algorithms/astar.hpp"
 
 using namespace librav;
 
 struct TestState
 {
-	TestState(uint64_t id) : any_unique_id_(id){};
+	TestState(uint64_t id) : id_(id){};
 
-	int64_t any_unique_id_;
-
-	int64_t GetUniqueID() const
-	{
-		return any_unique_id_;
-	}
+	int64_t id_;
 };
 
 struct GraphIteratorTest : testing::Test
 {
 	std::vector<TestState *> nodes;
-	Graph_t<TestState *> graph;
+	Graph<TestState *> graph;
 
 	std::set<int64_t> vertex_id_set;
 	std::set<double> edge_cost_set;
@@ -87,7 +81,7 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
 	{
 		vertex_ids.insert((*it).vertex_id_);
 		for (auto ite = (*it).edge_begin(); ite != (*it).edge_end(); ++ite)
-			edge_costs.insert((*ite).cost_);
+			edge_costs.insert((*ite).trans_);
 	}
 
 	ASSERT_TRUE(vertex_ids == vertex_id_set) << "Failed to access all vertices in the graph (with iterator * operator)";
@@ -99,7 +93,7 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
 	{
 		vertex_ids.insert(it->vertex_id_);
 		for (auto ite = it->edge_begin(); ite != it->edge_end(); ++ite)
-			edge_costs.insert(ite->cost_);
+			edge_costs.insert(ite->trans_);
 	}
 
 	ASSERT_TRUE(vertex_ids == vertex_id_set) << "Failed to access all vertices in the graph (with iterator -> operator)";
