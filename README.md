@@ -6,9 +6,9 @@ C++ class templates for constructing graphs and search. This library is distribu
 
 * A compiler that supports C++11
 
-This is a header-only library, so you only need to include the header files in the "**src/graph**" folder to use the data structures. The CMake configuration in this repository is only used to compile the demo code and may also serve as an example on how to use this library in a CMake project. 
+This is a header-only library, so you only need to include the header files in the "**src/graph**" folder to use the data structures. 
 
-Refer to the demo for more details. 
+The CMake configuration in this repository is only used to compile the demo code and may also serve as an example on how to use this library in a CMake project. Refer to "**src/demo**" for more details. 
 
 ## 2. Build Document
 
@@ -24,9 +24,11 @@ Outlines of core data structures for the purpose of API reference are given at h
 
 ## 3. Construct a graph
 
-You can associate a state to each vertex and a transition to each edge. The only requirement is that you need to define an index function for your State class. The index function is used to generate a unique index for a state and it's necessary for checking whether two given states are the same so that only one vertex is created for one unique state inside the graph.
+You can associate any object to a vertex, but you need to provide an index function for the State struct/class. The index function is used to generate a unique index for a state and it's necessary for checking whether two given states are the same so that only one vertex is created for one unique state inside the graph.
 
-**A default indexer is provided and could be used if you have a member variable "id_" inside the class.** You can define your own index function if the default one is not suitable for your application.
+**A default indexer is provided and could be used if you have a member variable "id_" with a unique value inside the class.** 
+
+You can also define your own index function if the default one is not suitable for your application.
 
 ```
 // struct YourStateIndexFunction is a functor that defines operator "()". 
@@ -55,4 +57,3 @@ See "simple_graph_demo.cpp" in "demo" folder for a working example.
 ## 4. Known Limitations
 
 * [TODO List](./TODO.md)
-

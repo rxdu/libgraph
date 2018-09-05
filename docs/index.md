@@ -1,5 +1,3 @@
-## Data Structures
-
 Outlines of core data structures are given below. The main purpose is to provide an API reference and some C++ details may be removed for brevity. Get more information of the actual implementation from the doxygen documentation.
 
 ### **Graph** 
@@ -163,8 +161,7 @@ struct Edge
     vertex_iterator dst_;
     Transition trans_;
 
-    /// Check if current edge is identical to the other 
-    ///  all (src_, dst_, trans_).
+    /// Check if current edge is identical to the other (src_, dst_, trans_).
     bool operator==(const Edge &other);
 
     /// Print edge information, assuming member "trans_" is printable.
