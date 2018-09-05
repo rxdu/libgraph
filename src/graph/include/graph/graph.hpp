@@ -4,6 +4,10 @@
  * Created on: Dec 9, 2015
  * Description: 
  * 
+ * Major Revisions: 
+ *  version 0.1 Dec 09, 2015
+ *  version 2.0 Sep 03, 2018
+ * 
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
 
@@ -132,7 +136,7 @@ public:
     Vertex(State &&other) = delete;
     Vertex &operator=(State &&other) = delete;
     ///@}
-    
+
     // generic attributes
     State state_;
     const int64_t vertex_id_;
@@ -299,9 +303,6 @@ private:
   /// The default indexer returns member variable "id_", assuming it exists.
   StateIndexer GetStateIndex;
   VertexMapType vertex_map_;
-
-  friend class Edge;
-  friend class Vertex;
 
   /// Returns the iterator to the pair whose value is "state" in the vertex map.
   /// Create a new pair if one does not exit yet and return the iterator to the

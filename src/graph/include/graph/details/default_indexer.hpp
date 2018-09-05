@@ -1,3 +1,12 @@
+/* 
+ * default_indexer.hpp
+ * 
+ * Created on: Sep 03, 2018 06:57
+ * Description: 
+ * 
+ * Copyright (c) 2018 Ruixiang Du (rdu)
+ */ 
+
 #ifndef STATE_INDEXER_HPP
 #define STATE_INDEXER_HPP
 
