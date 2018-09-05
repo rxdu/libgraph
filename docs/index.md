@@ -1,6 +1,6 @@
-##Data Structures
+## Data Structures
 
-The following is an outline of the core data structures. The main purpose is to provide an API reference. Get more information from the doxygen documentation.
+An outline of the core data structures is given below. The main purpose is to provide an API reference. Get more information of the actual implementation from the doxygen documentation.
 
 ### **Graph** 
 
@@ -22,10 +22,10 @@ class Graph
     ~Graph();
 
     /* Vertex Access */
-    vertex_iterator vertex_begin() { return vertex_iterator(vertex_map_.begin()); }
-    vertex_iterator vertex_end() { return vertex_iterator(vertex_map_.end()); }
-    const_vertex_iterator vertex_begin() const { return vertex_iterator(vertex_map_.begin()); }
-    const_vertex_iterator vertex_end() const { return vertex_iterator(vertex_map_.end()); }
+    vertex_iterator vertex_begin();
+    vertex_iterator vertex_end();
+    const_vertex_iterator vertex_begin() const;
+    const_vertex_iterator vertex_end() const;
 
     /* Edge Access */
     typedef typename Vertex::edge_iterator edge_iterator;
@@ -37,8 +37,6 @@ class Graph
 
     /// This function checks if a vertex exists in the graph and remove it if presents.
     void RemoveVertex(int64_t state_id);
-
-    template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
     void RemoveVertex(State state);
 
     /// This function is used to add an edge between the vertices associated with the given two states.
@@ -58,11 +56,8 @@ class Graph
     /// This functions is used to access all edges of a graph
     std::vector<edge_iterator> GetAllEdges() const;
 
-    /// This function return the vertex iterator with specified id
+    /// This function return the vertex iterator with specified id/state
     inline vertex_iterator FindVertex(int64_t vertex_id);
-
-    /// This function return the vertex iterator with specified state
-    template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
     inline vertex_iterator FindVertex(T state);
 
     /// Get total number of vertices in the graph
@@ -129,11 +124,8 @@ struct Vertex
     /// Returns the id of current vertex.
     int64_t GetVertexID() const { return vertex_id_; }
 
-    /// Look for the edge connecting to the vertex with give id.
+    /// Look for the edge connecting to the vertex with give id/state.
     edge_iterator FindEdge(int64_t dst_id);
-
-    /// Look for the edge connecting to the vertex with give state.
-    template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
     edge_iterator FindEdge(T dst_state);
 
     /// Check if the vertex with given id or state is a neighbour of current vertex.
