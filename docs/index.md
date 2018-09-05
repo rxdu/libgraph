@@ -1,10 +1,11 @@
 ## Data Structures
 
-An outline of the core data structures is given below. The main purpose is to provide an API reference. Get more information of the actual implementation from the doxygen documentation.
+Outlines of core data structures are given below. The main purpose is to provide an API reference and some C++ details may be removed for brevity. Get more information of the actual implementation from the doxygen documentation.
 
 ### **Graph** 
 
 ```cpp 
+template<typename State, typename Transition, typename StateIndexer>
 class Graph
 {
     /// Default Graph constructor.
@@ -32,25 +33,27 @@ class Graph
     typedef typename Vertex::const_edge_iterator const_edge_iterator;
 
     /* Modify vertex or edge of the graph */
-    /// This function is used to create a vertex in the graph that associates with the given node.
+    /// This function is used to create a vertex in the graph that 
+    /// associates with the given node.
     vertex_iterator AddVertex(State state);
 
-    /// This function checks if a vertex exists in the graph and remove it if presents.
+    /// Removes a vertex if exists.
     void RemoveVertex(int64_t state_id);
     void RemoveVertex(State state);
 
-    /// This function is used to add an edge between the vertices associated with the given two states.
-    /// Update the transition if edge already exists.
+    /// Add an edge between vertices associated with the given states.   
+    /// Update the transition if an edge already exists.
     void AddEdge(State sstate, State dstate, Transition trans);
 
-    /// This function is used to remove the directed edge from src_node to dst_node.
+    /// This function is used to remove the directed edge from 
+    /// src_node to dst_node.
     bool RemoveEdge(State sstate, State dstate);
 
     /* Undirected Graph */
-    /// This function is used to add an undirected edge connecting two nodes
+    /// Add an undirected edge connecting two states
     void AddUndirectedEdge(State sstate, State dstate, Transition trans);
 
-    /// This function is used to remove the edge from src_node to dst_node.
+    /// Remove the edge from src_node to dst_node.
     bool RemoveUndirectedEdge(State src_node, State dst_node);
 
     /// This functions is used to access all edges of a graph
@@ -79,13 +82,14 @@ class Graph
 
 ```cpp
 /// Vertex class template.
+template<typename State, typename Transition, typename StateIndexer>
 struct Vertex
 {
     // constructor/destructor
     Vertex(State s, int64_t id);
     ~Vertex() = default;
 
-    // do not allow copy or assign
+    // copy or assignment not allowed
     Vertex() = delete;
     Vertex(const State &other) = delete;
     Vertex &operator=(const State &other) = delete;
@@ -118,7 +122,7 @@ struct Vertex
     const_edge_iterator edge_begin() const;
     const_edge_iterator edge_end() const;
 
-    /// Returns true if two vertices have the same id. Otherwise, return false.
+    /// Returns true if two vertices have the same id. 
     bool operator==(const Vertex &other);
 
     /// Returns the id of current vertex.
@@ -128,7 +132,7 @@ struct Vertex
     edge_iterator FindEdge(int64_t dst_id);
     edge_iterator FindEdge(T dst_state);
 
-    /// Check if the vertex with given id or state is a neighbour of current vertex.
+    /// Check if the vertex with given id or state is a neighbour.
     template <typename T>
     bool CheckNeighbour(T dst);
 
@@ -144,6 +148,7 @@ struct Vertex
 
 ```cpp
 /// Edge class template.
+template<typename State, typename Transition, typename StateIndexer>
 struct Edge
 {
     Edge(vertex_iterator src, vertex_iterator dst, Transition c);
@@ -158,7 +163,8 @@ struct Edge
     vertex_iterator dst_;
     Transition trans_;
 
-    /// Check if current edge is identical to the other (all src_, dst_, trans_).
+    /// Check if current edge is identical to the other 
+    ///  all (src_, dst_, trans_).
     bool operator==(const Edge &other);
 
     /// Print edge information, assuming member "trans_" is printable.

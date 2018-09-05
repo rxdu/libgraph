@@ -6,7 +6,9 @@ C++ class templates for constructing graphs and search. This library is distribu
 
 * A compiler that supports C++11
 
-This is a header-only library, so you only need to include the header files in the "src/graph" folder to use the data structures. Refer to the demo for more details. The CMake configuration in this repository is only used to compile the demo code and may also serve as an example on how to use this library in a CMake project.
+This is a header-only library, so you only need to include the header files in the "**src/graph**" folder to use the data structures. The CMake configuration in this repository is only used to compile the demo code and may also serve as an example on how to use this library in a CMake project. 
+
+Refer to the demo for more details. 
 
 ## 2. Build Document
 
@@ -17,6 +19,8 @@ $ sudo apt-get install doxygen
 $ cd docs
 $ doxygen doxygen/Doxyfile
 ```
+
+Outlines of core data structures for the purpose of API reference are given at https://rdu.im/libgraph/ .
 
 ## 3. Construct a graph
 
