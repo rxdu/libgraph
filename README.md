@@ -26,7 +26,7 @@ Outlines of core data structures for the purpose of API reference are given at h
 
 You can associate any object to a vertex, but you need to provide an index function for the State struct/class. The index function is used to generate a unique index for a state and it's necessary for checking whether two given states are the same so that only one vertex is created for one unique state inside the graph.
 
-**A default indexer is provided and could be used if you have a member variable "id_" with a unique value inside the class.** 
+**A default indexer is provided and could be used if you have a member variable "id_" or "id" with a unique value inside the class.** 
 
 You can also define your own index function if the default one is not suitable for your application.
 
