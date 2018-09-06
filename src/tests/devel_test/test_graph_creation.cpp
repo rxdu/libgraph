@@ -143,57 +143,57 @@ void PointerTypeGraphDemo()
 		delete e;
 }
 
-void SmartPointerTypeGraphDemo()
-{
-	std::vector<std::shared_ptr<StateExample>> nodes;
+// void SmartPointerTypeGraphDemo()
+// {
+// 	std::vector<std::shared_ptr<StateExample>> nodes;
 
-	// create nodes
-	for (int i = 0; i < 9; i++)
-	{
-		nodes.push_back(std::make_shared<StateExample>(i));
-	}
+// 	// create nodes
+// 	for (int i = 0; i < 9; i++)
+// 	{
+// 		nodes.push_back(std::make_shared<StateExample>(i));
+// 	}
 
-	// create a graph
-	// Graph<StateExample *, double, IndexFunction> graph_ptr;
-	Graph<std::shared_ptr<StateExample>> graph_ptr;
+// 	// create a graph
+// 	// Graph<StateExample *, double, IndexFunction> graph_ptr;
+// 	Graph<std::shared_ptr<StateExample>> graph_ptr;
 
-	graph_ptr.AddEdge(nodes[0], nodes[1], 1.0);
-	graph_ptr.AddEdge(nodes[0], nodes[3], 1.5);
-	graph_ptr.AddEdge(nodes[1], nodes[0], 2.0);
-	// graph_ptr.AddEdge(nodes[1], nodes[4], 2.5);
-	// graph_ptr.AddEdge(nodes[1], nodes[2], 1.0);
-	// graph_ptr.AddEdge(nodes[2], nodes[1], 1.5);
-	// graph_ptr.AddEdge(nodes[2], nodes[5], 2.0);
-	graph_ptr.AddEdge(nodes[3], nodes[0], 2.5);
-	// graph_ptr.AddEdge(nodes[3], nodes[4], 2.5);
-	// graph_ptr.AddEdge(nodes[4], nodes[1], 2.5);
-	// graph_ptr.AddEdge(nodes[4], nodes[3], 2.5);
-	// graph_ptr.AddEdge(nodes[4], nodes[5], 2.5);
-	// graph_ptr.AddEdge(nodes[5], nodes[2], 2.5);
-	// graph_ptr.AddEdge(nodes[5], nodes[4], 2.5);
-	// graph_ptr.AddEdge(nodes[5], nodes[8], 2.5);
-	// graph_ptr.AddEdge(nodes[7], nodes[4], 2.5);
-	// graph_ptr.AddEdge(nodes[7], nodes[8], 2.5);
-	// graph_ptr.AddEdge(nodes[8], nodes[5], 2.5);
-	// graph_ptr.AddEdge(nodes[8], nodes[7], 2.5);
+// 	graph_ptr.AddEdge(nodes[0], nodes[1], 1.0);
+// 	graph_ptr.AddEdge(nodes[0], nodes[3], 1.5);
+// 	graph_ptr.AddEdge(nodes[1], nodes[0], 2.0);
+// 	// graph_ptr.AddEdge(nodes[1], nodes[4], 2.5);
+// 	// graph_ptr.AddEdge(nodes[1], nodes[2], 1.0);
+// 	// graph_ptr.AddEdge(nodes[2], nodes[1], 1.5);
+// 	// graph_ptr.AddEdge(nodes[2], nodes[5], 2.0);
+// 	graph_ptr.AddEdge(nodes[3], nodes[0], 2.5);
+// 	// graph_ptr.AddEdge(nodes[3], nodes[4], 2.5);
+// 	// graph_ptr.AddEdge(nodes[4], nodes[1], 2.5);
+// 	// graph_ptr.AddEdge(nodes[4], nodes[3], 2.5);
+// 	// graph_ptr.AddEdge(nodes[4], nodes[5], 2.5);
+// 	// graph_ptr.AddEdge(nodes[5], nodes[2], 2.5);
+// 	// graph_ptr.AddEdge(nodes[5], nodes[4], 2.5);
+// 	// graph_ptr.AddEdge(nodes[5], nodes[8], 2.5);
+// 	// graph_ptr.AddEdge(nodes[7], nodes[4], 2.5);
+// 	// graph_ptr.AddEdge(nodes[7], nodes[8], 2.5);
+// 	// graph_ptr.AddEdge(nodes[8], nodes[5], 2.5);
+// 	// graph_ptr.AddEdge(nodes[8], nodes[7], 2.5);
 
-	// auto all_edges = graph_ptr.GetAllEdges();
+// 	// auto all_edges = graph_ptr.GetAllEdges();
 
-	// for(auto& e : all_edges)
-	// 	e->PrintEdge();
+// 	// for(auto& e : all_edges)
+// 	// 	e->PrintEdge();
 
-	for (auto it = graph_ptr.vertex_begin(); it != graph_ptr.vertex_end(); ++it)
-		for (auto eit = it->edge_begin(); eit != it->edge_end(); ++eit)
-			eit->PrintEdge();
+// 	for (auto it = graph_ptr.vertex_begin(); it != graph_ptr.vertex_end(); ++it)
+// 		for (auto eit = it->edge_begin(); eit != it->edge_end(); ++eit)
+// 			eit->PrintEdge();
 
-	graph_ptr.RemoveEdge(nodes[3], nodes[0]);
+// 	graph_ptr.RemoveEdge(nodes[3], nodes[0]);
 
-	std::cout << "after change" << std::endl;
+// 	std::cout << "after change" << std::endl;
 
-	for (auto it = graph_ptr.vertex_begin(); it != graph_ptr.vertex_end(); ++it)
-		for (auto eit = it->edge_begin(); eit != it->edge_end(); ++eit)
-			eit->PrintEdge();
-}
+// 	for (auto it = graph_ptr.vertex_begin(); it != graph_ptr.vertex_end(); ++it)
+// 		for (auto eit = it->edge_begin(); eit != it->edge_end(); ++eit)
+// 			eit->PrintEdge();
+// }
 
 int main(int argc, char **argv)
 {
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
 
 	std::cout << "\n---------- smart pointer type graph ----------\n"
 			  << std::endl;
-	SmartPointerTypeGraphDemo();
+	// SmartPointerTypeGraphDemo();
 
 	return 0;
 }

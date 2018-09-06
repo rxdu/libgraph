@@ -19,3 +19,6 @@ target_link_libraries(test_graph_creation graph)
 
 add_executable(test_dynamic_pq test_dynamic_pq.cpp)
 target_link_libraries(test_dynamic_pq graph)
+
+add_executable(test_id test_id.cpp)
+# target_link_libraries(test_id graph)

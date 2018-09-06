@@ -1,37 +1,8 @@
-/* 
- * default_indexer.hpp
- * 
- * Created on: Sep 03, 2018 06:57
- * Description: 
- * 
- * Copyright (c) 2018 Ruixiang Du (rdu)
- */
-
-#ifndef STATE_INDEXER_HPP
-#define STATE_INDEXER_HPP
-
 #include <iostream>
-#include <type_traits>
+#include <type_traits> // To use 'std::integral_constant'.
+#include <iostream>    // To use 'std::cout'.
+#include <iomanip>     // To use 'std::boolalpha'.
 #include <memory>
-#include <iostream>
-#include <iomanip>
-
-namespace librav
-{
-/*
- * Reference:
- * 
- * Member detector:
- * [1] https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector
- * [2] https://jguegant.github.io/blogs/tech/sfinae-introduction.html
- * 
- * Check std::shared_ptr
- * [3] https://stackoverflow.com/questions/10539305/generic-way-to-test-if-a-type-is-a-smart-pointer
- * 
- * SFINAE:
- * [4] https://cpppatterns.com/patterns/class-template-sfinae.html
- * 
- */
 
 #define GENERATE_HAS_MEMBER(member)                                                   \
                                                                                       \
@@ -68,37 +39,21 @@ namespace librav
 GENERATE_HAS_MEMBER(id);
 GENERATE_HAS_MEMBER(id_);
 
-template <typename T>
-struct is_shared_ptr : std::false_type
+struct TestState
 {
-};
-template <typename T>
-struct is_shared_ptr<std::shared_ptr<T>> : std::true_type
-{
+    int32_t id_;
 };
 
-template <typename State, typename Enable = void>
-struct DefaultIndexer;
-
-template <typename State>
-struct DefaultIndexer<State, typename std::enable_if<has_member_id_<typename std::remove_pointer<typename std::remove_const<typename std::remove_reference<State>::type>::type>::type>::value>::type>
+int main(int argc, char **argv)
 {
-    template <typename T = State, typename std::enable_if<(!std::is_pointer<T>::value && !is_shared_ptr<T>::value)>::type * = nullptr>
-    int64_t operator()(const State &state) const { return static_cast<int64_t>(state.id_); }
+    std::cout << "test id result: " << has_member_id<TestState>::value << std::endl;
+    std::cout << "test id_ result: " << has_member_id_<TestState>::value << std::endl;
 
-    template <typename T = State, typename std::enable_if<(std::is_pointer<T>::value || is_shared_ptr<T>::value)>::type * = nullptr>
-    int64_t operator()(State state) const { return static_cast<int64_t>(state->id_); }
-};
+    std::cout << " ------ " << std::endl;
 
-template <typename State>
-struct DefaultIndexer<State, typename std::enable_if<has_member_id<typename std::remove_pointer<typename std::remove_const<typename std::remove_reference<State>::type>::type>::type>::value>::type>
-{
-    template <typename T = State, typename std::enable_if<(!std::is_pointer<T>::value && !is_shared_ptr<T>::value)>::type * = nullptr>
-    int64_t operator()(const State &state) const { return static_cast<int64_t>(state.id); }
+    std::cout << "test id result: " << has_member_id_<std::remove_pointer<TestState*>::type>::value << std::endl;
+    std::cout << "test id result: " << has_member_id_<std::remove_pointer<std::remove_const<const TestState*>::type>::type>::value << std::endl;
+    std::cout << "test id result: " << has_member_id<std::remove_pointer<std::remove_const<std::shared_ptr<TestState>>::type>::type>::value << std::endl;
 
-    template <typename T = State, typename std::enable_if<(std::is_pointer<T>::value || is_shared_ptr<T>::value)>::type * = nullptr>
-    int64_t operator()(State state) const { return static_cast<int64_t>(state->id); }
-};
-} // namespace librav
-
-#endif /* STATE_INDEXER_HPP */
+    return 0;
+}

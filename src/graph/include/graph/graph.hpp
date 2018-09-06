@@ -20,10 +20,6 @@
  * Erase–remove idiom:
  * [3] https://en.wikipedia.org/wiki/Erase%E2%80%93remove_idiom
  * 
- * Member detector:
- * [4] https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector
- * [5] https://jguegant.github.io/blogs/tech/sfinae-introduction.html
- * 
  */
 
 #ifndef GRAPH_HPP
