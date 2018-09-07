@@ -31,6 +31,14 @@ struct TestState
 	}
 };
 
+struct SharedPtrTestStateIndexer
+{
+	int64_t operator()(std::shared_ptr<TestState> state)
+	{
+		return state->id_;
+	}
+};
+
 struct GraphTypeTest : testing::Test
 {
 	std::vector<TestState *> nodes;
@@ -113,7 +121,7 @@ TEST_F(GraphTypeTest, PointerType)
 
 TEST_F(GraphTypeTest, SharedPointerType)
 {
-	Graph<std::shared_ptr<TestState>> graph;
+	Graph<std::shared_ptr<TestState>, double, SharedPtrTestStateIndexer> graph;
 
 	graph.AddEdge((shared_nodes[0]), (shared_nodes[1]), 1.0);
 	graph.AddEdge((shared_nodes[0]), (shared_nodes[3]), 1.5);
