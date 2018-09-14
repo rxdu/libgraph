@@ -180,6 +180,7 @@ typename Graph<State, Transition, StateIndexer>::vertex_iterator Graph<State, Tr
     if (it == vertex_map_.end())
     {
         auto new_vertex = new Vertex(state, state_id);
+        new_vertex->search_parent_ = vertex_end();
         vertex_map_.insert(std::make_pair(state_id, new_vertex));
         return vertex_iterator(vertex_map_.find(state_id));
     }
