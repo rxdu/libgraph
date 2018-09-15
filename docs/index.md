@@ -22,11 +22,11 @@ where $G = \{V, E\}$, $V = \{v_1, v_2, ..., v_n\}$, $E = \{E_{v_1}, ..., E_{v_n}
 
 In practice, we usually want to associate application-specific data structures to the vertices and edges so that the graph can be meaningful for the application. For example, when we use a graph to represent a square grid, a square cell is associated with a vertex, and a connection between two cells is associated with an edge. Thus we implment the graph as a class template **Graph<State, Transition, StateIndexer>**. We uniquely associate a **State** data structure with a vertex and a **Transition** data structure to an edge. The StateIndexer is used to generate an index for the states so that any state can be uniquely identified in the graph.
 
-### b. Constructing a Graph
+## Graph Construction
 
-In the current implementation, "State" has to be defined as a class or struct. If a user-defined State class/struct has a member variable "id_" or "id" and its value is unique, the default state indexer could be used. Otherwise, you have to provide an indexer in the form of a function or functor. By default, the "Transition" type is "double". Inside the graph, a Vertex has the same ID with the State it's associated with. 
+In the current implementation, "State" has to be defined as a class or struct. If a user-defined State class/struct has a member variable "id_" or "id" and the value is unique for each instance, the default state indexer could be used. Otherwise, you have to provide an indexer in the form of a function or functor. By default, the "Transition" type is "double". Inside the graph, a Vertex has the same ID with the State it's associated with. 
 
-Here is an example to use the templates.
+Here is an example showing how to use the templates to construct a graph.
 
 I. We first define a State type we want to use for constructing the graph.
 
@@ -92,7 +92,7 @@ for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
 }
 ~~~
 
-### c. Graph Search
+## Graph Search
 
 You can use A* and Dijkstra algorithms to perform search in the graph.
 
@@ -110,7 +110,7 @@ for (auto &e : path_d)
 
 In cases when it's unnecessary to build the entire graph for a search ,you can use the incremental version of A* and Dijkstra. See "demo/inc_search_demo.cpp" for a working example.
 
-### d. Memory Management
+## Memory Management
 
 When a Graph object goes out of scope, its destructor function will recycle memory allocated for its vertices and edges. **The graph doesn't recycle memory allocated for the bundled "State" data structure if only a pointer to the State is associated with the vertex in the graph**. In the square grid example, the graph doesn't assume the square grid also becomes useless when the graph itself is destructed. Thus you still have a complete square grid data structure after the graph object goes out of scope. The **square grid** should be responsible for recycling the memory allocated for its square cells when it goes out of scope. Thus in the above simple example, we will need to do the following operation to free the memory at the end.
 
