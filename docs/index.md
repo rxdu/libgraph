@@ -30,18 +30,18 @@ Here is an example showing how to use the templates to construct a graph.
 
 I. We first define a State type we want to use for constructing the graph.
 
-~~~
+~~~cpp
 struct StateExample
 {
-	StateExample(uint64_t id):id_(id){};
+    StateExample(uint64_t id):id_(id){};
 
-	int64_t id_;
+    int64_t id_;
 };
 ~~~
 
 II. Then we can create a few objects of class StateExample
 
-~~~
+~~~cpp
 std::vector<StateExample*> nodes;
 
 // create nodes to be bundled with the graph vertices
@@ -51,11 +51,11 @@ for(int i = 0; i < 9; i++) {
 
 III. Now use those nodes to construct a graph. Note that the graph is of type "Graph<StateExample*, double, DefaultStateIndexer<StateExample*>>" in this example. Since the latter two type parameters use the default types, you only need to explicitly specify the first one.
 
-~~~
+~~~cpp
 // create a graph
 Graph<StateExample*> graph;
 
-// we only store a pointer to the bundled data structure in the graph to avoid duplicating possibly large data
+// we only store a pointer in the graph to avoid copying possibly large data
 graph.AddEdge(nodes[0], nodes[1], 1.0);
 graph.AddEdge(nodes[0], nodes[2], 1.5);
 graph.AddEdge(nodes[1], nodes[2], 2.0);
@@ -64,7 +64,7 @@ graph.AddEdge(nodes[2], nodes[3], 2.5);
 
 IV. Now you've got a graph. You can print all edges of this graph in the following way
 
-~~~
+~~~cpp
 auto all_edges = graph.GetAllEdges();
 
 for(auto e : all_edges)
@@ -80,9 +80,9 @@ Edge: start - 1 , end - 2 , cost - 2
 Edge: start - 2 , end - 3 , cost - 2.5
 ~~~
 
-You can also use iterators to access vertices and edges
+You can use iterators to access vertices and edges
 
-~~~
+~~~cpp
 for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
 {
   std::cout << "edges of vertex: " << (*it).vertex_id_ << std::endl;
@@ -96,9 +96,10 @@ for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
 
 You can use A* and Dijkstra algorithms to perform search in the graph.
 
-~~~
+~~~cpp
 // In order to use A* search, you need to specify how to calculate heuristic
-auto path_a = AStar::Search(&graph, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
+auto path_a = AStar::Search(&graph, 0, 13,
+        CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
 for (auto &e : path_a)
   std::cout << "id: " << e->id_ << std::endl;
 
@@ -114,7 +115,7 @@ In cases when it's unnecessary to build the entire graph for a search ,you can u
 
 When a Graph object goes out of scope, its destructor function will recycle memory allocated for its vertices and edges. **The graph doesn't recycle memory allocated for the bundled "State" data structure if only a pointer to the State is associated with the vertex in the graph**. In the square grid example, the graph doesn't assume the square grid also becomes useless when the graph itself is destructed. Thus you still have a complete square grid data structure after the graph object goes out of scope. The **square grid** should be responsible for recycling the memory allocated for its square cells when it goes out of scope. Thus in the above simple example, we will need to do the following operation to free the memory at the end.
 
-~~~
+~~~cpp
 // delete objects of StateExample
 for(auto& e : nodes)
 	delete e;
