@@ -15,7 +15,7 @@ namespace librav
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::Edge::operator==(const Graph<State, Transition, StateIndexer>::Edge &other)
 {
-    if (src_ == other.src_ && dst_ == other.dst_ && trans_ == other.trans_)
+    if (src_ == other.src_ && dst_ == other.dst_ && cost_ == other.cost_)
         return true;
     return false;
 }
@@ -23,7 +23,7 @@ bool Graph<State, Transition, StateIndexer>::Edge::operator==(const Graph<State,
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::Edge::PrintEdge()
 {
-    std::cout << "Edge_t: src - " << src_->GetVertexID() << " , dst - " << dst_->GetVertexID() << " , cost - " << trans_ << std::endl;
+    std::cout << "Edge_t: src - " << src_->GetVertexID() << " , dst - " << dst_->GetVertexID() << " , cost - " << cost_ << std::endl;
 }
 
 } // namespace librav

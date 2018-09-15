@@ -92,7 +92,7 @@ public:
   /// Edge class template.
   struct Edge
   {
-    Edge(vertex_iterator src, vertex_iterator dst, Transition c) : src_(src), dst_(dst), trans_(c){};
+    Edge(vertex_iterator src, vertex_iterator dst, Transition c) : src_(src), dst_(dst), cost_(c){};
     ~Edge() = default;
 
     Edge(const Edge &other) = default;
@@ -102,12 +102,12 @@ public:
 
     vertex_iterator src_;
     vertex_iterator dst_;
-    Transition trans_;
+    Transition cost_;
 
-    /// Check if current edge is identical to the other (all src_, dst_, trans_).
+    /// Check if current edge is identical to the other (all src_, dst_, cost_).
     bool operator==(const Edge &other);
 
-    /// Print edge information, assuming member "trans_" is printable.
+    /// Print edge information, assuming member "cost_" is printable.
     void PrintEdge();
   };
   ///@}
@@ -307,6 +307,9 @@ private:
   vertex_iterator ObtainVertexFromVertexMap(State state);
   ///@}
 };
+
+template <typename State, typename Transition = double, typename StateIndexer = DefaultIndexer<State>>
+using Graph_t = Graph<State, Transition, StateIndexer>;
 } // namespace librav
 
 #include "graph/details/edge_impl.hpp"

@@ -1,170 +1,127 @@
-Outlines of core data structures are given below. The main purpose is to provide an API reference and some C++ details may be removed for brevity. Get more information of the actual implementation from the doxygen documentation.
+## API
 
-### **Graph** 
+Outlines of core data structures are given at this [page](./api). The main purpose is to provide an API reference. Some C++ details are removed for brevity. Get more information of the actual implementation from the doxygen documentation.
 
-```cpp 
-template<typename State, typename Transition, typename StateIndexer>
-class Graph
+## Design
+
+Graph is a type of data structure that can be used to represent pairwise relations between entities. A graph $G$ contains a collection of vertices $V$ and edges $E$, of which an edge corresponds to a connectivity relation and a vertex corresponds to an entity. A matrix or adjacency list is commonly used to implement a graph. In this library, an object-oriented implementation is used for efficient access to edges of each vertex. The structure is illustrated as follows 
+
+* Graph
+  * Vertex $v_1$
+    * Edge $e_{11}$ 
+    * Edge $e_{12}$
+    * ...
+  * ...
+  * Vertex $v_n$
+    * Edge $e_{n1}$ 
+    * Edge $e_{n2}$ 
+    * ...
+    * Edge $e_{nm}$ 
+
+where $G = \{V, E\}$, $V = \{v_1, v_2, ..., v_n\}$, $E = \{E_{v_1}, ..., E_{v_n}\} = \{\{e_{11}, e_{12}, ...\}, ..., \{e_{n1}, e_{n2}, ..., e_{nm}\}\}$. 
+
+In practice, we usually want to associate application-specific data structures to the vertices and edges so that the graph can be meaningful for the application. For example, when we use a graph to represent a square grid, a square cell is associated with a vertex, and a connection between two cells is associated with an edge. Thus we implment the graph as a class template **Graph<State, Transition, StateIndexer>**. We uniquely associate a **State** data structure with a vertex and a **Transition** data structure to an edge. The StateIndexer is used to generate an index for the states so that any state can be uniquely identified in the graph.
+
+### b. Constructing a Graph
+
+In the current implementation, "State" has to be defined as a class or struct. If a user-defined State class/struct has a member variable "id_" or "id" and its value is unique, the default state indexer could be used. Otherwise, you have to provide an indexer in the form of a function or functor. By default, the "Transition" type is "double". Inside the graph, a Vertex has the same ID with the State it's associated with. 
+
+Here is an example to use the templates.
+
+I. We first define a State type we want to use for constructing the graph.
+
+~~~
+struct StateExample
 {
-    /// Default Graph constructor.
-    Graph() = default;
-    /// Copy constructor.
-    Graph(const GraphType &other);
-    /// Move constructor
-    Graph(GraphType &&other);
-    /// Assignment operator
-    GraphType &operator=(const GraphType &other);
-    /// Move assignment operator
-    GraphType &operator=(GraphType &&other);
+	StateExample(uint64_t id):id_(id){};
 
-    /// Default Graph destructor.
-    ~Graph();
+	int64_t id_;
+};
+~~~
 
-    /* Vertex Access */
-    vertex_iterator vertex_begin();
-    vertex_iterator vertex_end();
-    const_vertex_iterator vertex_begin() const;
-    const_vertex_iterator vertex_end() const;
+II. Then we can create a few objects of class StateExample
 
-    /* Edge Access */
-    typedef typename Vertex::edge_iterator edge_iterator;
-    typedef typename Vertex::const_edge_iterator const_edge_iterator;
+~~~
+std::vector<StateExample*> nodes;
 
-    /* Modify vertex or edge of the graph */
-    /// This function is used to create a vertex in the graph that 
-    /// associates with the given node.
-    vertex_iterator AddVertex(State state);
+// create nodes to be bundled with the graph vertices
+for(int i = 0; i < 9; i++) {
+	nodes.push_back(new StateExample(i));
+~~~
 
-    /// Removes a vertex if exists.
-    void RemoveVertex(int64_t state_id);
-    void RemoveVertex(State state);
+III. Now use those nodes to construct a graph. Note that the graph is of type "Graph<StateExample*, double, DefaultStateIndexer<StateExample*>>" in this example. Since the latter two type parameters use the default types, you only need to explicitly specify the first one.
 
-    /// Add an edge between vertices associated with the given states.   
-    /// Update the transition if an edge already exists.
-    void AddEdge(State sstate, State dstate, Transition trans);
+~~~
+// create a graph
+Graph<StateExample*> graph;
 
-    /// This function is used to remove the directed edge from 
-    /// src_node to dst_node.
-    bool RemoveEdge(State sstate, State dstate);
+// we only store a pointer to the bundled data structure in the graph to avoid duplicating possibly large data
+graph.AddEdge(nodes[0], nodes[1], 1.0);
+graph.AddEdge(nodes[0], nodes[2], 1.5);
+graph.AddEdge(nodes[1], nodes[2], 2.0);
+graph.AddEdge(nodes[2], nodes[3], 2.5);
+~~~
 
-    /* Undirected Graph */
-    /// Add an undirected edge connecting two states
-    void AddUndirectedEdge(State sstate, State dstate, Transition trans);
+IV. Now you've got a graph. You can print all edges of this graph in the following way
 
-    /// Remove the edge from src_node to dst_node.
-    bool RemoveUndirectedEdge(State src_node, State dst_node);
+~~~
+auto all_edges = graph.GetAllEdges();
 
-    /// This functions is used to access all edges of a graph
-    std::vector<edge_iterator> GetAllEdges() const;
+for(auto e : all_edges)
+	e->PrintEdge();
+~~~
 
-    /// This function return the vertex iterator with specified id/state
-    inline vertex_iterator FindVertex(int64_t vertex_id);
-    inline vertex_iterator FindVertex(T state);
+You will get the output
 
-    /// Get total number of vertices in the graph
-    int64_t GetGraphVertexNumber() const;
+~~~
+Edge: start - 0 , end - 1 , cost - 1
+Edge: start - 0 , end - 2 , cost - 1.5
+Edge: start - 1 , end - 2 , cost - 2
+Edge: start - 2 , end - 3 , cost - 2.5
+~~~
 
-    /// Get total number of edges in the graph
-    int64_t GetGraphEdgeNumber() const;
+You can also use iterators to access vertices and edges
 
-    /* Utility functions */
-    /// This function is used to reset states of all vertice for a new search
-    void ResetGraphVertices();
-
-    /// This function removes all edges and vertices in the graph
-    void ClearGraph();
+~~~
+for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
+{
+  std::cout << "edges of vertex: " << (*it).vertex_id_ << std::endl;
+  
+  for (auto ite = it->edge_begin(); ite != it->edge_end(); ++ite)
+    std::cout << "edge " << (*ite).dst_->vertex_id_ << std::endl;
 }
-```
+~~~
 
-**Vertex** 
+### c. Graph Search
 
-```cpp
-/// Vertex class template.
-template<typename State, typename Transition, typename StateIndexer>
-struct Vertex
-{
-    // constructor/destructor
-    Vertex(State s, int64_t id);
-    ~Vertex() = default;
+You can use A* and Dijkstra algorithms to perform search in the graph.
 
-    // copy or assignment not allowed
-    Vertex() = delete;
-    Vertex(const State &other) = delete;
-    Vertex &operator=(const State &other) = delete;
-    Vertex(State &&other) = delete;
-    Vertex &operator=(State &&other) = delete;
+~~~
+// In order to use A* search, you need to specify how to calculate heuristic
+auto path_a = AStar::Search(&graph, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
+for (auto &e : path_a)
+  std::cout << "id: " << e->id_ << std::endl;
 
-    // generic attributes
-    State state_;
-    const int64_t vertex_id_;
-    StateIndexer GetStateIndex;
+// Dijkstra search
+auto path_d = Dijkstra::Search(&graph, 0, 13);
+for (auto &e : path_d)
+  std::cout << "id: " << e->id_ << std::endl;
+~~~
 
-    // edges connecting to other vertices
-    typedef std::vector<Edge> EdgeListType;
-    EdgeListType edges_to_;
+In cases when it's unnecessary to build the entire graph for a search ,you can use the incremental version of A* and Dijkstra. See "demo/inc_search_demo.cpp" for a working example.
 
-    // vertices that contain edges connecting to current vertex
-    std::vector<vertex_iterator> vertices_from_;
+### d. Memory Management
 
-    // attributes for search algorithms
-    bool is_checked_ = false;
-    bool is_in_openlist_ = false;
-    Transition f_cost_;
-    Transition g_cost_;
-    Transition h_cost_;
-    vertex_iterator search_parent_;
+When a Graph object goes out of scope, its destructor function will recycle memory allocated for its vertices and edges. **The graph doesn't recycle memory allocated for the bundled "State" data structure if only a pointer to the State is associated with the vertex in the graph**. In the square grid example, the graph doesn't assume the square grid also becomes useless when the graph itself is destructed. Thus you still have a complete square grid data structure after the graph object goes out of scope. The **square grid** should be responsible for recycling the memory allocated for its square cells when it goes out of scope. Thus in the above simple example, we will need to do the following operation to free the memory at the end.
 
-    // edge iterator for easy access
-    edge_iterator edge_begin();
-    edge_iterator edge_end();
-    const_edge_iterator edge_begin() const;
-    const_edge_iterator edge_end() const;
+~~~
+// delete objects of StateExample
+for(auto& e : nodes)
+	delete e;
+~~~
 
-    /// Returns true if two vertices have the same id. 
-    bool operator==(const Vertex &other);
+It's usually preferred to only associate a pointer to a vertex if it's expensive to copy all data over to the graph or if the attributes of your State may change dynamically and you don't want to synchronize data in the graph manually. In such case, user has to make sure the State data structures don't go out of scope before the destruction of the graph. Otherwise the graph vertices are associated with "nothing" and you will get memory errors.
 
-    /// Returns the id of current vertex.
-    int64_t GetVertexID() const { return vertex_id_; }
+In other cases, you can copy data to graph vertices and you will get a second copy of your original data in the graph once the graph is created. The data copied to the graph will be managed by the graph. You only need to recycle the original data if necessary.
 
-    /// Look for the edge connecting to the vertex with give id/state.
-    edge_iterator FindEdge(int64_t dst_id);
-    edge_iterator FindEdge(T dst_state);
-
-    /// Check if the vertex with given id or state is a neighbour.
-    template <typename T>
-    bool CheckNeighbour(T dst);
-
-    /// Get all neighbor vertices of this vertex.
-    std::vector<vertex_iterator> GetNeighbours();
-
-    /// Clear exiting search info before a new search
-    void ClearVertexSearchInfo();
-};
-```
-
-**Edge**
-
-```cpp
-/// Edge class template.
-template<typename State, typename Transition, typename StateIndexer>
-struct Edge
-{
-    Edge(vertex_iterator src, vertex_iterator dst, Transition c);
-    ~Edge();
-
-    Edge(const Edge &other) = default;
-    Edge &operator=(const Edge &other) = default;
-    Edge(Edge &&other) = default;
-    Edge &operator=(Edge &&other) = default;
-
-    vertex_iterator src_;
-    vertex_iterator dst_;
-    Transition trans_;
-
-    /// Check if current edge is identical to the other (src_, dst_, trans_).
-    bool operator==(const Edge &other);
-
-    /// Print edge information, assuming member "trans_" is printable.
-    void PrintEdge();
-};
-```
+An detailed example of the graph and path search can be found in "demo/simple_graph_demo.cpp". You may also find the unit tests in "tests/gtests" useful for other possible operations on the graph.
