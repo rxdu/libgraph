@@ -21,7 +21,7 @@ Graph<State, Transition, StateIndexer>::Graph(const Graph<State, Transition, Sta
     {
         auto vertex = pair.second;
         for (auto &edge : vertex->edges_to_)
-            this->AddEdge(edge.src_->state_, edge.dst_->state_, edge.trans_);
+            this->AddEdge(edge.src_->state_, edge.dst_->state_, edge.cost_);
     }
 }
 
@@ -94,7 +94,7 @@ void Graph<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
     auto it = src_vertex->FindEdge(dstate);
     if (it != src_vertex->edge_end())
     {
-        it->trans_ = trans;
+        it->cost_ = trans;
         return;
     }
 

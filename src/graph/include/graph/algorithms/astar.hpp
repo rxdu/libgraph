@@ -139,7 +139,7 @@ class AStar
 				// check if the vertex has been checked (in closed list)
 				if (successor->is_checked_ == false)
 				{
-					auto new_cost = current_vertex->g_cost_ + edge.trans_;
+					auto new_cost = current_vertex->g_cost_ + edge.cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost
@@ -218,7 +218,7 @@ class AStar
 				// check if the vertex has been checked (in closed list)
 				if (successor->is_checked_ == false)
 				{
-					auto new_cost = current_vertex->g_cost_ + edge.trans_;
+					auto new_cost = current_vertex->g_cost_ + edge.cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost

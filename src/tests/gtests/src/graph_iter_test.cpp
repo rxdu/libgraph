@@ -81,7 +81,7 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
 	{
 		vertex_ids.insert((*it).vertex_id_);
 		for (auto ite = (*it).edge_begin(); ite != (*it).edge_end(); ++ite)
-			edge_costs.insert((*ite).trans_);
+			edge_costs.insert((*ite).cost_);
 	}
 
 	ASSERT_TRUE(vertex_ids == vertex_id_set) << "Failed to access all vertices in the graph (with iterator * operator)";
@@ -93,7 +93,7 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
 	{
 		vertex_ids.insert(it->vertex_id_);
 		for (auto ite = it->edge_begin(); ite != it->edge_end(); ++ite)
-			edge_costs.insert(ite->trans_);
+			edge_costs.insert(ite->cost_);
 	}
 
 	ASSERT_TRUE(vertex_ids == vertex_id_set) << "Failed to access all vertices in the graph (with iterator -> operator)";

@@ -126,7 +126,7 @@ class Dijkstra
 				if (successor->is_checked_ == false)
 				{
 					// first set the parent of the adjacent vertex to be the current vertex
-					auto new_cost = current_vertex->g_cost_ + edge.trans_;
+					auto new_cost = current_vertex->g_cost_ + edge.cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost
@@ -197,7 +197,7 @@ class Dijkstra
 				if (successor->is_checked_ == false)
 				{
 					// first set the parent of the adjacent vertex to be the current vertex
-					auto new_cost = current_vertex->g_cost_ + edge.trans_;
+					auto new_cost = current_vertex->g_cost_ + edge.cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost
@@ -319,7 +319,7 @@ class DijkstraTraversal
 				if (successor->is_checked_ == false)
 				{
 					// first set the parent of the adjacent vertex to be the current vertex
-					auto new_cost = current_vertex->g_cost_ + edge->trans_;
+					auto new_cost = current_vertex->g_cost_ + edge->cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost
@@ -372,7 +372,7 @@ class DijkstraTraversal
 				if (successor->is_checked_ == false)
 				{
 					// first set the parent of the adjacent vertex to be the current vertex
-					auto new_cost = current_vertex->g_cost_ + edge->trans_;
+					auto new_cost = current_vertex->g_cost_ + edge->cost_;
 
 					// if the vertex is not in open list
 					// or if the vertex is in open list but has a higher cost

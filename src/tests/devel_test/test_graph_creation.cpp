@@ -49,7 +49,7 @@ void ValueTypeGraphDemo()
 	}
 
 	// create a graph
-	Graph<StateExample> graph_val;
+	Graph_t<StateExample> graph_val;
 
 	graph_val.AddEdge(nodes[0], nodes[1], 1.0);
 	graph_val.AddEdge(nodes[0], nodes[3], 1.5);
