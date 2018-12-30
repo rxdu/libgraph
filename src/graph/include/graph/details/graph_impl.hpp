@@ -132,10 +132,10 @@ void Graph<State, Transition, StateIndexer>::AddUndirectedEdge(State sstate, Sta
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-bool Graph<State, Transition, StateIndexer>::RemoveUndirectedEdge(State src_node, State dst_node)
+bool Graph<State, Transition, StateIndexer>::RemoveUndirectedEdge(State sstate, State dstate)
 {
-    bool edge1 = RemoveEdge(src_node, dst_node);
-    bool edge2 = RemoveEdge(dst_node, src_node);
+    bool edge1 = RemoveEdge(sstate, dstate);
+    bool edge2 = RemoveEdge(dstate, sstate);
 
     if (edge1 && edge2)
         return true;
@@ -157,14 +157,14 @@ std::vector<typename Graph<State, Transition, StateIndexer>::edge_iterator> Grap
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-void Graph<State, Transition, StateIndexer>::ResetGraphVertices()
+void Graph<State, Transition, StateIndexer>::ResetAllVertices()
 {
     for (auto &vertex_pair : vertex_map_)
         vertex_pair.second->ClearVertexSearchInfo();
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-void Graph<State, Transition, StateIndexer>::ClearGraph()
+void Graph<State, Transition, StateIndexer>::ClearAll()
 {
     for (auto &vertex_pair : vertex_map_)
         delete vertex_pair.second;

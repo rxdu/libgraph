@@ -86,8 +86,8 @@ TEST_F(GraphTypeTest, ValueType)
 	graph.AddEdge(*(nodes[8]), *(nodes[5]), 2.5);
 	graph.AddEdge(*(nodes[8]), *(nodes[7]), 2.5);
 
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 9) << "Failed to add vertices to value-type graph ";
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 20) << "Failed to add vertices to value-type graph ";
+	ASSERT_EQ(graph.GetTotalVertexNumber(), 9) << "Failed to add vertices to value-type graph ";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 20) << "Failed to add vertices to value-type graph ";
 }
 
 TEST_F(GraphTypeTest, PointerType)
@@ -115,8 +115,8 @@ TEST_F(GraphTypeTest, PointerType)
 	graph.AddEdge((nodes[8]), (nodes[5]), 10.5);
 	graph.AddEdge((nodes[8]), (nodes[7]), 11.0);
 
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 9) << "Failed to add vertices to pointer-type graph ";
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 20) << "Failed to add vertices to pointer-type graph ";
+	ASSERT_EQ(graph.GetTotalVertexNumber(), 9) << "Failed to add vertices to pointer-type graph ";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 20) << "Failed to add vertices to pointer-type graph ";
 }
 
 TEST_F(GraphTypeTest, SharedPointerType)
@@ -144,6 +144,6 @@ TEST_F(GraphTypeTest, SharedPointerType)
 	graph.AddEdge((shared_nodes[8]), (shared_nodes[5]), 10.5);
 	graph.AddEdge((shared_nodes[8]), (shared_nodes[7]), 11.0);
 
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 9) << "Failed to add vertices to pointer-type graph ";
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 20) << "Failed to add vertices to pointer-type graph ";
+	ASSERT_EQ(graph.GetTotalVertexNumber(), 9) << "Failed to add vertices to pointer-type graph ";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 20) << "Failed to add vertices to pointer-type graph ";
 }

@@ -45,25 +45,25 @@ TEST_F(GraphModificationTest, VertexMod)
 	// create a graph
 	Graph<TestState *> graph;
 
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 0) << "Graph should have no vertex now";
+	ASSERT_EQ(graph.GetTotalVertexNumber(), 0) << "Graph should have no vertex now";
 
 	graph.AddVertex(nodes[0]);
 	graph.AddVertex(nodes[1]);
 
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 2) << "Failed to add vertices to pointer-type graph ";
+	ASSERT_EQ(graph.GetTotalVertexNumber(), 2) << "Failed to add vertices to pointer-type graph ";
 
 	ASSERT_EQ(graph.FindVertex(0)->vertex_id_, 0) << "Failed to find added vertex by associated state ID from pointer-type graph ";
 	ASSERT_EQ(graph.FindVertex(nodes[1])->vertex_id_, 1) << "Failed to find added vertex by associated state from pointer-type graph ";
 
 	graph.RemoveVertex(0);
 
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 1) << "Failed to remove vertex by associated state ID from pointer-type graph ";
+	ASSERT_EQ(graph.GetTotalVertexNumber(), 1) << "Failed to remove vertex by associated state ID from pointer-type graph ";
 	ASSERT_TRUE(graph.FindVertex(0) == graph.vertex_end()) << "Failed to remove vertex by associated state ID from pointer-type graph ";
 	ASSERT_EQ(graph.FindVertex(1)->vertex_id_, 1) << "Removed wrong vertex by associated state ID from pointer-type graph ";
 
 	graph.RemoveVertex(nodes[1]);
 
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 0) << "Failed to remove vertex by associated state from pointer-type graph ";
+	ASSERT_EQ(graph.GetTotalVertexNumber(), 0) << "Failed to remove vertex by associated state from pointer-type graph ";
 	ASSERT_TRUE(graph.FindVertex(1) == graph.vertex_end()) << "Failed to remove vertex by associated state from pointer-type graph ";
 }
 
@@ -71,12 +71,12 @@ TEST_F(GraphModificationTest, EdgeMod)
 {
 	Graph<TestState *> graph;
 
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 0) << "Graph should have no edge now";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 0) << "Graph should have no edge now";
 
 	graph.AddEdge(nodes[0], nodes[1], 1.2);
 	graph.AddEdge(nodes[1], nodes[2], 1.5);
 
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 2) << "Failed to add directed edges to pointer-type graph";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 2) << "Failed to add directed edges to pointer-type graph";
 	std::vector<Graph<TestState *>::edge_iterator> edges;
 	for (auto it = graph.FindVertex(0)->edge_begin(); it != graph.FindVertex(0)->edge_end(); ++it)
 		edges.push_back(it);
@@ -93,7 +93,7 @@ TEST_F(GraphModificationTest, EdgeMod)
 	ASSERT_EQ(graph.FindVertex(nodes[1])->edges_to_.size(), 0) << "Failed to remove edge frome vertex";
 	ASSERT_EQ(graph.FindVertex(nodes[2])->vertices_from_.size(), 0) << "Failed to maintain list of vertices_from_";
 
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 1) << "Failed to remove a directed edge from pointer-type graph";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 1) << "Failed to remove a directed edge from pointer-type graph";
 
 	edges.clear();
 	for (auto it = graph.FindVertex(0)->edge_begin(); it != graph.FindVertex(0)->edge_end(); ++it)
@@ -103,27 +103,27 @@ TEST_F(GraphModificationTest, EdgeMod)
 
 	graph.AddUndirectedEdge(nodes[3], nodes[4], 1.8);
 	graph.AddUndirectedEdge(nodes[4], nodes[5], 2.0);
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 5) << "Failed to add a undirected edge from pointer-type graph";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 5) << "Failed to add a undirected edge from pointer-type graph";
 
 	graph.RemoveUndirectedEdge(nodes[4], nodes[5]);
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 3) << "Failed to remove a undirected edge from pointer-type graph";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 3) << "Failed to remove a undirected edge from pointer-type graph";
 }
 
 TEST_F(GraphModificationTest, ClearVertexEdge)
 {
 	Graph<TestState *> graph;
 
-	ASSERT_EQ(graph.GetGraphVertexNumber(), 0) << "Graph should have no vertex at beginning";
-	ASSERT_EQ(graph.GetGraphEdgeNumber(), 0) << "Graph should have no edge at beginning";
+	ASSERT_EQ(graph.GetTotalVertexNumber(), 0) << "Graph should have no vertex at beginning";
+	ASSERT_EQ(graph.GetTotalEdgeNumber(), 0) << "Graph should have no edge at beginning";
 
 	graph.AddEdge(nodes[0], nodes[1], 1.2);
 	graph.AddEdge(nodes[1], nodes[2], 1.5);
 
-	ASSERT_TRUE(graph.GetGraphVertexNumber() == 3 && graph.GetGraphEdgeNumber() == 2) << "Graph should have some vertices and edges now";
+	ASSERT_TRUE(graph.GetTotalVertexNumber() == 3 && graph.GetTotalEdgeNumber() == 2) << "Graph should have some vertices and edges now";
 
-	graph.ClearGraph();
+	graph.ClearAll();
 
-	ASSERT_TRUE(graph.GetGraphVertexNumber() == 0 && graph.GetGraphEdgeNumber() == 0) << "Graph should be empty now";
+	ASSERT_TRUE(graph.GetTotalVertexNumber() == 0 && graph.GetTotalEdgeNumber() == 0) << "Graph should be empty now";
 }
 
 TEST_F(GraphModificationTest, VertexAccessEdge)
