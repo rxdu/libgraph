@@ -68,7 +68,7 @@ class Graph
     {
       public:
         const_vertex_iterator() : VertexMapTypeIterator(){};
-        const_vertex_iterator(VertexMapTypeIterator s) : VertexMapTypeIterator(s){};
+        explicit const_vertex_iterator(VertexMapTypeIterator s) : VertexMapTypeIterator(s){};
 
         const Vertex *operator->() const { return (Vertex *const)(VertexMapTypeIterator::operator->()->second); }
         const Vertex &operator*() const { return *(VertexMapTypeIterator::operator*().second); }
@@ -78,7 +78,7 @@ class Graph
     {
       public:
         vertex_iterator() : const_vertex_iterator(){};
-        vertex_iterator(VertexMapTypeIterator s) : const_vertex_iterator(s){};
+        explicit vertex_iterator(VertexMapTypeIterator s) : const_vertex_iterator(s){};
 
         Vertex *operator->() { return (Vertex *const)(VertexMapTypeIterator::operator->()->second); }
         Vertex &operator*() { return *(VertexMapTypeIterator::operator*().second); }
@@ -149,9 +149,9 @@ class Graph
         // attributes for search algorithms
         bool is_checked_ = false;
         bool is_in_openlist_ = false;
-        Transition f_cost_; // = std::numeric_limits<double>::max();
-        Transition g_cost_; // = std::numeric_limits<double>::max();
-        Transition h_cost_; // = std::numeric_limits<double>::max();
+        double f_cost_ = std::numeric_limits<double>::max();
+        double g_cost_ = std::numeric_limits<double>::max();
+        double h_cost_ = std::numeric_limits<double>::max();
         vertex_iterator search_parent_;
 
         /** @name Edge access.
@@ -163,8 +163,8 @@ class Graph
         typedef typename EdgeListType::const_iterator const_edge_iterator;
         edge_iterator edge_begin() { return edges_to_.begin(); }
         edge_iterator edge_end() { return edges_to_.end(); }
-        const_edge_iterator edge_begin() const { return edges_to_.begin(); }
-        const_edge_iterator edge_end() const { return edges_to_.end(); }
+        const_edge_iterator edge_begin() const { return edges_to_.cbegin(); }
+        const_edge_iterator edge_end() const { return edges_to_.cend(); }
         ///@}
 
         /** @name Edge Operations
@@ -226,10 +226,10 @@ class Graph
    *  Vertex iterators to access vertices in the graph.
    */
     ///@{
-    vertex_iterator vertex_begin() { return vertex_iterator(vertex_map_.begin()); }
-    vertex_iterator vertex_end() { return vertex_iterator(vertex_map_.end()); }
-    const_vertex_iterator vertex_begin() const { return vertex_iterator(vertex_map_.begin()); }
-    const_vertex_iterator vertex_end() const { return vertex_iterator(vertex_map_.end()); }
+    vertex_iterator vertex_begin() { return vertex_iterator{vertex_map_.begin()}; }
+    vertex_iterator vertex_end() { return vertex_iterator{vertex_map_.end()}; }
+    const_vertex_iterator vertex_begin() const { return const_vertex_iterator{vertex_map_.begin()}; }
+    const_vertex_iterator vertex_end() const { return const_vertex_iterator{vertex_map_.end()}; }
     ///@}
 
     /** @name Edge Access
@@ -251,7 +251,7 @@ class Graph
     void RemoveVertex(int64_t state_id);
 
     template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-    void RemoveVertex(State state) { RemoveVertex(GetStateIndex(state)); }
+    void RemoveVertex(T state) { RemoveVertex(GetStateIndex(state)); }
 
     /// This function is used to add an edge between the vertices associated with the given two states.
     /// Update the transition if edge already exists.
@@ -271,11 +271,11 @@ class Graph
     std::vector<edge_iterator> GetAllEdges() const;
 
     /// This function return the vertex iterator with specified id
-    inline vertex_iterator FindVertex(int64_t vertex_id) { return vertex_iterator(vertex_map_.find(vertex_id)); }
+    inline vertex_iterator FindVertex(int64_t vertex_id) { return vertex_iterator{vertex_map_.find(vertex_id)}; }
 
     /// This function return the vertex iterator with specified state
     template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-    inline vertex_iterator FindVertex(T state) { return vertex_iterator(vertex_map_.find(GetStateIndex(state))); }
+    inline vertex_iterator FindVertex(T state) { return vertex_iterator{vertex_map_.find(GetStateIndex(state))}; }
 
     /// Get total number of vertices in the graph
     int64_t GetTotalVertexNumber() const { return vertex_map_.size(); }

@@ -27,12 +27,12 @@ typename Tree<State, Transition, StateIndexer>::vertex_iterator Tree<State, Tran
 template <typename State, typename Transition, typename StateIndexer>
 int32_t Tree<State, Transition, StateIndexer>::GetVertexDepth(int64_t state_id)
 {
-    auto it = TreeType::vertex_map_.find(state_id);
+    auto vtx = TreeType::FindVertex(state_id);
 
-    if (it != TreeType::vertex_map_.end())
+    if (vtx != TreeType::vertex_end())
     {
         int32_t depth = 0;
-        auto parent = it->second->vertices_from_;
+        auto parent = vtx->vertices_from_;
         while (!parent.empty())
         {
             ++depth;
@@ -45,15 +45,27 @@ int32_t Tree<State, Transition, StateIndexer>::GetVertexDepth(int64_t state_id)
 }
 
 template <typename State, typename Transition, typename StateIndexer>
+typename Tree<State, Transition, StateIndexer>::vertex_iterator Tree<State, Transition, StateIndexer>::GetParentVertex(int64_t state_id)
+{
+    auto vtx = TreeType::FindVertex(state_id);
+
+    assert((vtx != TreeType::vertex_end()) && (vtx->vertices_from_.size() <= 1));
+
+    if (vtx == root_)
+        return TreeType::vertex_end();
+    else
+        return vtx->vertices_from_.front();
+}
+
+template <typename State, typename Transition, typename StateIndexer>
 void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id)
 {
-    auto it = TreeType::vertex_map_.find(state_id);
+    auto vtx = TreeType::FindVertex(state_id);
 
     // remove if specified vertex exists
-    if (it != TreeType::vertex_map_.end())
+    if (vtx != TreeType::vertex_end())
     {
         // remove from other vertices that connect to the vertex to be deleted
-        auto vtx = vertex_iterator(it);
         for (auto &asv : vtx->vertices_from_)
             for (auto eit = asv->edges_to_.begin(); eit != asv->edges_to_.end(); eit++)
                 if ((*eit).dst_ == vtx)
@@ -64,8 +76,8 @@ void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id)
 
         // remove all subsequent vertices
         std::vector<vertex_iterator> child_vertices;
-        child_vertices.push_back(vertex_iterator(it));
-        std::vector<vertex_iterator> direct_children = it->second->GetNeighbours();
+        child_vertices.push_back(vtx);
+        std::vector<vertex_iterator> direct_children = vtx->GetNeighbours();
         while (!direct_children.empty())
         {
             // add direct children

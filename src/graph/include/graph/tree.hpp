@@ -85,16 +85,22 @@ class Tree : public Graph<State, Transition, StateIndexer>
     void RemoveVertex(int64_t state_id) { RemoveSubtree(state_id); };
 
     template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-    void RemoveVertex(State state) { RemoveVertex(TreeType::GetStateIndex(state)); }
+    void RemoveVertex(T state) { RemoveVertex(TreeType::GetStateIndex(state)); }
 
     /// This function returns the root vertex of the tree
     vertex_iterator GetRootVertex() const { return root_; }
+
+    // / This function returns the parent vertex of the specified node
+    vertex_iterator GetParentVertex(int64_t state_id);
+
+    template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
+    vertex_iterator GetParentVertex(State state) { return GetParentVertex(TreeType::GetStateIndex(state)); }
 
     /// This function checks depth of the specified node in the three, assuming each node only has one parent
     int32_t GetVertexDepth(int64_t state_id);
 
     template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-    int32_t GetVertexDepth(State state) { return GetVertexDepth(TreeType::GetStateIndex(state)); }
+    int32_t GetVertexDepth(T state) { return GetVertexDepth(TreeType::GetStateIndex(state)); }
 
     /// This function is used to add an edge between the vertices associated with the given two states.
     /// Update the transition if edge already exists.
@@ -113,13 +119,13 @@ class Tree : public Graph<State, Transition, StateIndexer>
     void RemoveSubtree(int64_t state_id);
 
     template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-    void RemoveSubtree(State state) { RemoveSubtree(TreeType::GetStateIndex(state)); }
+    void RemoveSubtree(T state) { RemoveSubtree(TreeType::GetStateIndex(state)); }
 
     /// This function removes all edges and vertices (including the root) in the graph
     void ClearAll();
     ///@}
 
-  private:
+  protected:
     vertex_iterator root_{vertex_iterator(TreeType::vertex_map_.end())};
 };
 

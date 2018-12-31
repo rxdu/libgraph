@@ -170,11 +170,14 @@ TEST_F(TreeModificationTest, SubtreeMod)
     ASSERT_EQ(tree.GetTotalVertexNumber(), 9) << "Failed to add vertices to pointer-type tree ";
     ASSERT_EQ(tree.GetTotalEdgeNumber(), 8) << "Failed to add vertices to pointer-type tree ";
 
-    ASSERT_EQ(tree.GetVertexDepth(nodes[0]), 0) << "Failed to get depth of vertex in the tree ";
+    ASSERT_EQ(tree.GetVertexDepth(0), 0) << "Failed to get depth of vertex by id in the tree ";
     ASSERT_EQ(tree.GetVertexDepth(nodes[1]), 1) << "Failed to get depth of vertex in the tree ";
     ASSERT_EQ(tree.GetVertexDepth(nodes[2]), 1) << "Failed to get depth of vertex in the tree ";
     ASSERT_EQ(tree.GetVertexDepth(nodes[7]), 3) << "Failed to get depth of vertex in the tree ";
     ASSERT_EQ(tree.GetVertexDepth(nodes[8]), 4) << "Failed to get depth of vertex in the tree ";
+
+    ASSERT_EQ(tree.GetParentVertex(5)->vertex_id_, 1) << "Failed to get parent vertex in the tree ";
+    ASSERT_EQ(tree.GetParentVertex(nodes[8])->vertex_id_, 7) << "Failed to get parent vertex in the tree ";
 
     tree.RemoveSubtree(1);
 
