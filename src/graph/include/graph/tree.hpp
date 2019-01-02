@@ -48,6 +48,7 @@ class Tree : public Graph<State, Transition, StateIndexer>
     // derive constructor
     using Graph<State, Transition, StateIndexer>::Graph;
 
+    using BaseType = Graph<State, Transition, StateIndexer>;
     using Edge = typename Graph<State, Transition, StateIndexer>::Edge;
     using Vertex = typename Graph<State, Transition, StateIndexer>::Vertex;
     using TreeType = Graph<State, Transition, StateIndexer>;
@@ -81,11 +82,11 @@ class Tree : public Graph<State, Transition, StateIndexer>
     /// This function is used to create a root vertex only
     vertex_iterator AddVertex(State state);
 
-    /// This function checks if a vertex exists in the graph and remove it (and the subtree) if presents.
-    void RemoveVertex(int64_t state_id) { RemoveSubtree(state_id); };
+    // /// This function checks if a vertex exists in the graph and remove it if presents.
+    // void RemoveVertex(int64_t state_id) { RemoveSubtree(state_id); };
 
-    template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-    void RemoveVertex(T state) { RemoveVertex(TreeType::GetStateIndex(state)); }
+    // template <class T = State, typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
+    // void RemoveVertex(T state) { RemoveVertex(TreeType::GetStateIndex(state)); }
 
     /// This function returns the root vertex of the tree
     vertex_iterator GetRootVertex() const { return root_; }
@@ -107,13 +108,13 @@ class Tree : public Graph<State, Transition, StateIndexer>
     void AddEdge(State sstate, State dstate, Transition trans);
 
     /// This function is used to remove the edge from src_node to dst_node.
-    bool RemoveEdge(State sstate, State dstate);
+    // bool RemoveEdge(State sstate, State dstate);
 
     /// Same with AddEdge()
     void AddUndirectedEdge(State sstate, State dstate, Transition trans) { AddEdge(sstate, dstate, trans); }
 
     /// Same with RemoveEdge()
-    bool RemoveUndirectedEdge(State sstate, State dstate) { RemoveEdge(sstate, dstate); }
+    bool RemoveUndirectedEdge(State sstate, State dstate) { BaseType::RemoveEdge(sstate, dstate); }
 
     /// This function removes a subtree including the specified vertex
     void RemoveSubtree(int64_t state_id);

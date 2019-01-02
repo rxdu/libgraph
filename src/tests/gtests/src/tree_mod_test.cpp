@@ -99,9 +99,10 @@ TEST_F(TreeModificationTest, VertexMod)
     ASSERT_EQ(tree.GetTotalVertexNumber(), 5) << "Failed to add vertices to pointer-type tree ";
 
     tree.RemoveVertex(nodes[1]);
-    ASSERT_EQ(tree.GetTotalVertexNumber(), 3) << "Failed to remove vertex and subtree by associated state ID from pointer-type tree ";
-    ASSERT_TRUE(tree.FindVertex(1) == tree.vertex_end()) << "Failed to remove subtree by associated state ID from pointer-type tree ";
-    ASSERT_TRUE(tree.FindVertex(3) == tree.vertex_end()) << "Failed to remove subtree by associated state ID from pointer-type tree ";
+    ASSERT_EQ(tree.GetTotalVertexNumber(), 4) << "Failed to remove vertex and vertex by associated state ID from pointer-type tree ";
+    ASSERT_TRUE(tree.FindVertex(1) == tree.vertex_end()) << "Failed to remove vertex by associated state ID from pointer-type tree ";
+    ASSERT_TRUE(tree.FindVertex(3) != tree.vertex_end()) << "Failed to remove vertex by associated state ID from pointer-type tree ";
+    ASSERT_EQ(tree.GetTotalEdgeNumber(), 2) << "Failed to remove a vertex from pointer-type tree";
 }
 
 TEST_F(TreeModificationTest, EdgeMod)
@@ -132,10 +133,20 @@ TEST_F(TreeModificationTest, EdgeMod)
 
     tree.AddEdge(nodes[1], nodes[2], 1.2);
     tree.AddEdge(nodes[2], nodes[3], 1.5);
-
     ASSERT_EQ(tree.GetTotalEdgeNumber(), 3) << "Failed to remove a edge from pointer-type tree";
+
     tree.RemoveEdge(nodes[1], nodes[2]);
-    ASSERT_EQ(tree.GetTotalEdgeNumber(), 1) << "Failed to remove a edge from pointer-type tree";
+    ASSERT_EQ(tree.GetTotalEdgeNumber(), 2) << "Failed to remove a edge from pointer-type tree";
+
+    tree.AddEdge(nodes[1], nodes[2], 1.2);
+    ASSERT_EQ(tree.GetTotalEdgeNumber(), 3) << "Failed to add a edge from pointer-type tree";
+
+    tree.AddEdge(nodes[0], nodes[4], 1.2);
+    tree.AddEdge(nodes[4], nodes[5], 1.2);
+    ASSERT_EQ(tree.GetTotalEdgeNumber(), 5) << "Failed to remove subtree from pointer-type tree";
+
+    tree.RemoveSubtree(nodes[4]);
+    ASSERT_EQ(tree.GetTotalEdgeNumber(), 3) << "Failed to remove subtree from pointer-type tree";
 
     edges.clear();
     for (auto it = tree.FindVertex(0)->edge_begin(); it != tree.FindVertex(0)->edge_end(); ++it)
@@ -145,10 +156,10 @@ TEST_F(TreeModificationTest, EdgeMod)
 
     tree.AddUndirectedEdge(nodes[3], nodes[4], 1.8);
     tree.AddUndirectedEdge(nodes[4], nodes[5], 2.0);
-    ASSERT_EQ(tree.GetTotalEdgeNumber(), 3) << "Failed to add a unedge from pointer-type tree";
+    ASSERT_EQ(tree.GetTotalEdgeNumber(), 5) << "Failed to add a unedge from pointer-type tree";
 
     tree.RemoveUndirectedEdge(nodes[4], nodes[5]);
-    ASSERT_EQ(tree.GetTotalEdgeNumber(), 2) << "Failed to remove a unedge from pointer-type tree";
+    ASSERT_EQ(tree.GetTotalEdgeNumber(), 4) << "Failed to remove a unedge from pointer-type tree";
 }
 
 TEST_F(TreeModificationTest, SubtreeMod)
