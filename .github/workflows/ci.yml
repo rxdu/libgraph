@@ -22,6 +22,6 @@ jobs:
     - name: Update submodules
       run: git submodule update --init --recursive
     - name: Configure and build
-      run: mkdir build && cd build && cmake -DBUILD_TESTS=ON .. && cmake --build .
+      run: pwd && ls && mkdir build && cd build && cmake -DBUILD_TESTS=ON .. && cmake --build .
     - name: Run tests
-      run: cd $GITHUB_WORKSPACE/build/bin && ls && $GITHUB_WORKSPACE/build/bin/gtest_all
+      run: pwd && ls && $GITHUB_WORKSPACE/build/bin/gtest_all
