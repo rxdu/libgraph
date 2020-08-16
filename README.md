@@ -14,7 +14,7 @@ If you're using CMake, the recommended way to integrate the library to your proj
 
 ## 2. Build the demo & pack the library
 
-A ".deb" installation package can be generated if you want to install the library to your system. Relevant CMake configuration files will also be installed so that you can easily use "find_package()" command to find and use the library in your project.
+A ".deb" installation package can be generated if you want to install the library to your system. Relevant CMake configuration files will also be installed so that you can easily use "find_package()" command to find and use the library in your project. Note that the library is exported as "rxdu::graph" to avoid naming conflicts with other libraries.
 
 ```
 $ git clone --recursive https://github.com/rxdu/libgraph.git
