@@ -11,7 +11,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(USER_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${USER_CMAKE_PATH}/modules")
 list(APPEND CMAKE_PREFIX_PATH "/usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-gnu/cmake")
-list(APPEND CMAKE_PREFIX_PATH "/opt/weston_robot/lib/cmake")
 
 ## Set compiler to use c++ 11 features
 set(CMAKE_CXX_STANDARD 11)
@@ -94,7 +93,7 @@ write_basic_package_version_file(
 
 install(EXPORT libgraphTargets
     FILE libgraphTargets.cmake
-    NAMESPACE westonrobot::
+    NAMESPACE rxdu::
     DESTINATION lib/cmake/libgraph)
 
 configure_file(cmake/libgraphConfig.cmake.in libgraphConfig.cmake @ONLY)
