@@ -1,8 +1,4 @@
-# Include path
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-# Add executables
-## demo
+# Add demo executables
 add_executable(simple_graph_demo simple_graph_demo.cpp)
 target_link_libraries(simple_graph_demo graph)
 

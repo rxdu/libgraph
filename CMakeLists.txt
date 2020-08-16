@@ -1,35 +1,123 @@
 cmake_minimum_required(VERSION 3.1.0)
-project(libgraph)
+project(libgraph VERSION 0.1.1)
 
-## Put all binary files into /bin and libraries into /lib
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-set(ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+## Project Options
+option(BUILD_TEST ON)
 
-## Set compiler to use c++ 11 features
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX14)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-elseif(COMPILER_SUPPORTS_CXX11)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-elseif(COMPILER_SUPPORTS_CXX0X)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-else()
-	message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++14 or C++11 support. Please use a different C++ compiler.")
-endif()
-
+## generate symbols for IDE indexer
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(BUILD_TEST on)
+## Additional cmake module path
+set(USER_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${USER_CMAKE_PATH}/modules")
+list(APPEND CMAKE_PREFIX_PATH "/usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-gnu/cmake")
+list(APPEND CMAKE_PREFIX_PATH "/opt/weston_robot/lib/cmake")
 
-## Add sub source directories
-# add_subdirectory(src/demo)
-add_subdirectory(src/graph)
+## Set compiler to use c++ 11 features
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(BUILD_TEST)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-	add_subdirectory(src/tests)
-endif(BUILD_TEST)
+## Chosse build type
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+ ## Put all binary files into /bin and libraries into /lib
+ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+
+ ## Build library
+add_subdirectory(demo)
+add_library(graph INTERFACE)
+target_compile_definitions(graph INTERFACE -DMINIMAL_PRINTOUT)
+target_include_directories(graph INTERFACE
+	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/graph/include>
+	$<INSTALL_INTERFACE:include>)
+
+# Build tests
+if((PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME) AND BUILD_TESTS)
+    enable_testing()
+    include(GoogleTest)
+    add_subdirectory(tests)
+    add_subdirectory(unit_tests)
+endif()
+
+## Use GNUInstallDirs to install libraries into correct locations on all platforms.
+include(GNUInstallDirs)
+message(STATUS "Project will be installed to ${CMAKE_INSTALL_PREFIX} with 'make install'")
+
+# Offer the user the choice of overriding the installation directories
+set(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
+set(INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
+set(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation directory for header files")
+if(WIN32 AND NOT CYGWIN)
+    set(DEF_INSTALL_CMAKEDIR CMake)
+else()
+    set(DEF_INSTALL_CMAKEDIR share/cmake/${PROJECT_NAME})
+endif()
+set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
+
+# Report to user
+foreach(p LIB BIN INCLUDE CMAKE)
+    file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${INSTALL_${p}DIR} _path)
+    message(STATUS " - To install ${p} components to ${_path}")
+    unset(_path)
+endforeach()
+
+# targets to install
+install(TARGETS graph
+    EXPORT libgraphTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include)
+
+install(DIRECTORY graph/include/graph
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# export target configuration 
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    libgraphConfigVersion.cmake
+    VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+    COMPATIBILITY SameMajorVersion)
+
+install(EXPORT libgraphTargets
+    FILE libgraphTargets.cmake
+    NAMESPACE westonrobot::
+    DESTINATION lib/cmake/libgraph)
+
+configure_file(cmake/libgraphConfig.cmake.in libgraphConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libgraphConfig.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/libgraphConfigVersion.cmake"
+        DESTINATION lib/cmake/libgraph)
+
+# Packaging support
+set(CPACK_PACKAGE_VENDOR "Ruixiang Du")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C++ class templates for graph construction and search.")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr/local")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Ruixiang Du (ruixiang.du@gmail.com)") 
+# set(CPACK_DEBIAN_PACKAGE_DEPENDS "libasio-dev")
+set(CPACK_SOURCE_IGNORE_FILES
+    /.git
+    /dist
+    /.*build.*
+    /\\\\.DS_Store
+)
+include(CPack)
