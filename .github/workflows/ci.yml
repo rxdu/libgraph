@@ -24,4 +24,4 @@ jobs:
     - name: Configure and build
       run: mkdir build && cd build && cmake -DBUILD_TESTS=ON .. && cmake --build .
     - name: Run tests
-      run: cd $GITHUB_WORKSPACE && pwd && ls && ./$GITHUB_WORKSPACE/build/bin/gtest_all
+      run: $GITHUB_WORKSPACE/build/bin/gtest_all
