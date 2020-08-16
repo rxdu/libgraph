@@ -8,11 +8,28 @@ C++ class templates for constructing graphs and search. This library is distribu
 
 * A compiler that supports C++11
 
-This is a header-only library, so you only need to include the header files in the "**src/graph**" folder to use the data structures. 
+This is a header-only library. You can simply copy the "graph" folder to your project and include "graph/graph.hpp" to use the library. 
 
-The CMake configuration in this repository is only used to compile the demo code and may also serve as an example on how to use this library in a CMake project. Refer to "**src/demo**" for more details. 
+If you're using CMake, the recommended way to integrate the library to your project is to add this repository as a git submodule. Then use "add_subdirectory()" in your CMakeLists.txt to add the library to your build tree.
 
-## 2. Build Document
+## 2. Build the demo & pack the library
+
+A ".deb" installation package can be generated if you want to install the library to your system. Relevant CMake configuration files will also be installed so that you can easily use "find_package()" command to find and use the library in your project.
+
+```
+$ git clone --recursive https://github.com/rxdu/libgraph.git
+$ mkdir build && cd build
+$ cmake --build .
+$ cpack
+```
+
+Demo programs will be built and put into "build/bin" folder. A ".deb" package would be generated inside "build" folder. Install the library with the ".deb" package using command "dpkg", for example
+
+```
+$ sudo dpkg -i libgraph_0.1.1_amd64.deb
+```
+
+## 3. Build Document
 
 You need to have doxygen to build the document.
 
@@ -24,7 +41,7 @@ $ doxygen doxygen/Doxyfile
 
 Outlines of core data structures for the purpose of API reference are given at https://rdu.im/libgraph/ .
 
-## 3. Construct a graph
+## 4. Construct a graph
 
 You can associate any object to a vertex, but you need to provide an index function for the State struct/class. The index function is used to generate a unique index for a state and it's necessary for checking whether two given states are the same so that only one vertex is created for one unique state inside the graph.
 
@@ -56,6 +73,6 @@ struct YourStateIndexFunction
 
 See "simple_graph_demo.cpp" in "demo" folder for a working example.
 
-## 4. Known Limitations
+## 5. Known Limitations
 
 * [TODO List](./TODO.md)
