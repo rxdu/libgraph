@@ -29,7 +29,7 @@ Demo programs will be built and put into "build/bin" folder. A ".deb" package wo
 $ sudo dpkg -i libgraph_0.1.1_amd64.deb
 ```
 
-## 3. Build Document
+## 3. Build document
 
 You need to have doxygen to build the document.
 
@@ -73,6 +73,6 @@ struct YourStateIndexFunction
 
 See "simple_graph_demo.cpp" in "demo" folder for a working example.
 
-## 5. Known Limitations
+## 5. Known limitations
 
 * [TODO List](./TODO.md)
