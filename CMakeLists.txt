@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1.0)
 project(libgraph VERSION 0.1.1)
 
 ## Project Options
-option(BUILD_TEST ON)
+option(BUILD_TESTS ON)
 
 ## generate symbols for IDE indexer
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -43,11 +43,13 @@ target_include_directories(graph INTERFACE
 	$<INSTALL_INTERFACE:include>)
 
 # Build tests
-if((PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME) AND BUILD_TESTS)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTS)
+    message(STATUS "Tests will be built")
     enable_testing()
     include(GoogleTest)
     add_subdirectory(tests)
-    add_subdirectory(unit_tests)
+else()
+    message(STATUS "Tests will not be built")
 endif()
 
 ## Use GNUInstallDirs to install libraries into correct locations on all platforms.
