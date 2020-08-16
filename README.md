@@ -1,5 +1,7 @@
 # Graph and Search
 
+![GitHub Workflow Status](https://github.com/rxdu/libgraph/workflows/CI/badge.svg)
+
 C++ class templates for constructing graphs and search. This library is distributed under **MIT license**.
 
 ## 1. Requirement

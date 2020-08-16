@@ -24,4 +24,4 @@ jobs:
     - name: Configure and build
       run: mkdir build && cd build && cmake -DBUILD_TESTS=ON .. && cmake --build .
     - name: Run tests
-      run: ls build/bin && ./build/gtest_all
+      run: ./build/bin/gtest_all
