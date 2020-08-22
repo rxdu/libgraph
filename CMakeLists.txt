@@ -3,9 +3,33 @@ project(libgraph VERSION 0.1.1)
 
 ## Project Options
 option(BUILD_TESTS ON)
+option(STATIC_CHECK ON)
+option(COVERAGE_CHECK ON)
+
+# sanity check of the options
+if(COVERAGE_CHECK)
+    set(BUILD_TESTS ON)
+endif()
 
 ## generate symbols for IDE indexer
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(STATIC_CHECK)
+    find_program(CPPCHECK cppcheck)
+    if(CPPCHECK)
+        message(STATUS "Found cppcheck")
+        set(CMAKE_CXX_CPPCHECK cppcheck;--std=c++11;--enable=all)
+    endif()
+endif()
+
+if(COVERAGE_CHECK)
+    find_program(GCOV gcov)
+    if(GCOV)
+        message(STATUS "Found gcov")
+        set(CMAKE_BUILD_TYPE Debug)
+        set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+    endif()
+endif()
 
 ## Additional cmake module path
 set(USER_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -17,7 +41,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-## Chosse build type
+## Choose build type
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
@@ -30,7 +54,6 @@ endif()
 
 ## Use GNUInstallDirs to install libraries into correct locations on all platforms.
 include(GNUInstallDirs)
-message(STATUS "Project will be installed to ${CMAKE_INSTALL_PREFIX} with 'make install'")
 
 ## Put all binary files into /bin and libraries into /lib
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
@@ -54,6 +77,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTS)
 else()
     message(STATUS "Tests will not be built")
 endif()
+
+# Show installation path
+message(STATUS "Project will be installed to ${CMAKE_INSTALL_PREFIX} with 'make install'")
 
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")

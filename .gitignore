@@ -53,3 +53,7 @@ tags
 */tags
 *.swp
 */*.swp
+
+# CLion
+.idea
+/cmake-build-debug/
