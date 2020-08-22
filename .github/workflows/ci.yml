@@ -43,3 +43,5 @@ jobs:
       run: /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info && /usr/bin/lcov --remove ./build/coverage.info "/usr/*" "*/googletest/googletest/*" --output-file ./build/coverage.info
     - name: Show coverage summary
       run: /usr/bin/lcov --list ./build/coverage.info
+    - name: Upload report to codecov
+      run: bash <(curl -s https://codecov.io/bash) -f ./build/coverage.info
