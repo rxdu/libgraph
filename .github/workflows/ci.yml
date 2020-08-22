@@ -38,6 +38,6 @@ jobs:
     - name: Run tests
       run: ./build/bin/gtest_all
     - name: Collect coverage data
-      run: lcov --directory ./build --capture --output-file ./build/coverage.info && lcov --remove ./build/coverage.info "/usr/*" "*/googletest/googletest/*" --output-file ./build/coverage.info
+      run: /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info && /usr/bin/lcov --remove ./build/coverage.info "/usr/*" "*/googletest/googletest/*" --output-file ./build/coverage.info
     - name: Show coverage summary
-      run: lcov --list ./build/coverage.info
+      run: /usr/bin/lcov --list ./build/coverage.info
