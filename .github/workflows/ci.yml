@@ -22,7 +22,7 @@ jobs:
     - name: Update submodules
       run: git submodule update --init --recursive
     - name: Configure and build
-      run: mkdir build && cd build && cmake -DBUILD_TESTS=OFF .. && cmake --build .
+      run: mkdir build && cd build && cmake .. && cmake --build .
 
   # This workflow contains a single job called "build"
   test:
