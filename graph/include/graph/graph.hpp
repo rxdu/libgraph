@@ -6,9 +6,9 @@
  * 
  * Major Revisions: 
  *  version 0.1 Dec 09, 2015
- *  version 2.0 Sep 03, 2018
+ *  version 1.0 Sep 03, 2018
  * 
- * Copyright (c) 2017 Ruixiang Du (rdu)
+ * Copyright (c) 2015-2020 Ruixiang Du (rdu)
  */
 
 /* Reference
