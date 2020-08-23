@@ -27,7 +27,7 @@ $ cpack
 Demo programs will be built and put into "build/bin" folder. A ".deb" package would be generated inside "build" folder. Install the library with the ".deb" package using command "dpkg", for example
 
 ```
-$ sudo dpkg -i libgraph_0.1.1_amd64.deb
+$ sudo dpkg -i libgraph_1.1_amd64.deb
 ```
 
 ## 3. Build document
