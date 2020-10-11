@@ -5,7 +5,7 @@
 
 C++ class templates for constructing graphs and search. This library is distributed under **MIT license**.
 
-## 1. Requirement
+## Requirement
 
 * A compiler that supports C++11
 
@@ -13,7 +13,7 @@ This is a header-only library. You can simply copy the "graph" folder to your pr
 
 If you're using CMake, the recommended way to integrate the library to your project is to add this repository as a git submodule. Then use "add_subdirectory()" in your CMakeLists.txt to add the library to your build tree.
 
-## 2. Build the demo & pack the library
+## Build the demo & pack the library
 
 A ".deb" installation package can be generated if you want to install the library to your system. Relevant CMake configuration files will also be installed so that you can easily use "find_package()" command to find and use the library in your project. Note that the library is exported as "rxdu::graph" to avoid naming conflicts with other libraries.
 
@@ -30,7 +30,7 @@ Demo programs will be built and put into "build/bin" folder. A ".deb" package wo
 $ sudo dpkg -i libgraph_1.1_amd64.deb
 ```
 
-## 3. Build document
+## Build document
 
 You need to have doxygen to build the document.
 
@@ -42,7 +42,7 @@ $ doxygen doxygen/Doxyfile
 
 Outlines of core data structures for the purpose of API reference are given at https://rdu.im/libgraph/ .
 
-## 4. Construct a graph
+## Construct a graph
 
 You can associate any object to a vertex, but you need to provide an index function for the State struct/class. The index function is used to generate a unique index for a state and it's necessary for checking whether two given states are the same so that only one vertex is created for one unique state inside the graph.
 
@@ -73,7 +73,3 @@ struct YourStateIndexFunction
 ```
 
 See "simple_graph_demo.cpp" in "demo" folder for a working example.
-
-## 5. Known limitations
-
-* [TODO List](./TODO.md)
