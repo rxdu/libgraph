@@ -52,7 +52,7 @@ class AStar
 							  CalcHeuristicFunc_t<State, Transition> calc_heuristic)
 	{
 		// reset last search information
-		graph->ResetGraphVertices();
+		graph->ResetAllVertices();
 
 		auto start_it = graph->FindVertex(start);
 		auto goal_it = graph->FindVertex(goal);
@@ -73,7 +73,7 @@ class AStar
 							  CalcHeuristicFunc_t<State, Transition> calc_heuristic)
 	{
 		// reset last search information
-		graph->ResetGraphVertices();
+		graph->ResetAllVertices();
 
 		auto start_it = graph->FindVertex(start);
 		auto goal_it = graph->FindVertex(goal);

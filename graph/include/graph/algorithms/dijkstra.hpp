@@ -43,7 +43,7 @@ class Dijkstra
 	static Path<State> Search(std::shared_ptr<Graph<State, Transition, StateIndexer>> graph, VertexIdentifier start, VertexIdentifier goal)
 	{
 		// reset last search information
-		graph->ResetGraphVertices();
+		graph->ResetAllVertices();
 
 		auto start_it = graph->FindVertex(start);
 		auto goal_it = graph->FindVertex(goal);
@@ -61,7 +61,7 @@ class Dijkstra
 	static Path<State> Search(Graph<State, Transition, StateIndexer> *graph, VertexIdentifier start, VertexIdentifier goal)
 	{
 		// reset last search information
-		graph->ResetGraphVertices();
+		graph->ResetAllVertices();
 
 		auto start_it = graph->FindVertex(start);
 		auto goal_it = graph->FindVertex(goal);
@@ -266,7 +266,7 @@ class DijkstraTraversal
 	void Run(Graph<State, Transition, StateIndexer> *graph, VertexIdentifier start)
 	{
 		// reset last search information
-		graph->ResetGraphVertices();
+		graph->ResetAllVertices();
 
 		auto start_it = graph->FindVertex(start);
 

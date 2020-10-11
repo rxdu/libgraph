@@ -57,8 +57,8 @@ TEST_F(GraphBigFiveTest, DefaultConstructor)
     graph.AddEdge(*(nodes[1]), *(nodes[2]), 1.0);
     graph.AddEdge(*(nodes[2]), *(nodes[5]), 2.0);
 
-    ASSERT_EQ(graph.GetGraphVertexNumber(), 6) << "Failed to add vertices to original graph ";
-    ASSERT_EQ(graph.GetGraphEdgeNumber(), 6) << "Failed to add edges to original graph ";
+    ASSERT_EQ(graph.GetTotalVertexNumber(), 6) << "Failed to add vertices to original graph ";
+    ASSERT_EQ(graph.GetTotalEdgeNumber(), 6) << "Failed to add edges to original graph ";
 }
 
 TEST_F(GraphBigFiveTest, CopyConstructor)
@@ -73,18 +73,18 @@ TEST_F(GraphBigFiveTest, CopyConstructor)
     graph.AddEdge(*(nodes[1]), *(nodes[2]), 1.0);
     graph.AddEdge(*(nodes[2]), *(nodes[5]), 2.0);
 
-    ASSERT_EQ(graph.GetGraphVertexNumber(), 6) << "Failed to add vertices to original graph ";
-    ASSERT_EQ(graph.GetGraphEdgeNumber(), 6) << "Failed to add edges to original graph ";
+    ASSERT_EQ(graph.GetTotalVertexNumber(), 6) << "Failed to add vertices to original graph ";
+    ASSERT_EQ(graph.GetTotalEdgeNumber(), 6) << "Failed to add edges to original graph ";
 
     Graph<TestState> copy_graph(graph);
 
-    ASSERT_EQ(copy_graph.GetGraphVertexNumber(), 6) << "Failed to add vertices to copied graph ";
-    ASSERT_EQ(copy_graph.GetGraphEdgeNumber(), 6) << "Failed to add vertices to copied graph ";
+    ASSERT_EQ(copy_graph.GetTotalVertexNumber(), 6) << "Failed to add vertices to copied graph ";
+    ASSERT_EQ(copy_graph.GetTotalEdgeNumber(), 6) << "Failed to add vertices to copied graph ";
 
     Graph<TestState> copy_graph2 = copy_graph;
 
-    ASSERT_EQ(copy_graph2.GetGraphVertexNumber(), 6) << "Failed to add vertices to copied graph 2 ";
-    ASSERT_EQ(copy_graph2.GetGraphEdgeNumber(), 6) << "Failed to add vertices to copied graph 2 ";
+    ASSERT_EQ(copy_graph2.GetTotalVertexNumber(), 6) << "Failed to add vertices to copied graph 2 ";
+    ASSERT_EQ(copy_graph2.GetTotalEdgeNumber(), 6) << "Failed to add vertices to copied graph 2 ";
 }
 
 TEST_F(GraphBigFiveTest, AssignmentOperator)
@@ -99,14 +99,14 @@ TEST_F(GraphBigFiveTest, AssignmentOperator)
     graph.AddEdge(*(nodes[1]), *(nodes[2]), 1.0);
     graph.AddEdge(*(nodes[2]), *(nodes[5]), 2.0);
 
-    ASSERT_EQ(graph.GetGraphVertexNumber(), 6) << "Failed to add vertices to original graph ";
-    ASSERT_EQ(graph.GetGraphEdgeNumber(), 6) << "Failed to add edges to original graph ";
+    ASSERT_EQ(graph.GetTotalVertexNumber(), 6) << "Failed to add vertices to original graph ";
+    ASSERT_EQ(graph.GetTotalEdgeNumber(), 6) << "Failed to add edges to original graph ";
 
     Graph<TestState> assign_graph;
     assign_graph = graph;
 
-    ASSERT_EQ(assign_graph.GetGraphVertexNumber(), 6) << "Failed to add vertices to assigned graph ";
-    ASSERT_EQ(assign_graph.GetGraphEdgeNumber(), 6) << "Failed to add vertices to assigned graph ";
+    ASSERT_EQ(assign_graph.GetTotalVertexNumber(), 6) << "Failed to add vertices to assigned graph ";
+    ASSERT_EQ(assign_graph.GetTotalEdgeNumber(), 6) << "Failed to add vertices to assigned graph ";
 }
 
 Graph<TestState> CreateGraph()
@@ -128,8 +128,8 @@ TEST_F(GraphBigFiveTest, MoveConstructor)
     // create a graph
     Graph<TestState> move_graph(CreateGraph());
 
-    ASSERT_EQ(move_graph.GetGraphVertexNumber(), 6) << "Failed to add vertices to moved graph ";
-    ASSERT_EQ(move_graph.GetGraphEdgeNumber(), 6) << "Failed to add vertices to moved graph ";
+    ASSERT_EQ(move_graph.GetTotalVertexNumber(), 6) << "Failed to add vertices to moved graph ";
+    ASSERT_EQ(move_graph.GetTotalEdgeNumber(), 6) << "Failed to add vertices to moved graph ";
 }
 
 TEST_F(GraphBigFiveTest, MoveAssignConstructor)
@@ -138,6 +138,6 @@ TEST_F(GraphBigFiveTest, MoveAssignConstructor)
     Graph<TestState> move_graph;
     move_graph = CreateGraph();
 
-    ASSERT_EQ(move_graph.GetGraphVertexNumber(), 6) << "Failed to add vertices to move assigned graph ";
-    ASSERT_EQ(move_graph.GetGraphEdgeNumber(), 6) << "Failed to add vertices to move assigned graph ";
+    ASSERT_EQ(move_graph.GetTotalVertexNumber(), 6) << "Failed to add vertices to move assigned graph ";
+    ASSERT_EQ(move_graph.GetTotalEdgeNumber(), 6) << "Failed to add vertices to move assigned graph ";
 }
