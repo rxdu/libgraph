@@ -10,6 +10,9 @@ build/
 # log
 *.log
 
+# IDE/Editor
+.vscode
+
 # Doxygen
 docs/doxygen/html/
 docs/doxygen/latex
@@ -50,3 +53,7 @@ tags
 */tags
 *.swp
 */*.swp
+
+# CLion
+.idea
+/cmake-build-debug/
