@@ -17,7 +17,7 @@
 // user
 #include "graph/graph.hpp"
 
-using namespace librav;
+using namespace rdu;
 
 struct StateExample
 {

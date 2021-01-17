@@ -13,7 +13,7 @@
 #include <utility>
 #include <queue>
 
-namespace librav {
+namespace rdu {
 template <typename T>
 struct PQElementComparator {
   bool operator()(const T &lhs, const T &rhs) const {
@@ -46,6 +46,6 @@ struct PriorityQueue {
     return best_item;
   }
 };
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* PRIORITY_QUEUE_HPP */

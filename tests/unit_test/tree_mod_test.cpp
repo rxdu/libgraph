@@ -14,7 +14,7 @@
 
 #include "graph/tree.hpp"
 
-using namespace librav;
+using namespace rdu;
 
 struct TestState
 {

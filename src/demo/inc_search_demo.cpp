@@ -21,7 +21,7 @@
 #include "graph/search/astar.hpp"
 #include "graph/search/dijkstra.hpp"
 
-using namespace librav;
+using namespace rdu;
 
 struct Index {
   int64_t x;

@@ -32,6 +32,7 @@
 #include <unordered_map>
 #endif
 
+#include <list>
 #include <vector>
 #include <cstdint>
 #include <limits>
@@ -40,7 +41,7 @@
 
 #include "graph/details/default_indexer.hpp"
 
-namespace librav {
+namespace rdu {
 /// Graph class template.
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
@@ -145,11 +146,11 @@ class Graph {
     StateIndexer GetStateIndex;
 
     // edges connecting to other vertices
-    typedef std::vector<Edge> EdgeListType;
+    typedef std::list<Edge> EdgeListType;
     EdgeListType edges_to_;
 
     // vertices that contain edges connecting to current vertex
-    std::vector<vertex_iterator> vertices_from_;
+    std::list<vertex_iterator> vertices_from_;
 
     // attributes for search algorithms
     bool is_checked_ = false;
@@ -339,7 +340,7 @@ class Graph {
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
 using Graph_t = Graph<State, Transition, StateIndexer>;
-}  // namespace librav
+}  // namespace rdu
 
 #include "graph/details/edge_impl.hpp"
 #include "graph/details/vertex_impl.hpp"

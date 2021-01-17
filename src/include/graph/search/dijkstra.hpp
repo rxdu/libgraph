@@ -25,7 +25,7 @@
 #include "graph/graph.hpp"
 #include "graph/details/priority_queue.hpp"
 
-namespace librav {
+namespace rdu {
 
 template <typename State>
 using Path = std::vector<State>;
@@ -389,6 +389,6 @@ class DijkstraTraversal {
   };
 };
 
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* DIJKSTRA_HPP */

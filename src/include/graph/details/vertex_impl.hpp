@@ -10,7 +10,7 @@
 #ifndef VERTEX_IMPL_HPP
 #define VERTEX_IMPL_HPP
 
-namespace librav {
+namespace rdu {
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::Vertex::operator==(
     const Graph<State, Transition, StateIndexer>::Vertex &other) {
@@ -68,6 +68,6 @@ void Graph<State, Transition, StateIndexer>::Vertex::ClearVertexSearchInfo() {
   g_cost_ = 0.0;
   h_cost_ = 0.0;
 }
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* VERTEX_IMPL_HPP */

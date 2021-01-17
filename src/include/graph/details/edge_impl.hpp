@@ -10,7 +10,7 @@
 #ifndef EDGE_IMPL_HPP
 #define EDGE_IMPL_HPP
 
-namespace librav {
+namespace rdu {
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::Edge::operator==(
     const Graph<State, Transition, StateIndexer>::Edge &other) {
@@ -25,6 +25,6 @@ void Graph<State, Transition, StateIndexer>::Edge::PrintEdge() {
             << dst_->GetVertexID() << " , cost - " << cost_ << std::endl;
 }
 
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* EDGE_IMPL_HPP */

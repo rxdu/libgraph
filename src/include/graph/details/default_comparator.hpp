@@ -12,7 +12,7 @@
 
 #include <functional>
 
-namespace librav {
+namespace rdu {
 template <typename Transition>
 class DefaultComparator {
  public:
@@ -23,6 +23,6 @@ class DefaultComparator {
  private:
   // Comparator compare;
 };
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* DEFAULT_COMPARATOR_HPP */

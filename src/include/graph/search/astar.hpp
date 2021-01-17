@@ -28,7 +28,7 @@
 #include "graph/graph.hpp"
 #include "graph/details/priority_queue.hpp"
 
-namespace librav {
+namespace rdu {
 template <typename State>
 using Path = std::vector<State>;
 
@@ -275,6 +275,6 @@ class AStar {
     return path;
   }
 };
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* ASTAR_HPP */

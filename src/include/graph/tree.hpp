@@ -43,7 +43,7 @@
 
 #include "graph/graph.hpp"
 
-namespace librav {
+namespace rdu {
 /// Tree class template.
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
@@ -154,7 +154,7 @@ class Tree : public Graph<State, Transition, StateIndexer> {
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
 using Tree_t = Tree<State, Transition, StateIndexer>;
-}  // namespace librav
+}  // namespace rdu
 
 #include "graph/details/tree_impl.hpp"
 

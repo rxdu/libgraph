@@ -18,7 +18,7 @@
 #include "graph/graph.hpp"
 #include "demo/state_example.hpp"
 
-using namespace librav;
+using namespace rdu;
 
 void ValueTypeGraphDemo();
 void PointerTypeGraphDemo();

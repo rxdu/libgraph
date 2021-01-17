@@ -16,7 +16,7 @@
 #include <iostream>
 #include <iomanip>
 
-namespace librav {
+namespace rdu {
 /*
  * Reference:
  *
@@ -115,6 +115,6 @@ struct DefaultIndexer<
     return static_cast<int64_t>(state->id);
   }
 };
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* STATE_INDEXER_HPP */

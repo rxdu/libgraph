@@ -15,7 +15,7 @@
 #include "graph/astar.h"
 #include "demo/state_example.h"
 
-using namespace librav;
+using namespace rdu;
 
 int main(int argc, char* argv[])
 {

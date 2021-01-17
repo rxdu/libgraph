@@ -4,7 +4,7 @@
 
 #include "graph/details/dynamic_priority_queue.hpp"
 
-using namespace librav;
+using namespace rdu;
 
 struct TestItem
 {

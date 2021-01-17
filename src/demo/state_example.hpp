@@ -12,7 +12,7 @@
 
 #include <cstdint>
 
-namespace librav {
+namespace rdu {
 
 struct StateExample {
   StateExample(uint64_t id) : id_(id){};
@@ -20,6 +20,6 @@ struct StateExample {
   int64_t id_;
 };
 
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* STATE_EXAMPLE_HPP */

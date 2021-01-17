@@ -18,7 +18,7 @@
 #include "graph/details/default_indexer.hpp"
 #include "graph/details/default_comparator.hpp"
 
-namespace librav {
+namespace rdu {
 /// A priority queue implementation that supports element priority update.
 // Reference:
 // [1] https://github.com/csbence/DynamicPriorityQueue
@@ -64,6 +64,6 @@ class DynamicPriorityQueue {
   std::unordered_map<int64_t, Item> data_;
   ItemIndexer GetItemIndex;
 };
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* DYNAMIC_PRIORITY_QUEUE_HPP */

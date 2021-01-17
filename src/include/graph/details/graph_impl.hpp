@@ -12,7 +12,7 @@
 
 #include <type_traits>
 
-namespace librav {
+namespace rdu {
 template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>::Graph(
     const Graph<State, Transition, StateIndexer> &other) {
@@ -179,6 +179,6 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
 
   return vertex_iterator(it);
 }
-}  // namespace librav
+}  // namespace rdu
 
 #endif /* GRAPH_IMPL_HPP */
