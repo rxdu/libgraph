@@ -1,9 +1,9 @@
-/* 
+/*
  * default_comparator.hpp
- * 
+ *
  * Created on: Sep 04, 2018 12:02
- * Description: 
- * 
+ * Description:
+ *
  * Copyright (c) 2018 Ruixiang Du (rdu)
  */
 
@@ -12,20 +12,17 @@
 
 #include <functional>
 
-namespace librav
-{
+namespace librav {
 template <typename Transition>
-class DefaultComparator
-{
-  public:
-    bool operator()(Transition lhs, Transition rhs)
-    {
-        return (lhs->value_ > rhs->value_);
-    }
+class DefaultComparator {
+ public:
+  bool operator()(Transition lhs, Transition rhs) {
+    return (lhs->value_ > rhs->value_);
+  }
 
-  private:
-    // Comparator compare;
+ private:
+  // Comparator compare;
 };
-} // namespace librav
+}  // namespace librav
 
 #endif /* DEFAULT_COMPARATOR_HPP */

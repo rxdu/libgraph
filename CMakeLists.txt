@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.1.0)
-project(libgraph VERSION 1.1)
+cmake_minimum_required(VERSION 3.10.2)
+project(libgraph VERSION 2.0)
 
 ## Project Options
 option(BUILD_TESTING ON)
