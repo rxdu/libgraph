@@ -15,8 +15,8 @@
 
 // user
 #include "graph/graph.hpp"
-#include "graph/algorithms/astar.hpp"
-#include "graph/algorithms/dijkstra.hpp"
+#include "graph/search/astar.hpp"
+#include "graph/search/dijkstra.hpp"
 
 using namespace librav;
 

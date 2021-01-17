@@ -9,7 +9,7 @@ C++ class templates for constructing graphs and search. This library is distribu
 
 * A compiler that supports C++11
 
-This is a header-only library. You can simply copy the "graph" folder to your project and include "graph/graph.hpp" to use the library. 
+This is a header-only library. You can simply copy content of the "src" folder to your project and include "graph/graph.hpp" to use the library. 
 
 If you're using CMake, the recommended way to integrate the library to your project is to add this repository as a git submodule. Then use "add_subdirectory()" in your CMakeLists.txt to add the library to your build tree.
 
