@@ -79,9 +79,9 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
 
     for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
     {
-        vertex_ids.insert((*it).vertex_id_);
+        vertex_ids.insert((*it).vertex_id);
         for (auto ite = (*it).edge_begin(); ite != (*it).edge_end(); ++ite)
-            edge_costs.insert((*ite).cost_);
+            edge_costs.insert((*ite).cost);
     }
 
     ASSERT_TRUE(vertex_ids == vertex_id_set) << "Failed to access all vertices in the graph (with iterator * operator)";
@@ -91,9 +91,9 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
     edge_costs.clear();
     for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
     {
-        vertex_ids.insert(it->vertex_id_);
+        vertex_ids.insert(it->vertex_id);
         for (auto ite = it->edge_begin(); ite != it->edge_end(); ++ite)
-            edge_costs.insert(ite->cost_);
+            edge_costs.insert(ite->cost);
     }
 
     ASSERT_TRUE(vertex_ids == vertex_id_set) << "Failed to access all vertices in the graph (with iterator -> operator)";
@@ -102,5 +102,5 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator)
     Graph<TestState *>::const_vertex_iterator cbegin_vtx = graph.vertex_begin();
     Graph<TestState *>::const_edge_iterator cbegin_edge = cbegin_vtx->edge_begin();
 
-    ASSERT_TRUE(cbegin_vtx->vertex_id_ == graph.vertex_begin()->vertex_id_) << "Failed to access const vertex iterator)";
+    ASSERT_TRUE(cbegin_vtx->vertex_id == graph.vertex_begin()->vertex_id) << "Failed to access const vertex iterator)";
 }

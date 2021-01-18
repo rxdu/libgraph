@@ -14,15 +14,14 @@ namespace rdu {
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::Edge::operator==(
     const Graph<State, Transition, StateIndexer>::Edge &other) {
-  if (src_ == other.src_ && dst_ == other.dst_ && cost_ == other.cost_)
-    return true;
+  if (src == other.src && dst == other.dst && cost == other.cost) return true;
   return false;
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::Edge::PrintEdge() {
-  std::cout << "Edge_t: src - " << src_->GetVertexID() << " , dst - "
-            << dst_->GetVertexID() << " , cost - " << cost_ << std::endl;
+  std::cout << "Edge_t: src - " << src->GetVertexID() << " , dst - "
+            << dst->GetVertexID() << " , cost - " << cost << std::endl;
 }
 
 }  // namespace rdu

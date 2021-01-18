@@ -14,7 +14,7 @@ namespace rdu {
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::Vertex::operator==(
     const Graph<State, Transition, StateIndexer>::Vertex &other) {
-  if (vertex_id_ == other.vertex_id_) return true;
+  if (vertex_id == other.vertex_id) return true;
   return false;
 }
 
@@ -23,7 +23,7 @@ typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator
 Graph<State, Transition, StateIndexer>::Vertex::FindEdge(int64_t dst_id) {
   typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator it;
   for (it = edge_begin(); it != edge_end(); ++it) {
-    if (it->dst_->vertex_id_ == dst_id) return it;
+    if (it->dst->vertex_id == dst_id) return it;
   }
   return it;
 }
@@ -35,7 +35,7 @@ typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator
 Graph<State, Transition, StateIndexer>::Vertex::FindEdge(T dst_state) {
   typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator it;
   for (it = edge_begin(); it != edge_end(); ++it) {
-    if (this->GetStateIndex(it->dst_->state_) == this->GetStateIndex(dst_state))
+    if (this->GetStateIndex(it->dst->state) == this->GetStateIndex(dst_state))
       return it;
   }
   return it;
@@ -54,19 +54,19 @@ std::vector<typename Graph<State, Transition, StateIndexer>::vertex_iterator>
 Graph<State, Transition, StateIndexer>::Vertex::GetNeighbours() {
   std::vector<typename Graph<State, Transition, StateIndexer>::vertex_iterator>
       nbs;
-  for (auto it = edge_begin(); it != edge_end(); ++it) nbs.push_back(it->dst_);
+  for (auto it = edge_begin(); it != edge_end(); ++it) nbs.push_back(it->dst);
   return nbs;
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::Vertex::ClearVertexSearchInfo() {
-  is_checked_ = false;
-  is_in_openlist_ = false;
-  search_parent_ = vertex_iterator();
+  is_checked = false;
+  is_in_openlist = false;
+  search_parent = vertex_iterator();
 
-  f_cost_ = 0.0;
-  g_cost_ = 0.0;
-  h_cost_ = 0.0;
+  f_cost = 0.0;
+  g_cost = 0.0;
+  h_cost = 0.0;
 }
 }  // namespace rdu
 

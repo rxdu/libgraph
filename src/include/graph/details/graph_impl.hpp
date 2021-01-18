@@ -18,8 +18,8 @@ Graph<State, Transition, StateIndexer>::Graph(
     const Graph<State, Transition, StateIndexer> &other) {
   for (auto &pair : other.vertex_map_) {
     auto vertex = pair.second;
-    for (auto &edge : vertex->edges_to_)
-      this->AddEdge(edge.src_->state_, edge.dst_->state_, edge.cost_);
+    for (auto &edge : vertex->edges_to)
+      this->AddEdge(edge.src->state, edge.dst->state, edge.cost);
   }
 }
 
@@ -65,11 +65,11 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
   if (it != vertex_map_.end()) {
     // remove from other vertices that connect to the vertex to be deleted
     auto vtx = vertex_iterator(it);
-    for (auto &asv : vtx->vertices_from_)
-      for (auto eit = asv->edges_to_.begin(); eit != asv->edges_to_.end();
+    for (auto &asv : vtx->vertices_from)
+      for (auto eit = asv->edges_to.begin(); eit != asv->edges_to.end();
            eit++)
-        if ((*eit).dst_ == vtx) {
-          asv->edges_to_.erase(eit);
+        if ((*eit).dst == vtx) {
+          asv->edges_to.erase(eit);
           break;
         }
 
@@ -89,12 +89,12 @@ void Graph<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
   // update transition if edge already exists
   auto it = src_vertex->FindEdge(dstate);
   if (it != src_vertex->edge_end()) {
-    it->cost_ = trans;
+    it->cost = trans;
     return;
   }
 
-  dst_vertex->vertices_from_.push_back(src_vertex);
-  src_vertex->edges_to_.emplace_back(src_vertex, dst_vertex, trans);
+  dst_vertex->vertices_from.push_back(src_vertex);
+  src_vertex->edges_to.emplace_back(src_vertex, dst_vertex, trans);
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -104,14 +104,14 @@ bool Graph<State, Transition, StateIndexer>::RemoveEdge(State sstate,
   auto dst_vertex = FindVertex(dstate);
 
   if ((src_vertex != vertex_end()) && (dst_vertex != vertex_end())) {
-    for (auto it = src_vertex->edges_to_.begin();
-         it != src_vertex->edges_to_.end(); ++it) {
-      if (it->dst_ == dst_vertex) {
-        src_vertex->edges_to_.erase(it);
-        dst_vertex->vertices_from_.erase(
-            std::remove(dst_vertex->vertices_from_.begin(),
-                        dst_vertex->vertices_from_.end(), src_vertex),
-            dst_vertex->vertices_from_.end());
+    for (auto it = src_vertex->edges_to.begin();
+         it != src_vertex->edges_to.end(); ++it) {
+      if (it->dst == dst_vertex) {
+        src_vertex->edges_to.erase(it);
+        dst_vertex->vertices_from.erase(
+            std::remove(dst_vertex->vertices_from.begin(),
+                        dst_vertex->vertices_from.end(), src_vertex),
+            dst_vertex->vertices_from.end());
         return true;
       }
     }
@@ -172,7 +172,7 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
 
   if (it == vertex_map_.end()) {
     auto new_vertex = new Vertex(state, state_id);
-    new_vertex->search_parent_ = vertex_end();
+    new_vertex->search_parent = vertex_end();
     vertex_map_.insert(std::make_pair(state_id, new_vertex));
     return vertex_iterator(vertex_map_.find(state_id));
   }

@@ -26,11 +26,7 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#ifdef NOT_USE_UNORDERED_MAP
-#include <map>
-#else
 #include <unordered_map>
-#endif
 
 #include <list>
 #include <vector>
@@ -43,19 +39,15 @@
 
 namespace rdu {
 /// Graph class template.
-template <typename State, typename Transition = double,
+template <typename State, typename TransitionCost = double,
           typename StateIndexer = DefaultIndexer<State>>
 class Graph {
  public:
   class Edge;
   class Vertex;
-  using GraphType = Graph<State, Transition, StateIndexer>;
+  using GraphType = Graph<State, TransitionCost, StateIndexer>;
 
-#ifdef NOT_USE_UNORDERED_MAP
-  typedef std::map<int64_t, Vertex *> VertexMapType;
-#else
   typedef std::unordered_map<int64_t, Vertex *> VertexMapType;
-#endif
   typedef typename VertexMapType::iterator VertexMapTypeIterator;
 
  public:
@@ -98,23 +90,17 @@ class Graph {
   ///@{
   /// Edge class template.
   struct Edge {
-    Edge(vertex_iterator src, vertex_iterator dst, Transition c)
-        : src_(src), dst_(dst), cost_(c){};
-    ~Edge() = default;
+    Edge(vertex_iterator src, vertex_iterator dst, TransitionCost c)
+        : src(src), dst(dst), cost(c){};
 
-    Edge(const Edge &other) = default;
-    Edge &operator=(const Edge &other) = default;
-    Edge(Edge &&other) = default;
-    Edge &operator=(Edge &&other) = default;
+    vertex_iterator src;
+    vertex_iterator dst;
+    TransitionCost cost;
 
-    vertex_iterator src_;
-    vertex_iterator dst_;
-    Transition cost_;
-
-    /// Check if current edge is identical to the other (all src_, dst_, cost_).
+    /// Check if current edge is identical to the other (all src, dst, cost).
     bool operator==(const Edge &other);
 
-    /// Print edge information, assuming member "cost_" is printable.
+    /// Print edge information, assuming member "cost" is printable.
     void PrintEdge();
   };
   ///@}
@@ -129,7 +115,7 @@ class Graph {
      *  Edge iterators to access vertices in the graph.
      */
     ///@{
-    Vertex(State s, int64_t id) : state_(s), vertex_id_(id) {}
+    Vertex(State s, int64_t id) : state(s), vertex_id(id) {}
     ~Vertex() = default;
 
     // do not allow copy or assign
@@ -141,24 +127,24 @@ class Graph {
     ///@}
 
     // generic attributes
-    State state_;
-    const int64_t vertex_id_;
+    State state;
+    const int64_t vertex_id;
     StateIndexer GetStateIndex;
 
     // edges connecting to other vertices
     typedef std::list<Edge> EdgeListType;
-    EdgeListType edges_to_;
+    EdgeListType edges_to;
 
     // vertices that contain edges connecting to current vertex
-    std::list<vertex_iterator> vertices_from_;
+    std::list<vertex_iterator> vertices_from;
 
     // attributes for search algorithms
-    bool is_checked_ = false;
-    bool is_in_openlist_ = false;
-    double f_cost_ = std::numeric_limits<double>::max();
-    double g_cost_ = std::numeric_limits<double>::max();
-    double h_cost_ = std::numeric_limits<double>::max();
-    vertex_iterator search_parent_;
+    bool is_checked = false;
+    bool is_in_openlist = false;
+    double f_cost = std::numeric_limits<double>::max();
+    double g_cost = std::numeric_limits<double>::max();
+    double h_cost = std::numeric_limits<double>::max();
+    vertex_iterator search_parent;
 
     /** @name Edge access.
      *  Edge iterators to access vertices in the graph.
@@ -167,10 +153,10 @@ class Graph {
     // edge iterator for easy access
     typedef typename EdgeListType::iterator edge_iterator;
     typedef typename EdgeListType::const_iterator const_edge_iterator;
-    edge_iterator edge_begin() { return edges_to_.begin(); }
-    edge_iterator edge_end() { return edges_to_.end(); }
-    const_edge_iterator edge_begin() const { return edges_to_.cbegin(); }
-    const_edge_iterator edge_end() const { return edges_to_.cend(); }
+    edge_iterator edge_begin() { return edges_to.begin(); }
+    edge_iterator edge_end() { return edges_to.end(); }
+    const_edge_iterator edge_begin() const { return edges_to.cbegin(); }
+    const_edge_iterator edge_end() const { return edges_to.cend(); }
     ///@}
 
     /** @name Edge Operations
@@ -181,7 +167,7 @@ class Graph {
     bool operator==(const Vertex &other);
 
     /// Returns the id of current vertex.
-    int64_t GetVertexID() const { return vertex_id_; }
+    int64_t GetVertexID() const { return vertex_id; }
 
     /// Look for the edge connecting to the vertex with give id.
     edge_iterator FindEdge(int64_t dst_id);
@@ -278,7 +264,7 @@ class Graph {
 
   /// This function is used to add an edge between the vertices associated with
   /// the given two states. Update the transition if edge already exists.
-  void AddEdge(State sstate, State dstate, Transition trans);
+  void AddEdge(State sstate, State dstate, TransitionCost trans);
 
   /// This function is used to remove the directed edge from src_node to
   /// dst_node.
@@ -286,7 +272,7 @@ class Graph {
 
   /* Undirected Graph */
   /// This function is used to add an undirected edge connecting two nodes
-  void AddUndirectedEdge(State sstate, State dstate, Transition trans);
+  void AddUndirectedEdge(State sstate, State dstate, TransitionCost trans);
 
   /// This function is used to remove the edge from src_node to dst_node.
   bool RemoveUndirectedEdge(State sstate, State dstate);
@@ -337,9 +323,9 @@ class Graph {
   ///@}
 };
 
-template <typename State, typename Transition = double,
+template <typename State, typename TransitionCost = double,
           typename StateIndexer = DefaultIndexer<State>>
-using Graph_t = Graph<State, Transition, StateIndexer>;
+using Graph_t = Graph<State, TransitionCost, StateIndexer>;
 }  // namespace rdu
 
 #include "graph/details/edge_impl.hpp"

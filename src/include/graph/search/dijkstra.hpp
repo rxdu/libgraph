@@ -95,47 +95,47 @@ class Dijkstra {
 
     // begin with start vertex
     openlist.put(start_vtx, 0);
-    start_vtx->is_in_openlist_ = true;
-    start_vtx->g_cost_ = 0;
+    start_vtx->is_in_openlist = true;
+    start_vtx->g_cost = 0;
 
     // start search iterations
     bool found_path = false;
     VertexIterator current_vertex;
     while (!openlist.empty() && found_path != true) {
       current_vertex = openlist.get();
-      if (current_vertex->is_checked_) continue;
+      if (current_vertex->is_checked) continue;
       if (current_vertex == goal_vtx) {
         found_path = true;
         break;
       }
 
-      current_vertex->is_in_openlist_ = false;
-      current_vertex->is_checked_ = true;
+      current_vertex->is_in_openlist = false;
+      current_vertex->is_checked = true;
 
       std::vector<std::tuple<State, Transition>> neighbours =
-          get_neighbours(current_vertex->state_);
+          get_neighbours(current_vertex->state);
       for (auto &nb : neighbours)
-        graph.AddEdge(current_vertex->state_, std::get<0>(nb), std::get<1>(nb));
+        graph.AddEdge(current_vertex->state, std::get<0>(nb), std::get<1>(nb));
 
       // check all adjacent vertices (successors of current vertex)
-      for (auto &edge : current_vertex->edges_to_) {
-        auto successor = edge.dst_;
+      for (auto &edge : current_vertex->edges_to) {
+        auto successor = edge.dst;
 
         // check if the vertex has been checked (in closed list)
-        if (successor->is_checked_ == false) {
+        if (successor->is_checked == false) {
           // first set the parent of the adjacent vertex to be the current
           // vertex
-          auto new_cost = current_vertex->g_cost_ + edge.cost_;
+          auto new_cost = current_vertex->g_cost + edge.cost;
 
           // if the vertex is not in open list
           // or if the vertex is in open list but has a higher cost
-          if (successor->is_in_openlist_ == false ||
-              new_cost < successor->g_cost_) {
-            successor->search_parent_ = current_vertex;
-            successor->g_cost_ = new_cost;
+          if (successor->is_in_openlist == false ||
+              new_cost < successor->g_cost) {
+            successor->search_parent = current_vertex;
+            successor->g_cost = new_cost;
 
-            openlist.put(successor, successor->g_cost_);
-            successor->is_in_openlist_ = true;
+            openlist.put(successor, successor->g_cost);
+            successor->is_in_openlist = true;
           }
         }
       }
@@ -144,9 +144,9 @@ class Dijkstra {
     // reconstruct path from search
     Path<State> path;
     if (found_path) {
-      std::cout << "path found with cost " << goal_vtx->g_cost_ << std::endl;
+      std::cout << "path found with cost " << goal_vtx->g_cost << std::endl;
       auto path_vtx = ReconstructPath(&graph, start_vtx, goal_vtx);
-      for (auto &wp : path_vtx) path.push_back(wp->state_);
+      for (auto &wp : path_vtx) path.push_back(wp->state);
     } else
       std::cout << "failed to find a path" << std::endl;
 
@@ -169,42 +169,42 @@ class Dijkstra {
 
     // begin with start vertex
     openlist.put(start_vtx, 0);
-    start_vtx->is_in_openlist_ = true;
-    start_vtx->g_cost_ = 0;
+    start_vtx->is_in_openlist = true;
+    start_vtx->g_cost = 0;
 
     // start search iterations
     bool found_path = false;
     VertexIterator current_vertex;
     while (!openlist.empty() && found_path != true) {
       current_vertex = openlist.get();
-      if (current_vertex->is_checked_) continue;
+      if (current_vertex->is_checked) continue;
       if (current_vertex == goal_vtx) {
         found_path = true;
         break;
       }
 
-      current_vertex->is_in_openlist_ = false;
-      current_vertex->is_checked_ = true;
+      current_vertex->is_in_openlist = false;
+      current_vertex->is_checked = true;
 
       // check all adjacent vertices (successors of current vertex)
-      for (auto &edge : current_vertex->edges_to_) {
-        auto successor = edge.dst_;
+      for (auto &edge : current_vertex->edges_to) {
+        auto successor = edge.dst;
 
         // check if the vertex has been checked (in closed list)
-        if (successor->is_checked_ == false) {
+        if (successor->is_checked == false) {
           // first set the parent of the adjacent vertex to be the current
           // vertex
-          auto new_cost = current_vertex->g_cost_ + edge.cost_;
+          auto new_cost = current_vertex->g_cost + edge.cost;
 
           // if the vertex is not in open list
           // or if the vertex is in open list but has a higher cost
-          if (successor->is_in_openlist_ == false ||
-              new_cost < successor->g_cost_) {
-            successor->search_parent_ = current_vertex;
-            successor->g_cost_ = new_cost;
+          if (successor->is_in_openlist == false ||
+              new_cost < successor->g_cost) {
+            successor->search_parent = current_vertex;
+            successor->g_cost = new_cost;
 
-            openlist.put(successor, successor->g_cost_);
-            successor->is_in_openlist_ = true;
+            openlist.put(successor, successor->g_cost);
+            successor->is_in_openlist = true;
           }
         }
       }
@@ -213,9 +213,9 @@ class Dijkstra {
     // reconstruct path from search
     Path<State> path;
     if (found_path) {
-      std::cout << "path found with cost " << goal_vtx->g_cost_ << std::endl;
+      std::cout << "path found with cost " << goal_vtx->g_cost << std::endl;
       auto path_vtx = ReconstructPath(graph, start_vtx, goal_vtx);
-      for (auto &wp : path_vtx) path.push_back(wp->state_);
+      for (auto &wp : path_vtx) path.push_back(wp->state);
     } else
       std::cout << "failed to find a path" << std::endl;
 
@@ -236,7 +236,7 @@ class Dijkstra {
     VertexIterator waypoint = goal_vtx;
     while (waypoint != start_vtx) {
       path.push_back(waypoint);
-      waypoint = waypoint->search_parent_;
+      waypoint = waypoint->search_parent;
     }
     // add the start node
     path.push_back(waypoint);
@@ -248,7 +248,7 @@ class Dijkstra {
     std::cout << "starting vertex id: " << (*traj_s)->vertex_id_ << std::endl;
     std::cout << "finishing vertex id: " << (*traj_e)->vertex_id_ << std::endl;
     std::cout << "path length: " << path.size() << std::endl;
-    std::cout << "total cost: " << path.back()->g_cost_ << std::endl;
+    std::cout << "total cost: " << path.back()->g_cost << std::endl;
 #endif
     return path;
   }
@@ -291,43 +291,43 @@ class DijkstraTraversal {
 
     // begin with start vertex
     openlist.put(start_vtx, 0);
-    start_vtx->is_in_openlist_ = true;
-    start_vtx->g_cost_ = 0;
+    start_vtx->is_in_openlist = true;
+    start_vtx->g_cost = 0;
 
     // start search iterations
     VertexIterator current_vertex;
     while (!openlist.empty()) {
       current_vertex = openlist.get();
-      if (current_vertex->is_checked_) continue;
+      if (current_vertex->is_checked) continue;
 
-      current_vertex->is_in_openlist_ = false;
-      current_vertex->is_checked_ = true;
+      current_vertex->is_in_openlist = false;
+      current_vertex->is_checked = true;
 
       std::vector<std::tuple<State, Transition>> neighbours =
-          get_neighbours(current_vertex->state_);
+          get_neighbours(current_vertex->state);
       for (auto &nb : neighbours)
-        graph.AddEdge(current_vertex->state_, std::get<0>(nb), std::get<1>(nb));
+        graph.AddEdge(current_vertex->state, std::get<0>(nb), std::get<1>(nb));
 
       // check all adjacent vertices (successors of current vertex)
       for (auto edge = current_vertex->edge_begin();
            edge != current_vertex->edge_end(); ++edge) {
-        auto successor = edge->dst_;
+        auto successor = edge->dst;
 
         // check if the vertex has been checked (in closed list)
-        if (successor->is_checked_ == false) {
+        if (successor->is_checked == false) {
           // first set the parent of the adjacent vertex to be the current
           // vertex
-          auto new_cost = current_vertex->g_cost_ + edge->cost_;
+          auto new_cost = current_vertex->g_cost + edge->cost;
 
           // if the vertex is not in open list
           // or if the vertex is in open list but has a higher cost
-          if (successor->is_in_openlist_ == false ||
-              new_cost < successor->g_cost_) {
-            successor->search_parent_ = current_vertex;
-            successor->g_cost_ = new_cost;
+          if (successor->is_in_openlist == false ||
+              new_cost < successor->g_cost) {
+            successor->search_parent = current_vertex;
+            successor->g_cost = new_cost;
 
-            openlist.put(successor, successor->g_cost_);
-            successor->is_in_openlist_ = true;
+            openlist.put(successor, successor->g_cost);
+            successor->is_in_openlist = true;
           }
         }
       }
@@ -350,38 +350,38 @@ class DijkstraTraversal {
 
     // begin with start vertex
     openlist.put(start_vtx, 0);
-    start_vtx->is_in_openlist_ = true;
-    start_vtx->g_cost_ = 0;
+    start_vtx->is_in_openlist = true;
+    start_vtx->g_cost = 0;
 
     // start search iterations
     VertexIterator current_vertex;
     while (!openlist.empty()) {
       current_vertex = openlist.get();
-      if (current_vertex->is_checked_) continue;
+      if (current_vertex->is_checked) continue;
 
-      current_vertex->is_in_openlist_ = false;
-      current_vertex->is_checked_ = true;
+      current_vertex->is_in_openlist = false;
+      current_vertex->is_checked = true;
 
       // check all adjacent vertices (successors of current vertex)
       for (auto edge = current_vertex->edge_begin();
            edge != current_vertex->edge_end(); ++edge) {
-        auto successor = edge->dst_;
+        auto successor = edge->dst;
 
         // check if the vertex has been checked (in closed list)
-        if (successor->is_checked_ == false) {
+        if (successor->is_checked == false) {
           // first set the parent of the adjacent vertex to be the current
           // vertex
-          auto new_cost = current_vertex->g_cost_ + edge->cost_;
+          auto new_cost = current_vertex->g_cost + edge->cost;
 
           // if the vertex is not in open list
           // or if the vertex is in open list but has a higher cost
-          if (successor->is_in_openlist_ == false ||
-              new_cost < successor->g_cost_) {
-            successor->search_parent_ = current_vertex;
-            successor->g_cost_ = new_cost;
+          if (successor->is_in_openlist == false ||
+              new_cost < successor->g_cost) {
+            successor->search_parent = current_vertex;
+            successor->g_cost = new_cost;
 
-            openlist.put(successor, successor->g_cost_);
-            successor->is_in_openlist_ = true;
+            openlist.put(successor, successor->g_cost);
+            successor->is_in_openlist = true;
           }
         }
       }
