@@ -67,18 +67,26 @@ class DynamicPriorityQueue {
 
   bool Empty() const { return (element_num_ == 0); }
 
-  T Peek() const { return array_[0]; }
-  void DeleteMin() {}
+  T Peek() const {
+    // default constructed T is assumed to be invalid
+    if (Empty()) return T();
+    return array_[1];
+  }
+
+  void DeleteMin() {
+    if (Empty()) return;
+    array_[1] = std::move(array_[element_num_--]);
+    PercolateDown(1);
+  }
 
   T Pop() {
-    auto min = array_[0];
+    auto min = std::move(array_[1]);
     DeleteMin();
     return min;
   }
 
-  void Remove(const T& element) {
-    // find element first
-  }
+  // TODO: this operation would require T to provide a max/infinity value
+  void Remove(const T& element) {}
 
   bool Contains(const T& element) const {
     return element_map_.find(GetItemIndex(element)) != element_map_.end();

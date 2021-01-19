@@ -60,5 +60,17 @@ int main(int argc, char* argv[]) {
 
   queue.PrintInfo();
 
+  std::cout << "Peeking: " << queue.Peek() << std::endl;
+
+  queue.PrintInfo();
+
+  std::cout << "Popping: " << queue.Pop() << std::endl;
+
+  queue.PrintInfo();
+
+  queue.DeleteMin();
+
+  queue.PrintInfo();
+
   return 0;
 }
