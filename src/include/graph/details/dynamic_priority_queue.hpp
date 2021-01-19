@@ -38,8 +38,15 @@ class DynamicPriorityQueue {
     array_.resize(initial_capacity);
   }
 
+  DynamicPriorityQueue(const std::vector<T>& elements) {
+    array_.resize(elements.size() * 2);
+    for (std::size_t i = 0; i < elements.size(); ++i)
+      array_[i + 1] = elements[i];
+    element_num_ = elements.size();
+    for (int i = element_num_ / 2; i > 0; --i) PercolateDown(i);
+  }
+
   void Push(const T& element) {
-    std::cout << "pushing: " << element << std::endl;
     // determine if resizing is necessary
     if (element_num_ == array_.size() - 1) array_.resize(array_.size() * 2);
 
