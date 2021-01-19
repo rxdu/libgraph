@@ -130,7 +130,7 @@ class Tree : public Graph<State, Transition, StateIndexer> {
 
   /// Same with RemoveEdge()
   bool RemoveUndirectedEdge(State sstate, State dstate) {
-    BaseType::RemoveEdge(sstate, dstate);
+    return BaseType::RemoveEdge(sstate, dstate);
   }
 
   /// This function removes a subtree including the specified vertex

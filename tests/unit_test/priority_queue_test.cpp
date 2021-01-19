@@ -7,7 +7,7 @@
  * Copyright (c) 2021 Ruixiang Du (rdu)
  */
 
-#include <stdio.h>
+#include <iostream>
 #include <vector>
 #include <memory>
 
@@ -18,15 +18,33 @@
 using namespace rdu;
 
 struct TestElement {
-  TestElement(uint64_t id) : id_(id){};
+  TestElement() = default;
+  TestElement(uint64_t _id, double _value) : id(_id), value(_value){};
 
-  int64_t id_;
+  int64_t id;
+  double value;
 };
+
+struct TEComparator {
+  bool operator()(const TestElement& x, const TestElement& y) const {
+    if (x.value < y.value) return true;
+    return false;
+  }
+};
+
+std::ostream& operator<<(std::ostream& os, const TestElement& e) {
+  os << e.value;
+  return os;
+}
 
 struct DynamicPriorityQueueTest : testing::Test {
-  DynamicPriorityQueueTest() {}
+  DynamicPriorityQueueTest() {
+    queue.Push(TestElement(0, 10));
+    queue.Push(TestElement(1, 5));
+    queue.Push(TestElement(2, 2));
+  }
 
-  ~DynamicPriorityQueueTest() {}
+  DynamicPriorityQueue<TestElement, TEComparator> queue;
 };
 
-TEST_F(DynamicPriorityQueueTest, DefaultConstructor) {}
+TEST_F(DynamicPriorityQueueTest, DefaultConstructor) { queue.PrintInfo(); }

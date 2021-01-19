@@ -29,10 +29,10 @@ int32_t Tree<State, Transition, StateIndexer>::GetVertexDepth(
 
   if (vtx != TreeType::vertex_end()) {
     int32_t depth = 0;
-    auto parent = vtx->vertices_from_;
+    auto parent = vtx->vertices_from;
     while (!parent.empty()) {
       ++depth;
-      parent = parent.front()->vertices_from_;
+      parent = parent.front()->vertices_from;
     }
     return depth;
   }
@@ -45,12 +45,12 @@ typename Tree<State, Transition, StateIndexer>::vertex_iterator
 Tree<State, Transition, StateIndexer>::GetParentVertex(int64_t state_id) {
   auto vtx = TreeType::FindVertex(state_id);
 
-  assert((vtx != TreeType::vertex_end()) && (vtx->vertices_from_.size() <= 1));
+  assert((vtx != TreeType::vertex_end()) && (vtx->vertices_from.size() <= 1));
 
   if (vtx == root_)
     return TreeType::vertex_end();
   else
-    return vtx->vertices_from_.front();
+    return vtx->vertices_from.front();
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -60,11 +60,11 @@ void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id) {
   // remove if specified vertex exists
   if (vtx != TreeType::vertex_end()) {
     // remove from other vertices that connect to the vertex to be deleted
-    for (auto &asv : vtx->vertices_from_)
-      for (auto eit = asv->edges_to_.begin(); eit != asv->edges_to_.end();
+    for (auto &asv : vtx->vertices_from)
+      for (auto eit = asv->edges_to.begin(); eit != asv->edges_to.end();
            eit++)
         if ((*eit).dst_ == vtx) {
-          asv->edges_to_.erase(eit);
+          asv->edges_to.erase(eit);
           break;
         }
 
@@ -107,12 +107,12 @@ void Tree<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
   // update transition if edge already exists
   auto it = src_vertex->FindEdge(dstate);
   if (it != src_vertex->edge_end()) {
-    it->cost_ = trans;
+    it->cost = trans;
     return;
   }
 
-  dst_vertex->vertices_from_.push_back(src_vertex);
-  src_vertex->edges_to_.emplace_back(src_vertex, dst_vertex, trans);
+  dst_vertex->vertices_from.push_back(src_vertex);
+  src_vertex->edges_to.emplace_back(src_vertex, dst_vertex, trans);
 }
 
 // template <typename State, typename Transition, typename StateIndexer>
@@ -125,15 +125,15 @@ void Tree<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
 //     if ((src_vertex != TreeType::vertex_end()) && (dst_vertex !=
 //     TreeType::vertex_end()))
 //     {
-//         for (auto it = src_vertex->edges_to_.begin(); it !=
-//         src_vertex->edges_to_.end(); ++it)
+//         for (auto it = src_vertex->edges_to.begin(); it !=
+//         src_vertex->edges_to.end(); ++it)
 //         {
 //             if (it->dst_ == dst_vertex)
 //             {
-//                 src_vertex->edges_to_.erase(it);
-//                 dst_vertex->vertices_from_.erase(std::remove(dst_vertex->vertices_from_.begin(),
-//                 dst_vertex->vertices_from_.end(), src_vertex),
-//                 dst_vertex->vertices_from_.end());
+//                 src_vertex->edges_to.erase(it);
+//                 dst_vertex->vertices_from.erase(std::remove(dst_vertex->vertices_from.begin(),
+//                 dst_vertex->vertices_from.end(), src_vertex),
+//                 dst_vertex->vertices_from.end());
 //                 // RemoveSubtree(dst_vertex->GetVertexID());
 //                 return true;
 //             }
