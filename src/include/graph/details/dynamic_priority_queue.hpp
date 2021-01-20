@@ -34,10 +34,12 @@ template <typename T, typename Comparator = std::less<T>,
           typename ItemIndexer = DefaultIndexer<T>>
 class DynamicPriorityQueue {
  public:
+  /// Construct a queue with initial capacity
   DynamicPriorityQueue(std::size_t initial_capacity = 100) {
     array_.resize(initial_capacity);
   }
 
+  /// Construct a queue with given elements
   DynamicPriorityQueue(const std::vector<T>& elements) {
     array_.resize(elements.size() * 2);
     for (std::size_t i = 0; i < elements.size(); ++i)
@@ -46,6 +48,7 @@ class DynamicPriorityQueue {
     for (int i = element_num_ / 2; i > 0; --i) PercolateDown(i);
   }
 
+  /// Push new element to queue, update value if element already exists
   void Push(const T& element) {
     // determine if resizing is necessary
     if (element_num_ == array_.size() - 1) array_.resize(array_.size() * 2);
@@ -58,6 +61,24 @@ class DynamicPriorityQueue {
     }
   }
 
+  /// Peek min/max element without removing it.
+  /// Assumption: default constructed T is assumed to be invalid
+  T Peek() const {
+    if (Empty()) return T();
+    return array_[1];
+  }
+
+  /// Get min/max element and remove it from queue.
+  /// Assumption: default constructed T is assumed to be invalid
+  T Pop() {
+    if (Empty()) return T();
+    auto min = std::move(array_[1]);
+    DeleteMin();
+    return min;
+  }
+
+  /// Update value of an existing element in queue, do nothing if the element
+  /// not exists already
   void Update(const T& element) {
     // do nothing if element is not in queue
     auto index_entry = element_map_.find(GetItemIndex(element));
@@ -72,34 +93,26 @@ class DynamicPriorityQueue {
     }
   }
 
+  /// Empty all elements in queue
+  void Clear() {
+    element_num_ = 0;
+    array_.clear();
+    element_map_.clear();
+  }
+
+  /// Check whether the queue is empty
   bool Empty() const { return (element_num_ == 0); }
 
-  T Peek() const {
-    // default constructed T is assumed to be invalid
-    if (Empty()) return T();
-    return array_[1];
-  }
+  /// Get number of elements in the queue
+  std::size_t GetQueueElementNumber() const { return element_num_; }
 
-  void DeleteMin() {
-    if (Empty()) return;
-    array_[1] = std::move(array_[element_num_--]);
-    PercolateDown(1);
-  }
-
-  T Pop() {
-    auto min = std::move(array_[1]);
-    DeleteMin();
-    return min;
-  }
-
-  // TODO: this operation would require T to provide a max/infinity value
-  void Remove(const T& element) {}
-
+  /// Check whether an element is in the queue
   bool Contains(const T& element) const {
     return element_map_.find(GetItemIndex(element)) != element_map_.end();
   }
 
-  void PrintInfo() {
+  /// Print queue (for debugging)
+  void PrintQueue() {
     for (std::size_t i = 1; i < element_num_ + 1; ++i) {
       std::cout << array_[i] << " ";
     }
@@ -113,6 +126,12 @@ class DynamicPriorityQueue {
 
   ItemIndexer GetItemIndex;
   Comparator Compare;
+
+  void DeleteMin() {
+    if (Empty()) return;
+    array_[1] = std::move(array_[element_num_--]);
+    PercolateDown(1);
+  }
 
   void PercolateUp(const T& element, std::size_t index) {
     T new_element = element;

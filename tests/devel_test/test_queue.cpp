@@ -48,29 +48,29 @@ int main(int argc, char* argv[]) {
     queue.Push(element);
   }
 
-  queue.PrintInfo();
+  queue.PrintQueue();
 
   elements[6].value = 3;
   queue.Update(elements[6]);
 
-  queue.PrintInfo();
+  queue.PrintQueue();
 
   elements[5].value = 7;
   queue.Update(elements[5]);
 
-  queue.PrintInfo();
+  queue.PrintQueue();
 
   std::cout << "Peeking: " << queue.Peek() << std::endl;
 
-  queue.PrintInfo();
+  queue.PrintQueue();
 
   std::cout << "Popping: " << queue.Pop() << std::endl;
 
-  queue.PrintInfo();
+  queue.PrintQueue();
 
-  queue.DeleteMin();
+  queue.Pop();
 
-  queue.PrintInfo();
+  queue.PrintQueue();
 
   return 0;
 }
