@@ -7,7 +7,7 @@ C++ class templates for constructing graphs and search. This library is distribu
 
 ## 1. Design
 
-Assuming a graph $G = (V, E)$ contains $n$ vertices and $m$ edges:
+Assuming a graph *G = (V, E)* contains *n* vertices and *m* edges:
 
 **Data Structure**
 
