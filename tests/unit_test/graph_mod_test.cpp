@@ -114,6 +114,13 @@ TEST_F(GraphModificationTest, EdgeMod) {
   ASSERT_EQ(graph.GetTotalEdgeNumber(), 1)
       << "Failed to remove a directed edge from pointer-type graph";
 
+  // remove non-existing edge
+  graph.RemoveEdge(nodes[1], nodes[3]);
+  ASSERT_EQ(graph.GetTotalEdgeNumber(), 1);
+
+  graph.RemoveUndirectedEdge(nodes[1], nodes[3]);
+  ASSERT_EQ(graph.GetTotalEdgeNumber(), 1);
+
   edges.clear();
   for (auto it = graph.FindVertex(0)->edge_begin();
        it != graph.FindVertex(0)->edge_end(); ++it)
@@ -131,6 +138,24 @@ TEST_F(GraphModificationTest, EdgeMod) {
   graph.RemoveUndirectedEdge(nodes[4], nodes[5]);
   ASSERT_EQ(graph.GetTotalEdgeNumber(), 3)
       << "Failed to remove a undirected edge from pointer-type graph";
+}
+
+TEST_F(GraphModificationTest, RemoveVertexWithEdge) {
+  Graph<TestState *> graph;
+
+  ASSERT_EQ(graph.GetTotalEdgeNumber(), 0) << "Graph should have no edge now";
+
+  graph.AddEdge(nodes[0], nodes[1], 1.2);
+  graph.AddEdge(nodes[1], nodes[2], 1.5);
+
+  graph.RemoveVertex(2);
+  ASSERT_EQ(graph.GetTotalVertexNumber(), 2);
+  ASSERT_EQ(graph.GetTotalEdgeNumber(), 1);
+
+  graph.AddEdge(nodes[1], nodes[2], 1.5);
+  graph.RemoveVertex(1);
+  ASSERT_EQ(graph.GetTotalVertexNumber(), 2);
+  ASSERT_EQ(graph.GetTotalEdgeNumber(), 0);
 }
 
 TEST_F(GraphModificationTest, ClearVertexEdge) {
@@ -161,6 +186,7 @@ TEST_F(GraphModificationTest, VertexAccessEdge) {
   graph.AddEdge(nodes[0], nodes[1], 1.2);
   graph.AddEdge(nodes[0], nodes[2], 1.5);
   graph.AddEdge(nodes[0], nodes[3], 1.8);
+  graph.AddEdge(nodes[0], nodes[3], 2.0);
 
   std::vector<int64_t> nc = {1, 2, 3};
 
@@ -182,7 +208,7 @@ TEST_F(GraphModificationTest, VertexAccessEdge) {
 
   ASSERT_TRUE(edge_cost1 == 1.2) << "Edge cost to vertex 1 should be 1.2";
   ASSERT_TRUE(edge_cost2 == 1.5) << "Edge cost to vertex 2 should be 1.5";
-  ASSERT_TRUE(edge_cost3 == 1.8) << "Edge cost to vertex 3 should be 1.8";
+  ASSERT_TRUE(edge_cost3 == 2.0) << "Edge cost to vertex 3 should be 2.0";
 
   bool check_neighbour = graph.FindVertex(0)->CheckNeighbour(1) &&
                          graph.FindVertex(0)->CheckNeighbour(2) &&
