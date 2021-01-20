@@ -210,8 +210,14 @@ TEST_F(GraphModificationTest, VertexAccessEdge) {
   ASSERT_TRUE(edge_cost2 == 1.5) << "Edge cost to vertex 2 should be 1.5";
   ASSERT_TRUE(edge_cost3 == 2.0) << "Edge cost to vertex 3 should be 2.0";
 
+  // try to find non-existing edge
+  ASSERT_EQ(graph.FindVertex(0)->FindEdge(4), graph.FindVertex(0)->edge_end());
+  ASSERT_EQ(graph.FindVertex(0)->FindEdge(nodes[4]),
+            graph.FindVertex(0)->edge_end());
+
   bool check_neighbour = graph.FindVertex(0)->CheckNeighbour(1) &&
                          graph.FindVertex(0)->CheckNeighbour(2) &&
                          graph.FindVertex(0)->CheckNeighbour(3);
   ASSERT_TRUE(check_neighbour) << "Vertex 0 and 1,2,3 should be neighbours";
+  ASSERT_FALSE(graph.FindVertex(0)->CheckNeighbour(4));
 }
