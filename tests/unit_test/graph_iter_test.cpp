@@ -99,6 +99,9 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator) {
   Graph<TestState *>::const_edge_iterator cbegin_edge =
       cbegin_vtx->edge_begin();
 
+  (void)cbegin_vtx;
+  (void)cbegin_edge;
+
   ASSERT_TRUE(cbegin_vtx->vertex_id == graph.vertex_begin()->vertex_id)
       << "Failed to access const vertex iterator)";
 }

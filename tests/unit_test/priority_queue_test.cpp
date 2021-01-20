@@ -73,7 +73,7 @@ TEST_F(DynamicPriorityQueueTest, Constructor) {
 
 TEST_F(DynamicPriorityQueueTest, PointerType) {
   std::vector<TestElement*> element_ptrs;
-  for (int i = 0; i < elements.size(); ++i)
+  for (std::size_t i = 0; i < elements.size(); ++i)
     element_ptrs.push_back(&elements[i]);
   DynamicPriorityQueue<TestElement*, TEComparator> queue(element_ptrs);
   ASSERT_EQ(queue.GetQueueElementNumber(), elements.size());
@@ -89,7 +89,7 @@ TEST_F(DynamicPriorityQueueTest, PushPop) {
   ASSERT_TRUE(queue.Contains(elements[0]));
   ASSERT_FALSE(queue.Contains(elements[1]));
 
-  for (int i = 1; i < elements.size(); ++i) queue.Push(elements[i]);
+  for (std::size_t i = 1; i < elements.size(); ++i) queue.Push(elements[i]);
   ASSERT_EQ(queue.GetQueueElementNumber(), elements.size());
   ASSERT_TRUE(queue.Contains(elements[1]));
 
