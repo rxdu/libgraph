@@ -24,6 +24,7 @@ using namespace rdu;
 #define COL_SIZE 4
 
 struct SimpleState {
+  SimpleState() = default;
   SimpleState(int32_t row, int32_t col) : row_(row), col_(col) {}
 
   int32_t row_;
@@ -33,6 +34,10 @@ struct SimpleState {
 struct SimpleStateIndexer {
   int64_t operator()(SimpleState *state) {
     return state->row_ * COL_SIZE + state->col_;
+  }
+
+  int64_t operator()(const SimpleState &state) {
+    return state.row_ * COL_SIZE + state.col_;
   }
 };
 

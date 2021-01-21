@@ -24,6 +24,7 @@
 
 #include "graph/graph.hpp"
 #include "graph/details/priority_queue.hpp"
+#include "graph/details/dynamic_priority_queue.hpp"
 
 namespace rdu {
 
@@ -49,13 +50,13 @@ class Dijkstra {
     auto start_it = graph->FindVertex(start);
     auto goal_it = graph->FindVertex(goal);
 
-    Path<State> empty;
-
+    Path<State> path;
     // start a new search and return result
-    if (start_it != graph->vertex_end() && goal_it != graph->vertex_end())
-      return PerformSearch(graph, start_it, goal_it);
-    else
-      return empty;
+    if (start_it != graph->vertex_end() && goal_it != graph->vertex_end()) {
+      auto path_vtx = PerformSearch(graph, start_it, goal_it);
+      for (auto &wp : path_vtx) path.push_back(wp->state);
+    }
+    return path;
   }
 
   template <typename State, typename Transition, typename StateIndexer,
@@ -68,13 +69,13 @@ class Dijkstra {
     auto start_it = graph->FindVertex(start);
     auto goal_it = graph->FindVertex(goal);
 
-    Path<State> empty;
-
+    Path<State> path;
     // start a new search and return result
-    if (start_it != graph->vertex_end() && goal_it != graph->vertex_end())
-      return PerformSearch(graph, start_it, goal_it);
-    else
-      return empty;
+    if (start_it != graph->vertex_end() && goal_it != graph->vertex_end()) {
+      auto path_vtx = PerformSearch(graph, start_it, goal_it);
+      for (auto &wp : path_vtx) path.push_back(wp->state);
+    }
+    return path;
   }
 
   template <typename State, typename Transition, typename StateIndexer>
@@ -82,35 +83,60 @@ class Dijkstra {
       State sstate, State gstate,
       GetNeighbourFunc_t<State, Transition> get_neighbours,
       StateIndexer indexer) {
+    Path<State> path;
+    auto path_vtx = PerformIncSearch(sstate, gstate, get_neighbours, indexer);
+    for (auto &wp : path_vtx) path.push_back(wp->state);
+    return path;
+  }
+
+ private:
+  template <typename State, typename Transition, typename StateIndexer>
+  static std::vector<
+      typename Graph<State, Transition, StateIndexer>::vertex_iterator>
+  PerformIncSearch(State sstate, State gstate,
+                   GetNeighbourFunc_t<State, Transition> get_neighbours,
+                   StateIndexer indexer) {
+    // type definitions
+    using PathType = std::vector<
+        typename Graph<State, Transition, StateIndexer>::vertex_iterator>;
     using VertexIterator =
         typename Graph<State, Transition, StateIndexer>::vertex_iterator;
+
+    struct VertexComparator {
+      bool operator()(VertexIterator x, VertexIterator y) const {
+        return (x->g_cost < y->g_cost);
+      }
+    };
+
+    struct VertexIndexer {
+      int64_t operator()(VertexIterator vtx) const {
+        return static_cast<int64_t>(vtx->vertex_id);
+      }
+    };
+
+    // open list - a list of vertices that need to be checked out
+    DynamicPriorityQueue<VertexIterator, VertexComparator, VertexIndexer>
+        openlist;
 
     // create a new graph with only start and goal vertices
     Graph<State, Transition, StateIndexer> graph;
     VertexIterator start_vtx = graph.AddVertex(sstate);
     VertexIterator goal_vtx = graph.AddVertex(gstate);
 
-    // open list - a list of vertices that need to be checked out
-    PriorityQueue<VertexIterator> openlist;
-
     // begin with start vertex
-    openlist.Push(start_vtx, 0);
-    start_vtx->is_in_openlist = true;
     start_vtx->g_cost = 0;
+    openlist.Push(start_vtx);
 
     // start search iterations
     bool found_path = false;
     VertexIterator current_vertex;
     while (!openlist.Empty() && found_path != true) {
       current_vertex = openlist.Pop();
-      if (current_vertex->is_checked) continue;
+      current_vertex->is_checked = true;
       if (current_vertex == goal_vtx) {
         found_path = true;
         break;
       }
-
-      current_vertex->is_in_openlist = false;
-      current_vertex->is_checked = true;
 
       std::vector<std::tuple<State, Transition>> neighbours =
           get_neighbours(current_vertex->state);
@@ -123,103 +149,98 @@ class Dijkstra {
 
         // check if the vertex has been checked (in closed list)
         if (successor->is_checked == false) {
-          // first set the parent of the adjacent vertex to be the current
-          // vertex
+          // set the parent of the adjacent vertex to be the current vertex
           auto new_cost = current_vertex->g_cost + edge.cost;
 
-          // if the vertex is not in open list
-          // or if the vertex is in open list but has a higher cost
-          if (successor->is_in_openlist == false ||
-              new_cost < successor->g_cost) {
+          // relax step
+          if (new_cost < successor->g_cost) {
             successor->search_parent = current_vertex;
             successor->g_cost = new_cost;
-
-            openlist.Push(successor, successor->g_cost);
-            successor->is_in_openlist = true;
+            openlist.Push(successor);
           }
         }
       }
     }
 
     // reconstruct path from search
-    Path<State> path;
     if (found_path) {
       std::cout << "path found with cost " << goal_vtx->g_cost << std::endl;
-      auto path_vtx = ReconstructPath(&graph, start_vtx, goal_vtx);
-      for (auto &wp : path_vtx) path.push_back(wp->state);
-    } else
-      std::cout << "failed to find a path" << std::endl;
-
-    return path;
+      return ReconstructPath(&graph, start_vtx, goal_vtx);
+    }
+    std::cout << "failed to find a path" << std::endl;
+    return PathType();
   };
 
- public:
   template <typename State, typename Transition, typename StateIndexer>
-  static Path<State> PerformSearch(
-      Graph<State, Transition, StateIndexer> *graph,
-      typename Graph<State, Transition, StateIndexer>::vertex_iterator
-          start_vtx,
-      typename Graph<State, Transition, StateIndexer>::vertex_iterator
-          goal_vtx) {
+  static std::vector<
+      typename Graph<State, Transition, StateIndexer>::vertex_iterator>
+  PerformSearch(Graph<State, Transition, StateIndexer> *graph,
+                typename Graph<State, Transition, StateIndexer>::vertex_iterator
+                    start_vtx,
+                typename Graph<State, Transition, StateIndexer>::vertex_iterator
+                    goal_vtx) {
+    // type definitions
+    using PathType = std::vector<
+        typename Graph<State, Transition, StateIndexer>::vertex_iterator>;
     using VertexIterator =
         typename Graph<State, Transition, StateIndexer>::vertex_iterator;
 
+    struct VertexComparator {
+      bool operator()(VertexIterator x, VertexIterator y) const {
+        return (x->g_cost < y->g_cost);
+      }
+    };
+
+    struct VertexIndexer {
+      int64_t operator()(VertexIterator vtx) const {
+        return static_cast<int64_t>(vtx->vertex_id);
+      }
+    };
+
     // open list - a list of vertices that need to be checked out
-    PriorityQueue<VertexIterator> openlist;
+    DynamicPriorityQueue<VertexIterator, VertexComparator, VertexIndexer>
+        openlist;
 
     // begin with start vertex
-    openlist.Push(start_vtx, 0);
-    start_vtx->is_in_openlist = true;
     start_vtx->g_cost = 0;
+    openlist.Push(start_vtx);
 
     // start search iterations
     bool found_path = false;
     VertexIterator current_vertex;
     while (!openlist.Empty() && found_path != true) {
       current_vertex = openlist.Pop();
-      if (current_vertex->is_checked) continue;
+      current_vertex->is_checked = true;
       if (current_vertex == goal_vtx) {
         found_path = true;
         break;
       }
 
-      current_vertex->is_in_openlist = false;
-      current_vertex->is_checked = true;
-
       // check all adjacent vertices (successors of current vertex)
       for (auto &edge : current_vertex->edges_to) {
         auto successor = edge.dst;
-
         // check if the vertex has been checked (in closed list)
         if (successor->is_checked == false) {
-          // first set the parent of the adjacent vertex to be the current
-          // vertex
+          // set the parent of the adjacent vertex to be the current vertex
           auto new_cost = current_vertex->g_cost + edge.cost;
 
-          // if the vertex is not in open list
-          // or if the vertex is in open list but has a higher cost
-          if (successor->is_in_openlist == false ||
-              new_cost < successor->g_cost) {
+          // relax step
+          if (new_cost < successor->g_cost) {
             successor->search_parent = current_vertex;
             successor->g_cost = new_cost;
-
-            openlist.Push(successor, successor->g_cost);
-            successor->is_in_openlist = true;
+            openlist.Push(successor);
           }
         }
       }
     }
 
     // reconstruct path from search
-    Path<State> path;
     if (found_path) {
       std::cout << "path found with cost " << goal_vtx->g_cost << std::endl;
-      auto path_vtx = ReconstructPath(graph, start_vtx, goal_vtx);
-      for (auto &wp : path_vtx) path.push_back(wp->state);
-    } else
-      std::cout << "failed to find a path" << std::endl;
-
-    return path;
+      return ReconstructPath(graph, start_vtx, goal_vtx);
+    }
+    std::cout << "failed to find a path" << std::endl;
+    return PathType();
   };
 
   template <typename State, typename Transition, typename StateIndexer>
@@ -253,142 +274,6 @@ class Dijkstra {
     return path;
   }
 };
-
-/************************************************************************************************/
-
-/// Dijkstra traversal algorithm.
-class DijkstraTraversal {
- public:
-  /// Traverse graph from specified vertex id
-  template <typename State, typename Transition, typename StateIndexer,
-            typename VertexIdentifier>
-  void Run(Graph<State, Transition, StateIndexer> *graph,
-           VertexIdentifier start) {
-    // reset last search information
-    graph->ResetAllVertices();
-
-    auto start_it = graph->FindVertex(start);
-
-    // start traversal
-    if (start_it != graph->vertex_end()) Traverse(start_it);
-  }
-
-  /// Traverse graph from specified vertex id
-  template <typename State, typename Transition, typename StateIndexer>
-  static Graph<State, Transition, StateIndexer> RunInc(
-      State sstate, GetNeighbourFunc_t<State, Transition> get_neighbours) {
-    using VertexIterator =
-        typename Graph<State, Transition, StateIndexer>::vertex_iterator;
-
-    // create a new graph with only start and goal vertices
-    Graph<State, Transition, StateIndexer> graph;
-    graph.AddVertex(sstate);
-
-    VertexIterator start_vtx = graph.FindVertex(sstate);
-
-    // open list - a list of vertices that need to be checked out
-    PriorityQueue<VertexIterator> openlist;
-
-    // begin with start vertex
-    openlist.Push(start_vtx, 0);
-    start_vtx->is_in_openlist = true;
-    start_vtx->g_cost = 0;
-
-    // start search iterations
-    VertexIterator current_vertex;
-    while (!openlist.Empty()) {
-      current_vertex = openlist.Pop();
-      if (current_vertex->is_checked) continue;
-
-      current_vertex->is_in_openlist = false;
-      current_vertex->is_checked = true;
-
-      std::vector<std::tuple<State, Transition>> neighbours =
-          get_neighbours(current_vertex->state);
-      for (auto &nb : neighbours)
-        graph.AddEdge(current_vertex->state, std::get<0>(nb), std::get<1>(nb));
-
-      // check all adjacent vertices (successors of current vertex)
-      for (auto edge = current_vertex->edge_begin();
-           edge != current_vertex->edge_end(); ++edge) {
-        auto successor = edge->dst;
-
-        // check if the vertex has been checked (in closed list)
-        if (successor->is_checked == false) {
-          // first set the parent of the adjacent vertex to be the current
-          // vertex
-          auto new_cost = current_vertex->g_cost + edge->cost;
-
-          // if the vertex is not in open list
-          // or if the vertex is in open list but has a higher cost
-          if (successor->is_in_openlist == false ||
-              new_cost < successor->g_cost) {
-            successor->search_parent = current_vertex;
-            successor->g_cost = new_cost;
-
-            openlist.Push(successor, successor->g_cost);
-            successor->is_in_openlist = true;
-          }
-        }
-      }
-    }
-
-    return graph;
-  };
-
- private:
-  template <typename State, typename Transition, typename StateIndexer>
-  static void Traverse(
-      Graph<State, Transition, StateIndexer> *graph,
-      typename Graph<State, Transition, StateIndexer>::vertex_iterator
-          start_vtx) {
-    using VertexIterator =
-        typename Graph<State, Transition, StateIndexer>::vertex_iterator;
-
-    // open list - a list of vertices that need to be checked out
-    PriorityQueue<VertexIterator> openlist;
-
-    // begin with start vertex
-    openlist.Push(start_vtx, 0);
-    start_vtx->is_in_openlist = true;
-    start_vtx->g_cost = 0;
-
-    // start search iterations
-    VertexIterator current_vertex;
-    while (!openlist.Empty()) {
-      current_vertex = openlist.Pop();
-      if (current_vertex->is_checked) continue;
-
-      current_vertex->is_in_openlist = false;
-      current_vertex->is_checked = true;
-
-      // check all adjacent vertices (successors of current vertex)
-      for (auto edge = current_vertex->edge_begin();
-           edge != current_vertex->edge_end(); ++edge) {
-        auto successor = edge->dst;
-
-        // check if the vertex has been checked (in closed list)
-        if (successor->is_checked == false) {
-          // first set the parent of the adjacent vertex to be the current
-          // vertex
-          auto new_cost = current_vertex->g_cost + edge->cost;
-
-          // if the vertex is not in open list
-          // or if the vertex is in open list but has a higher cost
-          if (successor->is_in_openlist == false ||
-              new_cost < successor->g_cost) {
-            successor->search_parent = current_vertex;
-            successor->g_cost = new_cost;
-
-            openlist.Push(successor, successor->g_cost);
-            successor->is_in_openlist = true;
-          }
-        }
-      }
-    }
-  };
-};
-
 }  // namespace rdu
 
 #endif /* DIJKSTRA_HPP */

@@ -142,6 +142,17 @@ TEST_F(GraphIncSearchTest, IncDijkstra) {
   std::vector<int64_t> path_ids;
   for (auto &e : path) path_ids.push_back(e.GetUniqueID());
 
+  std::cout << "dijkstra ids: " << std::endl;
+  for (auto &e : path) std::cout << e.GetUniqueID() << " ";
+  std::cout << std::endl;
+
+  std::cout << "path dijkstra: " << std::endl;
+  for (auto &e : path) std::cout << e.id_ << " ";
+  std::cout << std::endl;
+  std::cout << "path expected: " << std::endl;
+  for (auto &e : spath) std::cout << e << " ";
+  std::cout << std::endl;
+
   ASSERT_TRUE(path_ids == spath) << "Path found by incremental Dijkstra in "
                                     "value-type graph is not correct";
 }

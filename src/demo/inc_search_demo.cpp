@@ -129,7 +129,10 @@ int main(int argc, char **argv) {
                               GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)),
                           DefaultIndexer<SquareCell>());
 
+  std::cout << "path a*: " << std::endl;
   for (auto &e : path) std::cout << "id: " << e.id_ << std::endl;
+  std::cout << "path dijkstra: " << std::endl;
+  for (auto &e : path2) std::cout << "id: " << e.id_ << std::endl;
 
   return 0;
 }

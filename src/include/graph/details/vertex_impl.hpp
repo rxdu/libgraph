@@ -61,12 +61,12 @@ Graph<State, Transition, StateIndexer>::Vertex::GetNeighbours() {
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::Vertex::ClearVertexSearchInfo() {
   is_checked = false;
-  is_in_openlist = false;
+  is_in_openlist = false;  // to be removed
   search_parent = vertex_iterator();
 
-  f_cost = 0.0;
-  g_cost = 0.0;
-  h_cost = 0.0;
+  f_cost = std::numeric_limits<double>::max();
+  g_cost = std::numeric_limits<double>::max();
+  h_cost = std::numeric_limits<double>::max();
 }
 }  // namespace rdu
 

@@ -135,6 +135,8 @@ class DynamicPriorityQueue {
 
   void PercolateUp(const T& element, std::size_t index) {
     T new_element = element;
+    // copy new element to position 0, avoid comparing with non-existing element
+    array_[0] = std::move(new_element);
     // keep floating up until heap-order property is satisfied
     for (; Compare(element, array_[index / 2]); index /= 2) {
       array_[index] = std::move(array_[index / 2]);
