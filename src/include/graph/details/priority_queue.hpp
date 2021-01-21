@@ -24,27 +24,24 @@ struct PQElementComparator {
 /// A simple priority queue implementation.
 // Source: http://www.redblobgames.com/pathfinding/a-star/implementation.html
 template <typename T, typename V = double>
-struct PriorityQueue {
+class PriorityQueue {
   typedef std::pair<V, T> PQElement;
-
-  // std::priority_queue<PQElement, std::vector<PQElement>,
-  // 					std::greater<PQElement>>
-  // 	elements;
   std::priority_queue<PQElement, std::vector<PQElement>,
                       PQElementComparator<PQElement>>
       elements;
 
-  inline bool empty() const { return elements.empty(); }
+ public:
+  inline void Push(T item, V priority) { elements.emplace(priority, item); }
 
-  inline size_t size() const { return elements.size(); }
-
-  inline void put(T item, V priority) { elements.emplace(priority, item); }
-
-  inline T get() {
+  inline T Pop() {
     T best_item = elements.top().second;
     elements.pop();
     return best_item;
   }
+
+  inline bool Empty() const { return elements.empty(); }
+
+  inline size_t GetQueueElementNumber() const { return elements.size(); }
 };
 }  // namespace rdu
 

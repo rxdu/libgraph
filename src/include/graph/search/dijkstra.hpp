@@ -94,15 +94,15 @@ class Dijkstra {
     PriorityQueue<VertexIterator> openlist;
 
     // begin with start vertex
-    openlist.put(start_vtx, 0);
+    openlist.Push(start_vtx, 0);
     start_vtx->is_in_openlist = true;
     start_vtx->g_cost = 0;
 
     // start search iterations
     bool found_path = false;
     VertexIterator current_vertex;
-    while (!openlist.empty() && found_path != true) {
-      current_vertex = openlist.get();
+    while (!openlist.Empty() && found_path != true) {
+      current_vertex = openlist.Pop();
       if (current_vertex->is_checked) continue;
       if (current_vertex == goal_vtx) {
         found_path = true;
@@ -134,7 +134,7 @@ class Dijkstra {
             successor->search_parent = current_vertex;
             successor->g_cost = new_cost;
 
-            openlist.put(successor, successor->g_cost);
+            openlist.Push(successor, successor->g_cost);
             successor->is_in_openlist = true;
           }
         }
@@ -168,15 +168,15 @@ class Dijkstra {
     PriorityQueue<VertexIterator> openlist;
 
     // begin with start vertex
-    openlist.put(start_vtx, 0);
+    openlist.Push(start_vtx, 0);
     start_vtx->is_in_openlist = true;
     start_vtx->g_cost = 0;
 
     // start search iterations
     bool found_path = false;
     VertexIterator current_vertex;
-    while (!openlist.empty() && found_path != true) {
-      current_vertex = openlist.get();
+    while (!openlist.Empty() && found_path != true) {
+      current_vertex = openlist.Pop();
       if (current_vertex->is_checked) continue;
       if (current_vertex == goal_vtx) {
         found_path = true;
@@ -203,7 +203,7 @@ class Dijkstra {
             successor->search_parent = current_vertex;
             successor->g_cost = new_cost;
 
-            openlist.put(successor, successor->g_cost);
+            openlist.Push(successor, successor->g_cost);
             successor->is_in_openlist = true;
           }
         }
@@ -290,14 +290,14 @@ class DijkstraTraversal {
     PriorityQueue<VertexIterator> openlist;
 
     // begin with start vertex
-    openlist.put(start_vtx, 0);
+    openlist.Push(start_vtx, 0);
     start_vtx->is_in_openlist = true;
     start_vtx->g_cost = 0;
 
     // start search iterations
     VertexIterator current_vertex;
-    while (!openlist.empty()) {
-      current_vertex = openlist.get();
+    while (!openlist.Empty()) {
+      current_vertex = openlist.Pop();
       if (current_vertex->is_checked) continue;
 
       current_vertex->is_in_openlist = false;
@@ -326,7 +326,7 @@ class DijkstraTraversal {
             successor->search_parent = current_vertex;
             successor->g_cost = new_cost;
 
-            openlist.put(successor, successor->g_cost);
+            openlist.Push(successor, successor->g_cost);
             successor->is_in_openlist = true;
           }
         }
@@ -349,14 +349,14 @@ class DijkstraTraversal {
     PriorityQueue<VertexIterator> openlist;
 
     // begin with start vertex
-    openlist.put(start_vtx, 0);
+    openlist.Push(start_vtx, 0);
     start_vtx->is_in_openlist = true;
     start_vtx->g_cost = 0;
 
     // start search iterations
     VertexIterator current_vertex;
-    while (!openlist.empty()) {
-      current_vertex = openlist.get();
+    while (!openlist.Empty()) {
+      current_vertex = openlist.Pop();
       if (current_vertex->is_checked) continue;
 
       current_vertex->is_in_openlist = false;
@@ -380,7 +380,7 @@ class DijkstraTraversal {
             successor->search_parent = current_vertex;
             successor->g_cost = new_cost;
 
-            openlist.put(successor, successor->g_cost);
+            openlist.Push(successor, successor->g_cost);
             successor->is_in_openlist = true;
           }
         }
