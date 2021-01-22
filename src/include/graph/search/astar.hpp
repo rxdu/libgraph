@@ -34,7 +34,7 @@ namespace rdu {
 /// A* search algorithm.
 class AStar {
  public:
-  /// Search using vertex ids
+  /// Search using vertex id or state
   template <typename State, typename Transition, typename StateIndexer,
             typename VertexIdentifier>
   static Path<State> Search(
@@ -56,6 +56,7 @@ class AStar {
     return path;
   }
 
+  /// Search using vertex id or state
   template <typename State, typename Transition, typename StateIndexer,
             typename VertexIdentifier>
   static Path<State> Search(
@@ -77,6 +78,7 @@ class AStar {
     return path;
   }
 
+  /// Incrementally search with start state, goal state and an empty graph
   template <typename State, typename Transition, typename StateIndexer>
   static Path<State> IncSearch(
       Graph<State, Transition, StateIndexer> *graph, State sstate, State gstate,
@@ -159,19 +161,14 @@ class AStar {
       // check all adjacent vertices (successors of current vertex)
       for (auto &edge : current_vertex->edges_to) {
         auto successor = edge.dst;
-
         // check if the vertex has been checked (in closed list)
         if (successor->is_checked == false) {
           auto new_cost = current_vertex->g_cost + edge.cost;
 
-          // if the vertex is not in open list
-          // or if the vertex is in open list but has a higher cost
+          // relax step
           if (new_cost < successor->g_cost) {
-            // first set the parent of the adjacent vertex to be the current
-            // vertex
+            // set the parent of the adjacent vertex to be the current vertex
             successor->search_parent = current_vertex;
-
-            // update costs
             successor->g_cost = new_cost;
             successor->h_cost =
                 calc_heuristic(successor->state, goal_vtx->state);

@@ -30,7 +30,7 @@ namespace rdu {
 /// Dijkstra search algorithm.
 class Dijkstra {
  public:
-  /// Search using vertex ids
+  /// Search using vertex id or state
   template <typename State, typename Transition, typename StateIndexer,
             typename VertexIdentifier>
   static Path<State> Search(
@@ -51,6 +51,7 @@ class Dijkstra {
     return path;
   }
 
+  /// Search using vertex id or state
   template <typename State, typename Transition, typename StateIndexer,
             typename VertexIdentifier>
   static Path<State> Search(Graph<State, Transition, StateIndexer> *graph,
@@ -70,6 +71,7 @@ class Dijkstra {
     return path;
   }
 
+  /// Incrementally search with start state, goal state and an empty graph
   template <typename State, typename Transition, typename StateIndexer>
   static Path<State> IncSearch(
       Graph<State, Transition, StateIndexer> *graph, State sstate, State gstate,
@@ -151,11 +153,11 @@ class Dijkstra {
         auto successor = edge.dst;
         // check if the vertex has been checked (in closed list)
         if (successor->is_checked == false) {
-          // set the parent of the adjacent vertex to be the current vertex
           auto new_cost = current_vertex->g_cost + edge.cost;
 
           // relax step
           if (new_cost < successor->g_cost) {
+            // set the parent of the adjacent vertex to be the current vertex
             successor->search_parent = current_vertex;
             successor->g_cost = new_cost;
             openlist.Push(successor);
