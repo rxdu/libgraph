@@ -6,7 +6,7 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [ master, devel ]
   pull_request:
     branches: [ master ]
 
@@ -36,9 +36,9 @@ jobs:
     - name: Install tools
       run: sudo apt-get update && sudo apt-get install -y lcov
     - name: Configure and build
-      run: mkdir build && cd build && cmake -DBUILD_TESTS=ON -DCOVERAGE_CHECK=on .. && cmake --build .
+      run: mkdir build && cd build && cmake -DBUILD_TESTING=ON -DCOVERAGE_CHECK=on .. && cmake --build .
     - name: Run tests
-      run: ./build/bin/gtest_all
+      run: cd ./build && make test
     - name: Collect coverage data
       run: /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info && /usr/bin/lcov --remove ./build/coverage.info "/usr/*" "*/googletest/googletest/*" --output-file ./build/coverage.info
     - name: Show coverage summary

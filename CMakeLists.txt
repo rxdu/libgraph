@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 3.1.0)
-project(libgraph VERSION 1.1)
+cmake_minimum_required(VERSION 3.10.2)
+project(libgraph VERSION 2.0)
 
 ## Project Options
-option(BUILD_TESTS ON)
-option(STATIC_CHECK ON)
-option(COVERAGE_CHECK ON)
+option(BUILD_TESTING "Build tests" OFF)
+option(STATIC_CHECK "Perform static check" OFF)
+option(COVERAGE_CHECK "Perform coverage check" OFF)
 
 # sanity check of the options
 if(COVERAGE_CHECK)
-    set(BUILD_TESTS ON)
+    set(BUILD_TESTING ON)
 endif()
 
 ## generate symbols for IDE indexer
@@ -51,6 +51,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 ## Use GNUInstallDirs to install libraries into correct locations on all platforms.
 include(GNUInstallDirs)
@@ -60,19 +61,15 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
- ## Build library
-add_subdirectory(demo)
-add_library(graph INTERFACE)
-target_compile_definitions(graph INTERFACE -DMINIMAL_PRINTOUT)
-target_include_directories(graph INTERFACE
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/graph/include>
-	$<INSTALL_INTERFACE:include>)
+## Build library
+add_subdirectory(src)
 
 # Build tests
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTS)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
     message(STATUS "Tests will be built")
     enable_testing()
     include(GoogleTest)
+    set(BUILD_TESTS ON)
     add_subdirectory(tests)
 else()
     message(STATUS "Tests will not be built")
@@ -119,7 +116,7 @@ write_basic_package_version_file(
 
 install(EXPORT libgraphTargets
     FILE libgraphTargets.cmake
-    NAMESPACE rxdu::
+    NAMESPACE rdu::
     DESTINATION lib/cmake/libgraph)
 
 configure_file(cmake/libgraphConfig.cmake.in libgraphConfig.cmake @ONLY)
@@ -141,10 +138,5 @@ set(CPACK_GENERATOR "DEB")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Ruixiang Du (ruixiang.du@gmail.com)") 
 # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libasio-dev")
-set(CPACK_SOURCE_IGNORE_FILES
-    /.git
-    /dist
-    /.*build.*
-    /\\\\.DS_Store
-)
+set(CPACK_SOURCE_IGNORE_FILES /.git /dist /.*build.* /\\\\.DS_Store)
 include(CPack)

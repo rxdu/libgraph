@@ -1,13 +1,3 @@
-/*
- * graph_demo.cpp
- *
- *  Created on: Mar 30, 2016
- *      Author: rdu
- *
- *  Description: demo on how to create a graph and perform A* search on the graph.
- *
- */
-
 // standard libaray
 #include <iostream>
 #include <vector>
@@ -15,7 +5,7 @@
 #include <memory>
 
 // user
-#include "graph/graph.hpp"
+#include "graph/tree.hpp"
 
 using namespace rdu;
 

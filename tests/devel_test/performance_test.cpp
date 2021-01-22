@@ -17,7 +17,7 @@
 // user
 #include "graph/astar.h"
 
-using namespace librav;
+using namespace rdu;
 
 #define GRID_SIZE 100
 

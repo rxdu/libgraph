@@ -17,7 +17,7 @@
 #include "graph/astar.h"
 #include "demo/state_example.h"
 
-using namespace librav;
+using namespace rdu;
 
 std::vector<std::tuple<StateExample,double>> GetNeighbour(StateExample node)
 {
