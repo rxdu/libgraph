@@ -17,7 +17,7 @@
  *
  * Major Revisions:
  *
- * Copyright (c) 2018 Ruixiang Du (rdu)
+ * Copyright (c) 2018-2021 Ruixiang Du (rdu)
  */
 
 /* Reference
