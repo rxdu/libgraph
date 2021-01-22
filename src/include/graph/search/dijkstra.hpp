@@ -80,27 +80,36 @@ class Dijkstra {
 
   template <typename State, typename Transition, typename StateIndexer>
   static Path<State> IncSearch(
-      State sstate, State gstate,
-      GetNeighbourFunc_t<State, Transition> get_neighbours,
-      StateIndexer indexer) {
+      Graph<State, Transition, StateIndexer> *graph, State sstate, State gstate,
+      GetNeighbourFunc_t<State, Transition> get_neighbours) {
+    auto start_vtx = graph->AddVertex(sstate);
+    auto goal_vtx = graph->AddVertex(gstate);
+    auto path_vtx =
+        Dijkstra::PerformSearch(graph, start_vtx, goal_vtx, get_neighbours);
+
     Path<State> path;
-    auto path_vtx = PerformIncSearch(sstate, gstate, get_neighbours, indexer);
     for (auto &wp : path_vtx) path.push_back(wp->state);
     return path;
   }
 
- private:
+  //------------------------------------------------------------------------------------//
+
+ public:
   template <typename State, typename Transition, typename StateIndexer>
   static std::vector<
       typename Graph<State, Transition, StateIndexer>::vertex_iterator>
-  PerformIncSearch(State sstate, State gstate,
-                   GetNeighbourFunc_t<State, Transition> get_neighbours,
-                   StateIndexer indexer) {
+  PerformSearch(
+      Graph<State, Transition, StateIndexer> *graph,
+      typename Graph<State, Transition, StateIndexer>::vertex_iterator
+          start_vtx,
+      typename Graph<State, Transition, StateIndexer>::vertex_iterator goal_vtx,
+      GetNeighbourFunc_t<State, Transition> get_neighbours = nullptr) {
+    //-----------------------------------------------------------------------//
     // type definitions
-    using PathType = std::vector<
-        typename Graph<State, Transition, StateIndexer>::vertex_iterator>;
+    //-----------------------------------------------------------------------//
     using VertexIterator =
         typename Graph<State, Transition, StateIndexer>::vertex_iterator;
+    using PathType = std::vector<VertexIterator>;
 
     struct VertexComparator {
       bool operator()(VertexIterator x, VertexIterator y) const {
@@ -114,88 +123,9 @@ class Dijkstra {
       }
     };
 
-    // open list - a list of vertices that need to be checked out
-    DynamicPriorityQueue<VertexIterator, VertexComparator, VertexIndexer>
-        openlist;
-
-    // create a new graph with only start and goal vertices
-    Graph<State, Transition, StateIndexer> graph;
-    VertexIterator start_vtx = graph.AddVertex(sstate);
-    VertexIterator goal_vtx = graph.AddVertex(gstate);
-
-    // begin with start vertex
-    start_vtx->g_cost = 0;
-    openlist.Push(start_vtx);
-
-    // start search iterations
-    bool found_path = false;
-    VertexIterator current_vertex;
-    while (!openlist.Empty() && found_path != true) {
-      current_vertex = openlist.Pop();
-      current_vertex->is_checked = true;
-      if (current_vertex == goal_vtx) {
-        found_path = true;
-        break;
-      }
-
-      std::vector<std::tuple<State, Transition>> neighbours =
-          get_neighbours(current_vertex->state);
-      for (auto &nb : neighbours)
-        graph.AddEdge(current_vertex->state, std::get<0>(nb), std::get<1>(nb));
-
-      // check all adjacent vertices (successors of current vertex)
-      for (auto &edge : current_vertex->edges_to) {
-        auto successor = edge.dst;
-
-        // check if the vertex has been checked (in closed list)
-        if (successor->is_checked == false) {
-          // set the parent of the adjacent vertex to be the current vertex
-          auto new_cost = current_vertex->g_cost + edge.cost;
-
-          // relax step
-          if (new_cost < successor->g_cost) {
-            successor->search_parent = current_vertex;
-            successor->g_cost = new_cost;
-            openlist.Push(successor);
-          }
-        }
-      }
-    }
-
-    // reconstruct path from search
-    if (found_path) {
-      std::cout << "path found with cost " << goal_vtx->g_cost << std::endl;
-      return ReconstructPath(&graph, start_vtx, goal_vtx);
-    }
-    std::cout << "failed to find a path" << std::endl;
-    return PathType();
-  };
-
-  template <typename State, typename Transition, typename StateIndexer>
-  static std::vector<
-      typename Graph<State, Transition, StateIndexer>::vertex_iterator>
-  PerformSearch(Graph<State, Transition, StateIndexer> *graph,
-                typename Graph<State, Transition, StateIndexer>::vertex_iterator
-                    start_vtx,
-                typename Graph<State, Transition, StateIndexer>::vertex_iterator
-                    goal_vtx) {
-    // type definitions
-    using PathType = std::vector<
-        typename Graph<State, Transition, StateIndexer>::vertex_iterator>;
-    using VertexIterator =
-        typename Graph<State, Transition, StateIndexer>::vertex_iterator;
-
-    struct VertexComparator {
-      bool operator()(VertexIterator x, VertexIterator y) const {
-        return (x->g_cost < y->g_cost);
-      }
-    };
-
-    struct VertexIndexer {
-      int64_t operator()(VertexIterator vtx) const {
-        return static_cast<int64_t>(vtx->vertex_id);
-      }
-    };
+    //-----------------------------------------------------------------------//
+    // dijkstra search
+    //-----------------------------------------------------------------------//
 
     // open list - a list of vertices that need to be checked out
     DynamicPriorityQueue<VertexIterator, VertexComparator, VertexIndexer>
@@ -217,6 +147,14 @@ class Dijkstra {
       }
 
       // check all adjacent vertices (successors of current vertex)
+      // if search and build graph simultaneously
+      if (get_neighbours != nullptr) {
+        std::vector<std::tuple<State, Transition>> neighbours =
+            get_neighbours(current_vertex->state);
+        for (auto &nb : neighbours)
+          graph->AddEdge(current_vertex->state, std::get<0>(nb),
+                         std::get<1>(nb));
+      }
       for (auto &edge : current_vertex->edges_to) {
         auto successor = edge.dst;
         // check if the vertex has been checked (in closed list)
@@ -237,22 +175,15 @@ class Dijkstra {
     // reconstruct path from search
     if (found_path) {
       std::cout << "path found with cost " << goal_vtx->g_cost << std::endl;
-      return ReconstructPath(graph, start_vtx, goal_vtx);
+      return ReconstructPath(start_vtx, goal_vtx);
     }
     std::cout << "failed to find a path" << std::endl;
     return PathType();
   };
 
-  template <typename State, typename Transition, typename StateIndexer>
-  static std::vector<
-      typename Graph<State, Transition, StateIndexer>::vertex_iterator>
-  ReconstructPath(Graph<State, Transition, StateIndexer> *graph,
-                  typename Graph<State, Transition,
-                                 StateIndexer>::vertex_iterator start_vtx,
-                  typename Graph<State, Transition,
-                                 StateIndexer>::vertex_iterator goal_vtx) {
-    using VertexIterator =
-        typename Graph<State, Transition, StateIndexer>::vertex_iterator;
+  template <typename VertexIterator>
+  static std::vector<VertexIterator> ReconstructPath(VertexIterator start_vtx,
+                                                     VertexIterator goal_vtx) {
     std::vector<VertexIterator> path;
     VertexIterator waypoint = goal_vtx;
     while (waypoint != start_vtx) {
@@ -262,7 +193,6 @@ class Dijkstra {
     // add the start node
     path.push_back(waypoint);
     std::reverse(path.begin(), path.end());
-
 #ifndef MINIMAL_PRINTOUT
     auto traj_s = path.begin();
     auto traj_e = path.end() - 1;

@@ -134,11 +134,11 @@ struct GraphIncSearchTest : testing::Test {
 };
 
 TEST_F(GraphIncSearchTest, IncDijkstra) {
-  auto path =
-      Dijkstra::IncSearch(cell_s, cell_g,
-                          GetNeighbourFunc_t<SquareCell>(
-                              GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)),
-                          DefaultIndexer<SquareCell>());
+  Graph<SquareCell, double> sgraph;
+  auto find_neighbours = GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids);
+  auto path = Dijkstra::IncSearch(
+      &sgraph, cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(find_neighbours));
+
   std::vector<int64_t> path_ids;
   for (auto &e : path) path_ids.push_back(e.GetUniqueID());
 
@@ -149,6 +149,7 @@ TEST_F(GraphIncSearchTest, IncDijkstra) {
   std::cout << "path dijkstra: " << std::endl;
   for (auto &e : path) std::cout << e.id_ << " ";
   std::cout << std::endl;
+
   std::cout << "path expected: " << std::endl;
   for (auto &e : spath) std::cout << e << " ";
   std::cout << std::endl;

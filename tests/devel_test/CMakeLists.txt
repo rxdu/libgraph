@@ -31,3 +31,6 @@ add_executable(test_id test_id.cpp)
 
 add_executable(test_queue test_queue.cpp)
 target_link_libraries(test_queue graph)
+
+add_executable(test_dijkstra test_dijkstra.cpp)
+target_link_libraries(test_dijkstra graph)
