@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.10.2)
 project(libgraph VERSION 2.0)
 
 ## Project Options
-option(BUILD_TESTING ON)
-option(STATIC_CHECK ON)
-option(COVERAGE_CHECK ON)
+option(BUILD_TESTING "Build tests" OFF)
+option(STATIC_CHECK "Perform static check" OFF)
+option(COVERAGE_CHECK "Perform coverage check" OFF)
 
 # sanity check of the options
 if(COVERAGE_CHECK)
