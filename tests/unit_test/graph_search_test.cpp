@@ -115,6 +115,7 @@ struct GraphSearchTest : testing::Test {
     graph_val.AddEdge(*nodes[10], *nodes[13], 1.414);
     graph_val.AddEdge(*nodes[13], *nodes[9], 1.0);
     graph_val.AddEdge(*nodes[13], *nodes[10], 1.414);
+    graph_val.AddEdge(*nodes[14], *nodes[15], 1.414);
 
     graph_ptr.AddEdge(nodes[0], nodes[1], 1.0);
     graph_ptr.AddEdge(nodes[1], nodes[0], 1.0);
