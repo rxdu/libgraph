@@ -34,3 +34,6 @@ target_link_libraries(test_queue graph)
 
 add_executable(test_dijkstra test_dijkstra.cpp)
 target_link_libraries(test_dijkstra graph)
+
+add_executable(test_astar test_astar.cpp)
+target_link_libraries(test_astar graph)

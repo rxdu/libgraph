@@ -159,12 +159,11 @@ TEST_F(GraphIncSearchTest, IncDijkstra) {
 }
 
 TEST_F(GraphIncSearchTest, IncAStar) {
-  auto path =
-      AStar::IncSearch(cell_s, cell_g,
-                       GetNeighbourFunc_t<SquareCell>(
-                           GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)),
-                       CalcHeuristicFunc_t<SquareCell>(CalcHeuristic),
-                       DefaultIndexer<SquareCell>());
+  Graph<SquareCell, double> sgraph;
+  auto path = AStar::IncSearch(
+      &sgraph, cell_s, cell_g, CalcHeuristicFunc_t<SquareCell>(CalcHeuristic),
+      GetNeighbourFunc_t<SquareCell>(
+          GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
   std::vector<int64_t> path_ids;
   for (auto &e : path) path_ids.push_back(e.GetUniqueID());
 

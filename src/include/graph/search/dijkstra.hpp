@@ -23,18 +23,10 @@
 #include <memory>
 
 #include "graph/graph.hpp"
-#include "graph/details/priority_queue.hpp"
+#include "graph/search/common.hpp"
 #include "graph/details/dynamic_priority_queue.hpp"
 
 namespace rdu {
-
-template <typename State>
-using Path = std::vector<State>;
-
-template <typename State, typename Transition = double>
-using GetNeighbourFunc_t =
-    std::function<std::vector<std::tuple<State, Transition>>(State)>;
-
 /// Dijkstra search algorithm.
 class Dijkstra {
  public:
@@ -94,7 +86,7 @@ class Dijkstra {
 
   //------------------------------------------------------------------------------------//
 
- public:
+ private:
   template <typename State, typename Transition, typename StateIndexer>
   static std::vector<
       typename Graph<State, Transition, StateIndexer>::vertex_iterator>
@@ -126,7 +118,6 @@ class Dijkstra {
     //-----------------------------------------------------------------------//
     // dijkstra search
     //-----------------------------------------------------------------------//
-
     // open list - a list of vertices that need to be checked out
     DynamicPriorityQueue<VertexIterator, VertexComparator, VertexIndexer>
         openlist;
@@ -151,9 +142,10 @@ class Dijkstra {
       if (get_neighbours != nullptr) {
         std::vector<std::tuple<State, Transition>> neighbours =
             get_neighbours(current_vertex->state);
-        for (auto &nb : neighbours)
+        for (auto &nb : neighbours) {
           graph->AddEdge(current_vertex->state, std::get<0>(nb),
                          std::get<1>(nb));
+        }
       }
       for (auto &edge : current_vertex->edges_to) {
         auto successor = edge.dst;
@@ -172,37 +164,16 @@ class Dijkstra {
       }
     }
 
-    // reconstruct path from search
+    //-----------------------------------------------------------------------//
+    // reconstruct path
+    //-----------------------------------------------------------------------//
     if (found_path) {
       std::cout << "path found with cost " << goal_vtx->g_cost << std::endl;
-      return ReconstructPath(start_vtx, goal_vtx);
+      return utils::ReconstructPath(start_vtx, goal_vtx);
     }
     std::cout << "failed to find a path" << std::endl;
     return PathType();
   };
-
-  template <typename VertexIterator>
-  static std::vector<VertexIterator> ReconstructPath(VertexIterator start_vtx,
-                                                     VertexIterator goal_vtx) {
-    std::vector<VertexIterator> path;
-    VertexIterator waypoint = goal_vtx;
-    while (waypoint != start_vtx) {
-      path.push_back(waypoint);
-      waypoint = waypoint->search_parent;
-    }
-    // add the start node
-    path.push_back(waypoint);
-    std::reverse(path.begin(), path.end());
-#ifndef MINIMAL_PRINTOUT
-    auto traj_s = path.begin();
-    auto traj_e = path.end() - 1;
-    std::cout << "starting vertex id: " << (*traj_s)->vertex_id_ << std::endl;
-    std::cout << "finishing vertex id: " << (*traj_e)->vertex_id_ << std::endl;
-    std::cout << "path length: " << path.size() << std::endl;
-    std::cout << "total cost: " << path.back()->g_cost << std::endl;
-#endif
-    return path;
-  }
 };
 }  // namespace rdu
 

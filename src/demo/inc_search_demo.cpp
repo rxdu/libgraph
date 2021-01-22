@@ -117,17 +117,17 @@ int main(int argc, char **argv) {
   obstacle_ids.push_back(18);
   obstacle_ids.push_back(19);
 
-  auto path =
-      AStar::IncSearch(cell_s, cell_g,
-                       GetNeighbourFunc_t<SquareCell>(
-                           GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)),
-                       CalcHeuristicFunc_t<SquareCell>(CalcHeuristic),
-                       DefaultIndexer<SquareCell>());
-
-  Graph<SquareCell, double> sgraph;
   auto find_neighbours = GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids);
-  auto path2 = Dijkstra::IncSearch(
-      &sgraph, cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(find_neighbours));
+
+  Graph<SquareCell, double> sgraph1;
+  auto path = AStar::IncSearch(&sgraph1, cell_s, cell_g,
+                               CalcHeuristicFunc_t<SquareCell>(CalcHeuristic),
+                               GetNeighbourFunc_t<SquareCell>(find_neighbours));
+
+  Graph<SquareCell, double> sgraph2;
+  auto path2 =
+      Dijkstra::IncSearch(&sgraph2, cell_s, cell_g,
+                          GetNeighbourFunc_t<SquareCell>(find_neighbours));
 
   std::cout << "path a*: " << std::endl;
   for (auto &e : path) std::cout << "id: " << e.id_ << std::endl;

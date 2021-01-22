@@ -15,7 +15,7 @@
 
 // user
 #include "graph/graph.hpp"
-#include "graph/search/dijkstra.hpp"
+#include "graph/search/astar.hpp"
 
 using namespace rdu;
 
@@ -40,7 +40,7 @@ struct SimpleStateIndexer {
   }
 };
 
-double CalcHeuristic(SimpleState *node1, SimpleState *node2) {
+double CalcHeuristicSimpleState(SimpleState *node1, SimpleState *node2) {
   int32_t dist_row = node1->row_ - node2->row_;
   int32_t dist_col = node1->col_ - node2->col_;
 
@@ -167,18 +167,20 @@ int main(int argc, char **argv) {
   for (auto &e : all_edges) e->PrintEdge();
 
   // Dijkstra search
-  std::cout << "\nDijkstra search: " << std::endl;
+  std::cout << "\nA* search: " << std::endl;
   //   auto path = Dijkstra::PerformSearch(&graph, graph.FindVertex(0),
   //                                       graph.FindVertex(13));
   // for (auto &e : path) std::cout << "id: " << e->vertex_id << std::endl;
 
-  auto path = Dijkstra::Search(&graph, 0, 13);
+  auto path = AStar::Search(
+      &graph, 0, 13,
+      CalcHeuristicFunc_t<SimpleState *>(CalcHeuristicSimpleState));
   for (auto &e : path)
     std::cout << "id: " << SimpleStateIndexer()(e) << std::endl;
 
-  auto path2 = Dijkstra::Search(&graph, 0, 13);
-  for (auto &e : path2)
-    std::cout << "id2: " << SimpleStateIndexer()(e) << std::endl;
+  //   auto path2 = AStar::Search(&graph, 0, 13);
+  //   for (auto &e : path2)
+  //     std::cout << "id2: " << SimpleStateIndexer()(e) << std::endl;
 
   // need to delete all nodes, the graph only maintains pointers to these nodes
   for (auto &e : nodes) delete e;
@@ -207,19 +209,20 @@ int main(int argc, char **argv) {
   auto find_neighbours = GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids);
   //   auto path_i =
   //       Dijkstra::PerformSearch(&search_graph, start_vtx, goal_vtx,
-  //                               GetNeighbourFunc_t<SquareCell>(find_neighbours));
+  // GetNeighbourFunc_t<SquareCell>(find_neighbours));
 
   //   std::cout << "Inc dijkstra search: " << std::endl;
-  //   for (auto &e : path_i) std::cout << "id: " << e->vertex_id << std::endl;
+  //   for (auto &e : path_i) std::cout << "id: " << e->vertex_id <<
+  //   std::endl;
 
   //---------------------------------------------------------------------
 
   Graph<SquareCell, double> sgraph;
+  auto path_i2 = AStar::IncSearch(&sgraph, cell_s, cell_g,
+                               CalcHeuristicFunc_t<SquareCell>(CalcHeuristic),
+                               GetNeighbourFunc_t<SquareCell>(find_neighbours));
 
-  auto path_i2 = Dijkstra::IncSearch(
-      &sgraph, cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(find_neighbours));
-
-  std::cout << "Inc dijkstra search2: " << std::endl;
+  std::cout << "Inc A* search2: " << std::endl;
   for (auto &e : path_i2) std::cout << "id: " << e.GetUniqueID() << std::endl;
 
   return 0;
