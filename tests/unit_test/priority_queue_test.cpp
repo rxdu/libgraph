@@ -78,16 +78,20 @@ TEST_F(DynamicPriorityQueueTest, PointerType) {
   DynamicPriorityQueue<TestElement*, TEComparator> queue(element_ptrs);
   ASSERT_EQ(queue.GetQueueElementNumber(), elements.size());
 
-  ASSERT_EQ(queue.Peek()->id, 6);
+  ASSERT_FLOAT_EQ(queue.Peek()->id, 6);
   ASSERT_FLOAT_EQ(queue.Peek()->value, 1);
 }
 
 TEST_F(DynamicPriorityQueueTest, PushPop) {
   DynamicPriorityQueue<TestElement, TEComparator> queue;
   queue.Push(elements[0]);
-  ASSERT_EQ(queue.GetQueueElementNumber(), 1);
+  ASSERT_FLOAT_EQ(queue.GetQueueElementNumber(), 1);
   ASSERT_TRUE(queue.Contains(elements[0]));
   ASSERT_FALSE(queue.Contains(elements[1]));
+
+  elements[0].value = 1.1;
+  queue.Push(elements[0]);
+  ASSERT_FLOAT_EQ(queue.Peek().value, 1.1);
 
   for (std::size_t i = 1; i < elements.size(); ++i) queue.Push(elements[i]);
   ASSERT_EQ(queue.GetQueueElementNumber(), elements.size());
@@ -102,7 +106,7 @@ TEST_F(DynamicPriorityQueueTest, PushPop) {
   queue.PrintQueue();
 
   queue.Clear();
-  ASSERT_EQ(queue.GetQueueElementNumber(), 0);
+  ASSERT_FLOAT_EQ(queue.GetQueueElementNumber(), 0);
 
   queue.PrintQueue();
 }
