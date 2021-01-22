@@ -178,3 +178,12 @@ TEST_F(GraphSearchTest, PointerTypeAStar) {
   ASSERT_TRUE(path_ids == spath || path_ids == spath2)
       << "Path found by A* in pointer-type graph is not correct";
 }
+
+TEST_F(GraphSearchTest, NoPathFound) {
+  Path<SimpleState> path1 = Dijkstra::Search(&graph_val, 0, 15);
+  ASSERT_TRUE(path1.empty()) << "No path should be found by Dijkstra";
+
+  Path<SimpleState> path2 = AStar::Search(
+      &graph_val, 0, 15, CalcHeuristicFunc_t<SimpleState>(CalcHeuristicVal));
+  ASSERT_TRUE(path2.empty()) << "No path should be found by A*";
+}
