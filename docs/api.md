@@ -2,8 +2,8 @@
 
 ```cpp 
 template<typename State, typename Transition, typename StateIndexer>
-class Graph
-{
+class Graph {
+ public:
     /// Default Graph constructor.
     Graph() = default;
     /// Copy constructor.
@@ -79,8 +79,7 @@ class Graph
 ```cpp
 /// Vertex class template.
 template<typename State, typename Transition, typename StateIndexer>
-struct Vertex
-{
+struct Vertex {
     // constructor/destructor
     Vertex(State s, int64_t id);
     ~Vertex() = default;
@@ -93,24 +92,24 @@ struct Vertex
     Vertex &operator=(State &&other) = delete;
 
     // generic attributes
-    State state_;
-    const int64_t vertex_id_;
+    State state;
+    const int64_t vertex_id;
     StateIndexer GetStateIndex;
 
     // edges connecting to other vertices
-    typedef std::vector<Edge> EdgeListType;
-    EdgeListType edges_to_;
+    typedef std::list<Edge> EdgeListType;
+    EdgeListType edges_to;
 
     // vertices that contain edges connecting to current vertex
-    std::vector<vertex_iterator> vertices_from_;
+    std::list<vertex_iterator> vertices_from;
 
     // attributes for search algorithms
-    bool is_checked_ = false;
-    bool is_in_openlist_ = false;
-    Transition f_cost_;
-    Transition g_cost_;
-    Transition h_cost_;
-    vertex_iterator search_parent_;
+    bool is_checked = false;
+    bool is_in_openlist = false;
+    double f_cost = std::numeric_limits<double>::max();
+    double g_cost = std::numeric_limits<double>::max();
+    double h_cost = std::numeric_limits<double>::max();
+    vertex_iterator search_parent;
 
     // edge iterator for easy access
     edge_iterator edge_begin();
@@ -155,9 +154,9 @@ struct Edge
     Edge(Edge &&other) = default;
     Edge &operator=(Edge &&other) = default;
 
-    vertex_iterator src_;
-    vertex_iterator dst_;
-    Transition cost_;
+    vertex_iterator src;
+    vertex_iterator dst;
+    Transition cost;
 
     /// Check if current edge is identical to the other (src_, dst_, cost_).
     bool operator==(const Edge &other);
@@ -165,4 +164,58 @@ struct Edge
     /// Print edge information, assuming member "cost_" is printable.
     void PrintEdge();
 };
+```
+
+**Graph Search Related Types**
+
+```cpp
+template <typename State>
+using Path = std::vector<State>;
+
+template <typename State, typename Transition = double>
+using GetNeighbourFunc_t =
+    std::function<std::vector<std::tuple<State, Transition>>(State)>;
+
+template <typename State, typename Transition = double>
+using CalcHeuristicFunc_t = std::function<Transition(State, State)>;
+```
+
+**Dijkstra**
+
+```cpp
+class Dijkstra {
+ public:
+  /// Search using vertex id or state
+  template <typename State, typename Transition, typename StateIndexer,
+            typename VertexIdentifier>
+  static Path<State> Search(Graph<State, Transition, StateIndexer> *graph,
+                            VertexIdentifier start, VertexIdentifier goal);
+
+  /// Incrementally search with start state, goal state and an empty graph
+  template <typename State, typename Transition, typename StateIndexer>
+  static Path<State> IncSearch(
+      Graph<State, Transition, StateIndexer> *graph, State sstate, State gstate,
+      GetNeighbourFunc_t<State, Transition> get_neighbours);
+};
+```
+
+**A\***
+
+```cpp
+class AStar {
+ public:
+  /// Search using vertex id or state
+  template <typename State, typename Transition, typename StateIndexer,
+            typename VertexIdentifier>
+  static Path<State> Search(
+      Graph<State, Transition, StateIndexer> *graph, VertexIdentifier start,
+      VertexIdentifier goal,
+      CalcHeuristicFunc_t<State, Transition> calc_heuristic);
+
+  /// Incrementally search with start state, goal state and an empty graph
+  template <typename State, typename Transition, typename StateIndexer>
+  static Path<State> IncSearch(
+      Graph<State, Transition, StateIndexer> *graph, State sstate, State gstate,
+      CalcHeuristicFunc_t<State, Transition> calc_heuristic,
+      GetNeighbourFunc_t<State, Transition> get_neighbours);
 ```
