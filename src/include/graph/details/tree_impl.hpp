@@ -63,7 +63,7 @@ void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id) {
     for (auto &asv : vtx->vertices_from)
       for (auto eit = asv->edges_to.begin(); eit != asv->edges_to.end();
            eit++)
-        if ((*eit).dst_ == vtx) {
+        if ((*eit).dst == vtx) {
           asv->edges_to.erase(eit);
           break;
         }
@@ -128,7 +128,7 @@ void Tree<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
 //         for (auto it = src_vertex->edges_to.begin(); it !=
 //         src_vertex->edges_to.end(); ++it)
 //         {
-//             if (it->dst_ == dst_vertex)
+//             if (it->dst == dst_vertex)
 //             {
 //                 src_vertex->edges_to.erase(it);
 //                 dst_vertex->vertices_from.erase(std::remove(dst_vertex->vertices_from.begin(),
