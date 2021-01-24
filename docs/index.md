@@ -1,6 +1,6 @@
 ## API
 
-Outlines of core data structures are given at this [page](./api). The main purpose is to provide an API reference. Some C++ details are removed for brevity. Get more information of the actual implementation from the doxygen documentation.
+Outlines of core data structures are given at this [page](./api). The main purpose of that page is to provide an API reference. Some C++ details are removed for brevity. Get more information of the actual implementation from the doxygen documentation.
 
 ## Design
 
@@ -33,9 +33,9 @@ I. We first define a State type we want to use for constructing the graph.
 ~~~cpp
 struct StateExample
 {
-    StateExample(uint64_t id):id_(id){};
+    StateExample(uint64_t _id):id(_id){};
 
-    int64_t id_;
+    int64_t id;
 };
 ~~~
 
@@ -101,15 +101,15 @@ You can use A* and Dijkstra algorithms to perform search in the graph.
 auto path_a = AStar::Search(&graph, 0, 13,
         CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
 for (auto &e : path_a)
-  std::cout << "id: " << e->id_ << std::endl;
+  std::cout << "id: " << e->id << std::endl;
 
 // Dijkstra search
 auto path_d = Dijkstra::Search(&graph, 0, 13);
 for (auto &e : path_d)
-  std::cout << "id: " << e->id_ << std::endl;
+  std::cout << "id: " << e->id << std::endl;
 ~~~
 
-In cases when it's unnecessary to build the entire graph for a search ,you can use the incremental version of A* and Dijkstra. See "demo/inc_search_demo.cpp" for a working example.
+In cases when it's unnecessary to build the entire graph for a search ,you can use the incremental version of A* and Dijkstra. See **"demo/inc_search_demo.cpp"** for a working example.
 
 ## Memory Management
 
@@ -125,4 +125,4 @@ It's usually preferred to only associate a pointer to a vertex if it's expensive
 
 In other cases, you can copy data to graph vertices and you will get a second copy of your original data in the graph once the graph is created. The data copied to the graph will be managed by the graph. You only need to recycle the original data if necessary.
 
-An detailed example of the graph and path search can be found in "demo/simple_graph_demo.cpp". You may also find the unit tests in "tests/gtests" useful for other possible operations on the graph.
+An detailed example of the graph and path search can be found in "demo/simple_graph_demo.cpp". You may also find the unit tests in "tests/unit_test" useful for other possible operations on the graph.

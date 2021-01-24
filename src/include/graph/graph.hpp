@@ -39,13 +39,13 @@
 
 namespace rdu {
 /// Graph class template.
-template <typename State, typename TransitionCost = double,
+template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
 class Graph {
  public:
   class Edge;
   class Vertex;
-  using GraphType = Graph<State, TransitionCost, StateIndexer>;
+  using GraphType = Graph<State, Transition, StateIndexer>;
 
   typedef std::unordered_map<int64_t, Vertex *> VertexMapType;
   typedef typename VertexMapType::iterator VertexMapTypeIterator;
@@ -90,12 +90,12 @@ class Graph {
   ///@{
   /// Edge class template.
   struct Edge {
-    Edge(vertex_iterator src, vertex_iterator dst, TransitionCost c)
+    Edge(vertex_iterator src, vertex_iterator dst, Transition c)
         : src(src), dst(dst), cost(c){};
 
     vertex_iterator src;
     vertex_iterator dst;
-    TransitionCost cost;
+    Transition cost;
 
     /// Check if current edge is identical to the other (all src, dst, cost).
     bool operator==(const Edge &other);
@@ -264,7 +264,7 @@ class Graph {
 
   /// This function is used to add an edge between the vertices associated with
   /// the given two states. Update the transition if edge already exists.
-  void AddEdge(State sstate, State dstate, TransitionCost trans);
+  void AddEdge(State sstate, State dstate, Transition trans);
 
   /// This function is used to remove the directed edge from src_node to
   /// dst_node.
@@ -272,7 +272,7 @@ class Graph {
 
   /* Undirected Graph */
   /// This function is used to add an undirected edge connecting two nodes
-  void AddUndirectedEdge(State sstate, State dstate, TransitionCost trans);
+  void AddUndirectedEdge(State sstate, State dstate, Transition trans);
 
   /// This function is used to remove the edge from src_node to dst_node.
   bool RemoveUndirectedEdge(State sstate, State dstate);
@@ -323,9 +323,9 @@ class Graph {
   ///@}
 };
 
-template <typename State, typename TransitionCost = double,
+template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
-using Graph_t = Graph<State, TransitionCost, StateIndexer>;
+using Graph_t = Graph<State, Transition, StateIndexer>;
 }  // namespace rdu
 
 #include "graph/details/edge_impl.hpp"

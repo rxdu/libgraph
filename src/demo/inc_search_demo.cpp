@@ -29,13 +29,13 @@ struct Index {
 };
 
 struct SquareCell {
-  SquareCell(int64_t id) : id_(id){};
+  SquareCell(int64_t id) : id(id){};
   ~SquareCell() = default;
 
   Index idx;
-  int64_t id_;
+  int64_t id;
 
-  int64_t GetUniqueID() const { return id_; }
+  int64_t GetUniqueID() const { return id; }
 };
 
 double CalcHeuristic(SquareCell node1, SquareCell node2) {
@@ -130,9 +130,9 @@ int main(int argc, char **argv) {
                           GetNeighbourFunc_t<SquareCell>(find_neighbours));
 
   std::cout << "path a*: " << std::endl;
-  for (auto &e : path) std::cout << "id: " << e.id_ << std::endl;
+  for (auto &e : path) std::cout << "id: " << e.id << std::endl;
   std::cout << "path dijkstra: " << std::endl;
-  for (auto &e : path2) std::cout << "id: " << e.id_ << std::endl;
+  for (auto &e : path2) std::cout << "id: " << e.id << std::endl;
 
   return 0;
 }

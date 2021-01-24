@@ -25,25 +25,25 @@ using namespace rdu;
 
 struct SimpleState {
   SimpleState() = default;
-  SimpleState(int32_t row, int32_t col) : row_(row), col_(col) {}
+  SimpleState(int32_t row, int32_t col) : row(row), col(col) {}
 
-  int32_t row_;
-  int32_t col_;
+  int32_t row;
+  int32_t col;
 };
 
 struct SimpleStateIndexer {
   int64_t operator()(SimpleState *state) {
-    return state->row_ * COL_SIZE + state->col_;
+    return state->row * COL_SIZE + state->col;
   }
 
   int64_t operator()(const SimpleState &state) {
-    return state.row_ * COL_SIZE + state.col_;
+    return state.row * COL_SIZE + state.col;
   }
 };
 
 double CalcHeuristic(SimpleState *node1, SimpleState *node2) {
-  int32_t dist_row = node1->row_ - node2->row_;
-  int32_t dist_col = node1->col_ - node2->col_;
+  int32_t dist_row = node1->row - node2->row;
+  int32_t dist_col = node1->col - node2->col;
 
   return std::sqrt(dist_row * dist_row + dist_col * dist_col);
 }

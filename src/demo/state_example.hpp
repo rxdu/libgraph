@@ -15,9 +15,9 @@
 namespace rdu {
 
 struct StateExample {
-  StateExample(uint64_t id) : id_(id){};
+  StateExample(uint64_t id) : id(id){};
 
-  int64_t id_;
+  int64_t id;
 };
 
 }  // namespace rdu
