@@ -235,6 +235,51 @@ TEST_F(TreeModificationTest, SubtreeMod) {
   ASSERT_EQ(tree.GetParentVertex(nodes[8])->vertex_id, 7)
       << "Failed to get parent vertex in the tree ";
 
+  tree.RemoveSubtree(0);
+
+  ASSERT_EQ(tree.GetTotalVertexNumber(), 0)
+      << "Failed to remove vertex and subtree by associated state ID from "
+         "pointer-type tree ";
+  ASSERT_EQ(tree.GetTotalEdgeNumber(), 0)
+      << "Failed to add vertices to pointer-type tree ";
+}
+
+TEST_F(TreeModificationTest, SubtreeMod2) {
+  // create a tree
+  Tree<TestState *> tree;
+
+  ASSERT_EQ(tree.GetTotalVertexNumber(), 0) << "Tree should have no vertex now";
+
+  tree.AddEdge(nodes[0], nodes[1], 1.5);
+  tree.AddEdge(nodes[0], nodes[2], 1.5);
+  tree.AddEdge(nodes[2], nodes[3], 1.5);
+  tree.AddEdge(nodes[1], nodes[4], 1.5);
+  tree.AddEdge(nodes[1], nodes[5], 1.5);
+  tree.AddEdge(nodes[5], nodes[6], 1.5);
+  tree.AddEdge(nodes[5], nodes[7], 1.5);
+  tree.AddEdge(nodes[7], nodes[8], 1.5);
+
+  ASSERT_EQ(tree.GetTotalVertexNumber(), 9)
+      << "Failed to add vertices to pointer-type tree ";
+  ASSERT_EQ(tree.GetTotalEdgeNumber(), 8)
+      << "Failed to add vertices to pointer-type tree ";
+
+  ASSERT_EQ(tree.GetVertexDepth(0), 0)
+      << "Failed to get depth of vertex by id in the tree ";
+  ASSERT_EQ(tree.GetVertexDepth(nodes[1]), 1)
+      << "Failed to get depth of vertex in the tree ";
+  ASSERT_EQ(tree.GetVertexDepth(nodes[2]), 1)
+      << "Failed to get depth of vertex in the tree ";
+  ASSERT_EQ(tree.GetVertexDepth(nodes[7]), 3)
+      << "Failed to get depth of vertex in the tree ";
+  ASSERT_EQ(tree.GetVertexDepth(nodes[8]), 4)
+      << "Failed to get depth of vertex in the tree ";
+
+  ASSERT_EQ(tree.GetParentVertex(5)->vertex_id, 1)
+      << "Failed to get parent vertex in the tree ";
+  ASSERT_EQ(tree.GetParentVertex(nodes[8])->vertex_id, 7)
+      << "Failed to get parent vertex in the tree ";
+
   tree.RemoveSubtree(1);
 
   ASSERT_EQ(tree.GetTotalVertexNumber(), 3)
