@@ -60,13 +60,15 @@ void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id) {
   // remove if specified vertex exists
   if (vtx != TreeType::vertex_end()) {
     // remove from other vertices that connect to the vertex to be deleted
-    for (auto &asv : vtx->vertices_from)
+    for (auto &asv : vtx->vertices_from) {
       for (auto eit = asv->edges_to.begin(); eit != asv->edges_to.end();
-           eit++)
-        if ((*eit).dst_ == vtx) {
+           eit++) {
+        if ((*eit).dst == vtx) {
           asv->edges_to.erase(eit);
           break;
         }
+      }
+    }
 
     // remove all subsequent vertices
     std::vector<vertex_iterator> child_vertices;
@@ -114,34 +116,6 @@ void Tree<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
   dst_vertex->vertices_from.push_back(src_vertex);
   src_vertex->edges_to.emplace_back(src_vertex, dst_vertex, trans);
 }
-
-// template <typename State, typename Transition, typename StateIndexer>
-// bool Tree<State, Transition, StateIndexer>::RemoveEdge(State sstate, State
-// dstate)
-// {
-//     auto src_vertex = TreeType::FindVertex(sstate);
-//     auto dst_vertex = TreeType::FindVertex(dstate);
-
-//     if ((src_vertex != TreeType::vertex_end()) && (dst_vertex !=
-//     TreeType::vertex_end()))
-//     {
-//         for (auto it = src_vertex->edges_to.begin(); it !=
-//         src_vertex->edges_to.end(); ++it)
-//         {
-//             if (it->dst_ == dst_vertex)
-//             {
-//                 src_vertex->edges_to.erase(it);
-//                 dst_vertex->vertices_from.erase(std::remove(dst_vertex->vertices_from.begin(),
-//                 dst_vertex->vertices_from.end(), src_vertex),
-//                 dst_vertex->vertices_from.end());
-//                 // RemoveSubtree(dst_vertex->GetVertexID());
-//                 return true;
-//             }
-//         }
-//     }
-
-//     return false;
-// }
 
 template <typename State, typename Transition, typename StateIndexer>
 void Tree<State, Transition, StateIndexer>::ClearAll() {

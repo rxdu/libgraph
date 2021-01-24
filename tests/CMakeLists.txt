@@ -18,8 +18,9 @@ add_executable(utests
     unit_test/graph_mod_test.cpp
     unit_test/graph_iter_test.cpp
     unit_test/graph_search_test.cpp
-    unit_test/graph_search_inc_test.cpp)
-# add_executable(utests unit_test/pq_with_graph_test.cpp)
+    unit_test/graph_search_inc_test.cpp
+    unit_test/tree_bigfive_test.cpp
+    unit_test/tree_mod_test.cpp)
 target_link_libraries(utests PRIVATE gtest gmock gtest_main graph)
 # get_target_property(PRIVATE_HEADERS graph INCLUDE_DIRECTORIES)
 target_include_directories(utests PRIVATE ${PRIVATE_HEADERS})

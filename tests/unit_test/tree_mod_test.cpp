@@ -25,6 +25,7 @@ struct TestState {
 struct TreeModificationTest : testing::Test {
   TreeModificationTest() {
     for (int i = 0; i < 9; i++) nodes.push_back(new TestState(i));
+    nodes.push_back(new TestState(9));
   }
 
   virtual ~TreeModificationTest() {
@@ -76,10 +77,10 @@ TEST_F(TreeModificationTest, VertexMod) {
       << "Failed to add vertices to pointer-type tree ";
 
   tree.AddEdge(nodes[0], nodes[1], 1.5);
-  ASSERT_EQ(tree.FindVertex(0)->vertex_id_, 0)
+  ASSERT_EQ(tree.FindVertex(0)->vertex_id, 0)
       << "Failed to find added vertex by associated state ID from pointer-type "
          "tree ";
-  ASSERT_EQ(tree.FindVertex(nodes[1])->vertex_id_, 1)
+  ASSERT_EQ(tree.FindVertex(nodes[1])->vertex_id, 1)
       << "Failed to find added vertex by associated state from pointer-type "
          "tree ";
 
@@ -91,7 +92,7 @@ TEST_F(TreeModificationTest, VertexMod) {
   ASSERT_TRUE(tree.FindVertex(1) == tree.vertex_end())
       << "Failed to remove vertex by associated state ID from pointer-type "
          "tree ";
-  ASSERT_EQ(tree.FindVertex(0)->vertex_id_, 0)
+  ASSERT_EQ(tree.FindVertex(0)->vertex_id, 0)
       << "Removed wrong vertex by associated state ID from pointer-type tree ";
 
   tree.RemoveVertex(nodes[0]);
@@ -139,21 +140,21 @@ TEST_F(TreeModificationTest, EdgeMod) {
     edges.push_back(it);
   ASSERT_EQ(edges.size(), 1)
       << "Wrong number of edges added to vertex in pointer-type tree";
-  ASSERT_EQ(edges.front()->src_->vertex_id_, 0)
+  ASSERT_EQ(edges.front()->src->vertex_id, 0)
       << "Wrong src of edges added to vertex in pointer-type tree";
-  ASSERT_EQ(edges.front()->dst_->vertex_id_, 1)
+  ASSERT_EQ(edges.front()->dst->vertex_id, 1)
       << "Wrong dst of edges added to vertex in pointer-type tree";
-  ASSERT_EQ(edges.front()->cost_, 1.2)
+  ASSERT_EQ(edges.front()->cost, 1.2)
       << "Wrong cost of edges added to vertex in pointer-type tree";
 
-  ASSERT_EQ(tree.FindVertex(nodes[1])->edges_to_.size(), 1)
+  ASSERT_EQ(tree.FindVertex(nodes[1])->edges_to.size(), 1)
       << "Failed to add edge to vertex";
-  ASSERT_EQ(tree.FindVertex(nodes[2])->vertices_from_.size(), 1)
-      << "Failed to maintain list of vertices_from_";
+  ASSERT_EQ(tree.FindVertex(nodes[2])->vertices_from.size(), 1)
+      << "Failed to maintain list of vertices_from";
 
   tree.RemoveEdge(nodes[1], nodes[2]);
 
-  ASSERT_EQ(tree.FindVertex(nodes[1])->edges_to_.size(), 0)
+  ASSERT_EQ(tree.FindVertex(nodes[1])->edges_to.size(), 0)
       << "Failed to remove edge frome vertex";
   ASSERT_EQ(tree.GetTotalEdgeNumber(), 1)
       << "Failed to remove a edge from pointer-type tree";
@@ -185,8 +186,8 @@ TEST_F(TreeModificationTest, EdgeMod) {
        it != tree.FindVertex(0)->edge_end(); ++it)
     edges.push_back(it);
   bool edge_intact =
-      (edges.size() == 1) && (edges.front()->src_->vertex_id_ == 0) &&
-      (edges.front()->dst_->vertex_id_ == 1) && (edges.front()->cost_ == 1.2);
+      (edges.size() == 1) && (edges.front()->src->vertex_id == 0) &&
+      (edges.front()->dst->vertex_id == 1) && (edges.front()->cost == 1.2);
   ASSERT_TRUE(edge_intact) << "A wrong edge is removed from pointer-type tree";
 
   tree.AddUndirectedEdge(nodes[3], nodes[4], 1.8);
@@ -213,6 +214,10 @@ TEST_F(TreeModificationTest, SubtreeMod) {
   tree.AddEdge(nodes[5], nodes[6], 1.5);
   tree.AddEdge(nodes[5], nodes[7], 1.5);
   tree.AddEdge(nodes[7], nodes[8], 1.5);
+  tree.AddEdge(nodes[7], nodes[8], 2.5);
+
+  ASSERT_FLOAT_EQ(tree.FindVertex(7)->FindEdge(8)->cost, 2.5)
+      << "Failed to add vertices to pointer-type tree ";
 
   ASSERT_EQ(tree.GetTotalVertexNumber(), 9)
       << "Failed to add vertices to pointer-type tree ";
@@ -230,10 +235,55 @@ TEST_F(TreeModificationTest, SubtreeMod) {
   ASSERT_EQ(tree.GetVertexDepth(nodes[8]), 4)
       << "Failed to get depth of vertex in the tree ";
 
-  ASSERT_EQ(tree.GetParentVertex(5)->vertex_id_, 1)
+  ASSERT_EQ(tree.GetVertexDepth(nodes[9]), -1)
+      << "Failed to get depth of vertex in the tree ";
+
+  ASSERT_EQ(tree.GetParentVertex(0), tree.vertex_end())
       << "Failed to get parent vertex in the tree ";
-  ASSERT_EQ(tree.GetParentVertex(nodes[8])->vertex_id_, 7)
+  ASSERT_EQ(tree.GetParentVertex(5)->vertex_id, 1)
       << "Failed to get parent vertex in the tree ";
+  ASSERT_EQ(tree.GetParentVertex(nodes[8])->vertex_id, 7)
+      << "Failed to get parent vertex in the tree ";
+}
+
+TEST_F(TreeModificationTest, SubtreeRemove1) {
+  // create a tree
+  Tree<TestState *> tree;
+
+  ASSERT_EQ(tree.GetTotalVertexNumber(), 0) << "Tree should have no vertex now";
+
+  tree.AddEdge(nodes[0], nodes[1], 1.5);
+  tree.AddEdge(nodes[0], nodes[2], 1.5);
+  tree.AddEdge(nodes[2], nodes[3], 1.5);
+  tree.AddEdge(nodes[1], nodes[4], 1.5);
+  tree.AddEdge(nodes[1], nodes[5], 1.5);
+  tree.AddEdge(nodes[5], nodes[6], 1.5);
+  tree.AddEdge(nodes[5], nodes[7], 1.5);
+  tree.AddEdge(nodes[7], nodes[8], 1.5);
+
+  tree.RemoveSubtree(0);
+
+  ASSERT_EQ(tree.GetTotalVertexNumber(), 0)
+      << "Failed to remove vertex and subtree by associated state ID from "
+         "pointer-type tree ";
+  ASSERT_EQ(tree.GetTotalEdgeNumber(), 0)
+      << "Failed to add vertices to pointer-type tree ";
+}
+
+TEST_F(TreeModificationTest, SubtreeRemove2) {
+  // create a tree
+  Tree<TestState *> tree;
+
+  ASSERT_EQ(tree.GetTotalVertexNumber(), 0) << "Tree should have no vertex now";
+
+  tree.AddEdge(nodes[0], nodes[1], 1.5);
+  tree.AddEdge(nodes[0], nodes[2], 1.5);
+  tree.AddEdge(nodes[2], nodes[3], 1.5);
+  tree.AddEdge(nodes[1], nodes[4], 1.5);
+  tree.AddEdge(nodes[1], nodes[5], 1.5);
+  tree.AddEdge(nodes[5], nodes[6], 1.5);
+  tree.AddEdge(nodes[5], nodes[7], 1.5);
+  tree.AddEdge(nodes[7], nodes[8], 1.5);
 
   tree.RemoveSubtree(1);
 
@@ -277,19 +327,19 @@ TEST_F(TreeModificationTest, VertexAccessEdge) {
 
   auto neighbours = tree.FindVertex(0)->GetNeighbours();
   std::vector<int64_t> nids2;
-  for (auto &n : neighbours) nids2.push_back(n->vertex_id_);
+  for (auto &n : neighbours) nids2.push_back(n->vertex_id);
   ASSERT_TRUE(nids2 == nc)
       << "Tree should have 3 neighbors (checked from vertex pointer)";
 
   auto nbs = tree.FindVertex(0)->GetNeighbours();
   std::vector<int64_t> nids;
-  for (auto &nb : nbs) nids.push_back(nb->vertex_id_);
+  for (auto &nb : nbs) nids.push_back(nb->vertex_id);
   ASSERT_TRUE(nids.size() == 3) << "Tree should have 3 neighbors";
   ASSERT_TRUE(nids == nc) << "Tree should have 3 neighbors";
 
-  auto edge_cost1 = tree.FindVertex(0)->FindEdge(1)->cost_;
-  auto edge_cost2 = tree.FindVertex(0)->FindEdge(2)->cost_;
-  auto edge_cost3 = tree.FindVertex(0)->FindEdge(3)->cost_;
+  auto edge_cost1 = tree.FindVertex(0)->FindEdge(1)->cost;
+  auto edge_cost2 = tree.FindVertex(0)->FindEdge(2)->cost;
+  auto edge_cost3 = tree.FindVertex(0)->FindEdge(3)->cost;
 
   ASSERT_TRUE(edge_cost1 == 1.2) << "Edge cost to vertex 1 should be 1.2";
   ASSERT_TRUE(edge_cost2 == 1.5) << "Edge cost to vertex 2 should be 1.5";
