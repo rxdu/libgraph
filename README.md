@@ -35,7 +35,7 @@ The overall space complexity of this graph implementation is *O(m+n)*.
 
 **Graph Search**
 
-The dynamic priority queue is implemented as a binary heap, thus the time complexity of a graph search is *O((m+n)*log(n))*.
+The dynamic priority queue is implemented as a binary heap, thus the time complexity of a graph search is O((m+n)*log(n)).
 
 ## 2. Dependencies
 
