@@ -18,7 +18,7 @@ A "Graph" class contains a collection of "Vertex" objects (stored in vertex_map_
 | VertexMapType | std::unordered_map<int64_t, Vertex *> | hash table  |
 | EdgeListType  |           std::list\<Edge\>           | linked list |
 
-The overall space complemxity of this graph implementation is $O(m+n)$.
+The overall space complexity of this graph implementation is *O(m+n)*.
 
 **Time Complexity**
 
@@ -32,6 +32,10 @@ The overall space complemxity of this graph implementation is $O(m+n)$.
 |  Remove Edge  |       Worst  O(d)        |
 
 * d is the number of edges contained by the corresponding vertex
+
+**Graph Search**
+
+The dynamic priority queue is implemented as a binary heap, thus the time complexity of a graph search is *O((m+n)*log(n))*.
 
 ## 2. Dependencies
 
