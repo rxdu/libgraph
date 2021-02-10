@@ -26,12 +26,13 @@ The overall space complexity of this graph implementation is *O(m+n)*.
 | :-----------: | :----------------------: |
 |  Find Vertex  | Average O(1), Worst O(n) |
 |  Add Vertex   | Average O(1), Worst O(n) |
-| Remove Vertex | Average O(1), Worst O(n) |
-|   Find Edge   |       Worst  O(d*)       |
+| Remove Vertex | Average O(1), Worst O(n)* |
+|   Find Edge   |       Worst  O(m*)       |
 |   Add Edge    |       Worst  O(1)        |
-|  Remove Edge  |       Worst  O(d)        |
+|  Remove Edge  |       Worst  O(m)        |
 
-* d is the number of edges contained by the corresponding vertex
+* here O(1)/O(n) only accounts for the operation to remove the vertex from the vertex map. Additionally it takes O(m) to remove all edges connecting to the vertex to be deleted in the worst case.
+* for a sparse graph, the number of edges that a vertex contains should be much less than m
 
 **Graph Search**
 
