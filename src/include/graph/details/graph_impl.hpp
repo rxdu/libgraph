@@ -48,7 +48,9 @@ Graph<State, Transition, StateIndexer>
 
 template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>::~Graph() {
-  for (auto &vertex_pair : vertex_map_) delete vertex_pair.second;
+  for (auto &vertex_pair : vertex_map_) {
+    delete vertex_pair.second;
+  }
 };
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -63,15 +65,29 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
 
   // remove if specified vertex exists
   if (it != vertex_map_.end()) {
-    // remove from other vertices that connect to the vertex to be deleted
     auto vtx = vertex_iterator(it);
-    for (auto &asv : vtx->vertices_from)
-      for (auto eit = asv->edges_to.begin(); eit != asv->edges_to.end();
-           eit++)
-        if ((*eit).dst == vtx) {
+    // remove upstream connections
+    // e.g. other vertices that connect to the vertex to be deleted
+    for (auto &asv : vtx->vertices_from) {
+      for (auto eit = asv->edges_to.begin(); eit != asv->edges_to.end(); eit++)
+        if (eit->dst->vertex_id == vtx->vertex_id) {
           asv->edges_to.erase(eit);
           break;
         }
+    }
+
+    // remove downstream connections
+    // e.g. other vertices that are connected by the vertex to be deleted
+    for (auto &edge : vtx->edges_to) {
+      auto &target_vertex = edge.dst;
+      for (auto vfi = target_vertex->vertices_from.begin();
+           vfi != target_vertex->vertices_from.end(); vfi++) {
+        if ((*vfi)->vertex_id == vtx->vertex_id) {
+          target_vertex->vertices_from.erase(vfi);
+          break;
+        }
+      }
+    }
 
     // remove from vertex map
     auto vptr = it->second;
@@ -84,15 +100,17 @@ template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
                                                      Transition trans) {
   auto src_vertex = ObtainVertexFromVertexMap(sstate);
-  auto dst_vertex = ObtainVertexFromVertexMap(dstate);
 
   // update transition if edge already exists
   auto it = src_vertex->FindEdge(dstate);
   if (it != src_vertex->edge_end()) {
     it->cost = trans;
+    std::cout << "updated cost: " << trans << std::endl;
     return;
   }
 
+  // otherwise add new edge
+  auto dst_vertex = ObtainVertexFromVertexMap(dstate);
   dst_vertex->vertices_from.push_back(src_vertex);
   src_vertex->edges_to.emplace_back(src_vertex, dst_vertex, trans);
 }

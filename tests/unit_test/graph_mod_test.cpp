@@ -153,9 +153,17 @@ TEST_F(GraphModificationTest, RemoveVertexWithEdge) {
   ASSERT_EQ(graph.GetTotalEdgeNumber(), 1);
 
   graph.AddEdge(nodes[1], nodes[2], 1.5);
+  graph.AddEdge(nodes[1], nodes[3], 1.5);
   graph.RemoveVertex(1);
-  ASSERT_EQ(graph.GetTotalVertexNumber(), 2);
+  ASSERT_EQ(graph.GetTotalVertexNumber(), 3);
   ASSERT_EQ(graph.GetTotalEdgeNumber(), 0);
+
+  graph.AddEdge(nodes[0], nodes[1], 1.2);
+  graph.AddEdge(nodes[1], nodes[2], 1.5);
+  graph.AddEdge(nodes[1], nodes[3], 1.5);
+  graph.RemoveVertex(2);
+  //   ASSERT_EQ(graph.GetTotalVertexNumber(), 3);
+  //   ASSERT_EQ(graph.GetTotalEdgeNumber(), 2);
 }
 
 TEST_F(GraphModificationTest, ClearVertexEdge) {
