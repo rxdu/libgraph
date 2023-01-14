@@ -17,6 +17,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(test_default_indexer test_default_indexer.cpp)
 target_link_libraries(test_default_indexer graph)
 
+add_executable(test_remove_vertex test_remove_vertex.cpp)
+target_link_libraries(test_remove_vertex graph)
+
 add_executable(test_graph_creation test_graph_creation.cpp)
 target_link_libraries(test_graph_creation graph)
 
