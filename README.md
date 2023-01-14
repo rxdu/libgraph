@@ -1,8 +1,7 @@
 # Graph and Search
 
-![GitHub Workflow Status](https://github.com/rxdu/libgraph/workflows/CI/badge.svg)
+![GitHub Workflow Status](https://github.com/rxdu/libgraph/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/gh/rxdu/libgraph/branch/master/graph/badge.svg)](https://codecov.io/gh/rxdu/libgraph)
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/rxdu/libgraph.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rxdu/libgraph/context:cpp)
 
 C++ class templates for constructing graphs and search. This library is distributed under **MIT license**.
 
@@ -23,14 +22,14 @@ The overall space complexity of this graph implementation is *O(m+n)*.
 
 **Time Complexity**
 
-|   Operation   |     Time Complexity      |
-| :-----------: | :----------------------: |
-|  Find Vertex  | Average O(1), Worst O(n) |
-|  Add Vertex   | Average O(1), Worst O(n) |
+|   Operation   |      Time Complexity      |
+| :-----------: | :-----------------------: |
+|  Find Vertex  | Average O(1), Worst O(n)  |
+|  Add Vertex   | Average O(1), Worst O(n)  |
 | Remove Vertex | Average O(1), Worst O(n)* |
-|   Find Edge   |       Worst  O(m*)       |
-|   Add Edge    |       Worst  O(1)        |
-|  Remove Edge  |       Worst  O(m)        |
+|   Find Edge   |       Worst  O(m*)        |
+|   Add Edge    |        Worst  O(1)        |
+|  Remove Edge  |        Worst  O(m)        |
 
 * here O(1)/O(n) only accounts for the operation to remove the vertex from the vertex map. Additionally it takes O(m) to remove all edges connecting to the vertex to be deleted in the worst case.
 * for a sparse graph, the number of edges that a vertex contains should be much less than m
@@ -82,7 +81,7 @@ Outlines of core data structures for the purpose of API reference are given at h
 
 You can associate any object to a vertex, but you need to provide an index function for the State struct/class. The index function is used to generate a unique index for a state and it's necessary for checking whether two given states are the same so that only one vertex is created for one unique state inside the graph.
 
-**A default indexer is provided and could be used if you have a member variable "id_" or "id" with a unique value inside the class.** 
+**A default indexer is provided and could be used if you have a member function "GetId()" or a member variable "id_" or "id" that provide you with a unique value of the object.**
 
 You can also define your own index function if the default one is not suitable for your application.
 

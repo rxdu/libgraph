@@ -7,16 +7,6 @@
  * Copyright (c) 2018 Ruixiang Du (rdu)
  */
 
-#ifndef STATE_INDEXER_HPP
-#define STATE_INDEXER_HPP
-
-#include <iostream>
-#include <type_traits>
-#include <memory>
-#include <iostream>
-#include <iomanip>
-
-namespace rdu {
 /*
  * Reference:
  *
@@ -28,12 +18,38 @@ namespace rdu {
  * [3]
  * https://stackoverflow.com/questions/10539305/generic-way-to-test-if-a-type-is-a-smart-pointer
  *
+ * Access value/pointer types
+ * [4]
+ * https://stackoverflow.com/questions/14466620/c-template-specialization-calling-methods-on-types-that-could-be-pointers-or/14466705
+ *
  * SFINAE:
- * [4] https://cpppatterns.com/patterns/class-template-sfinae.html
+ * [5] https://cpppatterns.com/patterns/class-template-sfinae.html
  *
  */
 
-#define GENERATE_HAS_MEMBER(member)                    \
+#ifndef STATE_INDEXER_HPP
+#define STATE_INDEXER_HPP
+
+#include <iostream>
+#include <type_traits>
+#include <memory>
+#include <iostream>
+#include <iomanip>
+
+#if __cplusplus <= 201703L
+template <class...>
+using void_t = void;
+#endif
+
+#if __cplusplus < 201402L
+namespace std {
+template <bool B, class T = void>
+using enable_if_t = typename enable_if<B, T>::type;
+}
+#endif
+
+namespace rdu {
+#define GENERATE_HAS_MEM_VAR(member)                   \
                                                        \
   template <class T>                                   \
   class HasMember_##member {                           \
@@ -57,11 +73,22 @@ namespace rdu {
   };                                                   \
                                                        \
   template <class T>                                   \
-  struct has_member_##member                           \
+  struct has_memvar_##member                           \
       : public std::integral_constant<bool, HasMember_##member<T>::RESULT> {};
 
-GENERATE_HAS_MEMBER(id);
-GENERATE_HAS_MEMBER(id_);
+#define GENERATE_HAS_MEM_FUNC(member)                          \
+                                                               \
+  template <typename T, typename = void>                       \
+  struct has_memfunc_##member : std::false_type {};            \
+                                                               \
+  template <typename T>                                        \
+  struct has_memfunc_##member<                                 \
+      T, void_t<decltype(std::declval<T>().member() == true)>> \
+      : std::true_type {};
+
+GENERATE_HAS_MEM_VAR(id);
+GENERATE_HAS_MEM_VAR(id_);
+GENERATE_HAS_MEM_FUNC(GetId);
 
 template <typename T>
 struct is_shared_ptr : std::false_type {};
@@ -69,50 +96,86 @@ struct is_shared_ptr : std::false_type {};
 template <typename T>
 struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
-template <typename State, typename Enable = void>
-struct DefaultIndexer;
+template <typename T>
+T *get_ptr(T &obj) {
+  return &obj;
+}
 
-// when State has a member "id_"
+template <typename T>
+T *get_ptr(const T &obj) {
+  return &obj;
+}
+
+template <typename T>
+T *get_ptr(T *obj) {
+  return obj;
+}
+
+template <typename T>
+std::shared_ptr<T> get_ptr(std::shared_ptr<T> obj) {
+  return obj;
+}
+
+/*---------------------------------------------------------------------------------*/
+
+template <typename T>
+using check_GetId =
+    has_memfunc_GetId<typename std::remove_pointer<typename std::remove_const<
+        typename std::remove_reference<T>::type>::type>::type>;
+
+template <typename T>
+using check_id =
+    has_memvar_id<typename std::remove_pointer<typename std::remove_const<
+        typename std::remove_reference<T>::type>::type>::type>;
+
+template <typename T>
+using check_id_ =
+    has_memvar_id_<typename std::remove_pointer<typename std::remove_const<
+        typename std::remove_reference<T>::type>::type>::type>;
+
 template <typename State>
-struct DefaultIndexer<
-    State, typename std::enable_if<has_member_id_<typename std::remove_pointer<
-               typename std::remove_const<typename std::remove_reference<
-                   State>::type>::type>::type>::value>::type> {
-  template <
-      typename T = State,
-      typename std::enable_if<(!std::is_pointer<T>::value &&
-                               !is_shared_ptr<T>::value)>::type * = nullptr>
-  int64_t operator()(const State &state) const {
-    return static_cast<int64_t>(state.id_);
+struct DefaultIndexer {
+  // check GetId()
+  template <typename T = State,
+            std::enable_if_t<check_GetId<T>::value, bool> = true>
+  int64_t operator()(T state) const {
+    return static_cast<int64_t>(get_ptr(state)->GetId());
   }
 
-  template <typename T = State, typename std::enable_if<(
-                                    std::is_pointer<T>::value ||
-                                    is_shared_ptr<T>::value)>::type * = nullptr>
-  int64_t operator()(State state) const {
-    return static_cast<int64_t>(state->id_);
-  }
-};
-
-// when State has a member "id"
-template <typename State>
-struct DefaultIndexer<
-    State, typename std::enable_if<has_member_id<typename std::remove_pointer<
-               typename std::remove_const<typename std::remove_reference<
-                   State>::type>::type>::type>::value>::type> {
-  template <
-      typename T = State,
-      typename std::enable_if<(!std::is_pointer<T>::value &&
-                               !is_shared_ptr<T>::value)>::type * = nullptr>
-  int64_t operator()(const State &state) const {
-    return static_cast<int64_t>(state.id);
+  template <typename T = State,
+            std::enable_if_t<check_GetId<T>::value, bool> = true>
+  int64_t operator()(std::shared_ptr<T> state) const {
+    return static_cast<int64_t>(get_ptr(state)->GetId());
   }
 
-  template <typename T = State, typename std::enable_if<(
-                                    std::is_pointer<T>::value ||
-                                    is_shared_ptr<T>::value)>::type * = nullptr>
-  int64_t operator()(State state) const {
-    return static_cast<int64_t>(state->id);
+  // check id
+  template <typename T = State,
+            std::enable_if_t<!check_GetId<T>::value && check_id<T>::value,
+                             bool> = true>
+  int64_t operator()(T state) const {
+    return static_cast<int64_t>(get_ptr(state)->id);
+  }
+
+  template <typename T = State,
+            std::enable_if_t<!check_GetId<T>::value && check_id<T>::value,
+                             bool> = true>
+  int64_t operator()(std::shared_ptr<T> state) const {
+    return static_cast<int64_t>(get_ptr(state)->id);
+  }
+
+  // check id_
+  template <typename T = State,
+            std::enable_if_t<!check_GetId<T>::value && check_id_<T>::value,
+                             bool> = true>
+  int64_t operator()(T state) const {
+    return static_cast<int64_t>(get_ptr(state)->id_);
+  }
+
+  template <typename T = State,
+            std::enable_if_t<!check_GetId<T>::value && check_id_<T>::value,
+                             bool> = true>
+  int64_t operator()(std::shared_ptr<T> state) const {
+    return static_cast<int64_t>(get_ptr(state)->id_);
   }
 };
 }  // namespace rdu
