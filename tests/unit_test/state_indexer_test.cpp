@@ -15,7 +15,7 @@
 
 #include "graph/details/default_indexer.hpp"
 
-using namespace rdu;
+using namespace robosw;
 
 struct TestStateId {
   TestStateId(uint64_t id) : id(id){};

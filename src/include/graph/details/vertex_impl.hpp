@@ -10,7 +10,7 @@
 #ifndef VERTEX_IMPL_HPP
 #define VERTEX_IMPL_HPP
 
-namespace rdu {
+namespace robosw {
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::Vertex::operator==(
     const Graph<State, Transition, StateIndexer>::Vertex &other) {
@@ -68,6 +68,6 @@ void Graph<State, Transition, StateIndexer>::Vertex::ClearVertexSearchInfo() {
   g_cost = std::numeric_limits<double>::max();
   h_cost = std::numeric_limits<double>::max();
 }
-}  // namespace rdu
+}  // namespace robosw
 
 #endif /* VERTEX_IMPL_HPP */

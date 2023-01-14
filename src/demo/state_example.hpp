@@ -12,7 +12,7 @@
 
 #include <cstdint>
 
-namespace rdu {
+namespace robosw {
 
 struct StateExample {
   StateExample(uint64_t id) : id(id){};
@@ -20,6 +20,6 @@ struct StateExample {
   int64_t id;
 };
 
-}  // namespace rdu
+}  // namespace robosw
 
 #endif /* STATE_EXAMPLE_HPP */

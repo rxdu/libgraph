@@ -17,7 +17,7 @@
 // user
 #include "graph/astar.h"
 
-using namespace rdu;
+using namespace robosw;
 
 #define GRID_SIZE 100
 

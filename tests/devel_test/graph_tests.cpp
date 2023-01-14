@@ -17,7 +17,7 @@
 #include "graph/astar.h"
 #include "demo/state_example.h"
 
-using namespace rdu;
+using namespace robosw;
 
 std::vector<std::tuple<StateExample,double>> GetNeighbour(StateExample node)
 {

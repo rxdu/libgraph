@@ -30,7 +30,7 @@
 #include "graph/details/priority_queue.hpp"
 #include "graph/details/dynamic_priority_queue.hpp"
 
-namespace rdu {
+namespace robosw {
 /// A* search algorithm.
 class AStar {
  public:
@@ -190,6 +190,6 @@ class AStar {
     return PathType();
   };
 };
-}  // namespace rdu
+}  // namespace robosw
 
 #endif /* ASTAR_HPP */

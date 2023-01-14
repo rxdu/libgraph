@@ -13,7 +13,7 @@
 #include <iostream>
 #include "graph/graph.hpp"
 
-namespace rdu {
+namespace robosw {
 template <typename State>
 using Path = std::vector<State>;
 
@@ -48,6 +48,6 @@ static std::vector<VertexIterator> ReconstructPath(VertexIterator start_vtx,
   return path;
 }
 }  // namespace utils
-}  // namespace rdu
+}  // namespace robosw
 
 #endif /* COMMON_HPP */
