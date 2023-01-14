@@ -41,7 +41,7 @@ The dynamic priority queue is implemented as a binary heap, thus the time comple
 
 ## 2. Dependencies
 
-* A compiler that supports C++11
+* A compiler that supports C++14
 
 This is a header-only library. There are multiple ways you can integrate this library to your project:
 
