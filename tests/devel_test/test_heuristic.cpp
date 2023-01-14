@@ -9,7 +9,7 @@
 #include "graph/algorithms/astar.hpp"
 #include "demo/state_example.hpp"
 
-using namespace rdu;
+using namespace robosw;
 
 double CalcHeuristic(StateExample node1, StateExample node2)
 {

@@ -12,7 +12,7 @@
 
 #include <type_traits>
 
-namespace rdu {
+namespace robosw {
 template <typename State, typename Transition, typename StateIndexer>
 typename Tree<State, Transition, StateIndexer>::vertex_iterator
 Tree<State, Transition, StateIndexer>::AddVertex(State state) {
@@ -123,6 +123,6 @@ void Tree<State, Transition, StateIndexer>::ClearAll() {
   TreeType::vertex_map_.clear();
   root_ = TreeType::vertex_end();
 }
-}  // namespace rdu
+}  // namespace robosw
 
 #endif /* TREE_IMPL_HPP */

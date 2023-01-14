@@ -7,7 +7,7 @@
 // user
 #include "graph/tree.hpp"
 
-using namespace rdu;
+using namespace robosw;
 
 struct StateExample
 {

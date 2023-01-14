@@ -48,7 +48,7 @@ using enable_if_t = typename enable_if<B, T>::type;
 }
 #endif
 
-namespace rdu {
+namespace robosw {
 #define GENERATE_HAS_MEM_VAR(member)                   \
                                                        \
   template <class T>                                   \
@@ -178,6 +178,6 @@ struct DefaultIndexer {
     return static_cast<int64_t>(get_ptr(state)->id_);
   }
 };
-}  // namespace rdu
+}  // namespace robosw
 
 #endif /* STATE_INDEXER_HPP */

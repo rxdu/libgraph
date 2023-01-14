@@ -16,7 +16,7 @@
 #include "graph/search/astar.hpp"
 #include "graph/search/dijkstra.hpp"
 
-using namespace rdu;
+using namespace robosw;
 
 struct Index {
   int64_t x;

@@ -15,7 +15,7 @@
 
 #include "graph/details/dynamic_priority_queue.hpp"
 
-using namespace rdu;
+using namespace robosw;
 
 struct TestElement {
   TestElement() = default;

@@ -15,7 +15,7 @@
 
 #include "graph/graph.hpp"
 
-using namespace rdu;
+using namespace robosw;
 
 struct TestState {
   TestState(uint64_t id) : id_(id){};

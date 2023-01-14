@@ -12,7 +12,7 @@
 
 #include <type_traits>
 
-namespace rdu {
+namespace robosw {
 template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>::Graph(
     const Graph<State, Transition, StateIndexer> &other) {
@@ -197,6 +197,6 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
 
   return vertex_iterator(it);
 }
-}  // namespace rdu
+}  // namespace robosw
 
 #endif /* GRAPH_IMPL_HPP */

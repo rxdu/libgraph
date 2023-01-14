@@ -18,7 +18,7 @@
 #include "graph/graph.hpp"
 #include "state_example.hpp"
 
-using namespace rdu;
+using namespace robosw;
 
 void ValueTypeGraphDemo();
 void PointerTypeGraphDemo();

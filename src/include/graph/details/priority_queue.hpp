@@ -13,7 +13,7 @@
 #include <utility>
 #include <queue>
 
-namespace rdu {
+namespace robosw {
 template <typename T>
 struct PQElementComparator {
   bool operator()(const T &lhs, const T &rhs) const {
@@ -43,6 +43,6 @@ class PriorityQueue {
 
   inline size_t GetQueueElementNumber() const { return elements.size(); }
 };
-}  // namespace rdu
+}  // namespace robosw
 
 #endif /* PRIORITY_QUEUE_HPP */

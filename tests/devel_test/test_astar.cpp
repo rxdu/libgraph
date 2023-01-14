@@ -17,7 +17,7 @@
 #include "graph/graph.hpp"
 #include "graph/search/astar.hpp"
 
-using namespace rdu;
+using namespace robosw;
 
 #define ROW_SIZE 4
 #define COL_SIZE 4

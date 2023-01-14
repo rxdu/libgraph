@@ -15,7 +15,7 @@
 #include "graph/astar.h"
 #include "demo/state_example.h"
 
-using namespace rdu;
+using namespace robosw;
 
 int main(int argc, char* argv[])
 {
