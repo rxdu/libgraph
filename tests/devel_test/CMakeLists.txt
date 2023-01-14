@@ -14,6 +14,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # add_executable(test_pt_graph test_pt_graph.cpp)
 # target_link_libraries(test_pt_graph graph)
 
+add_executable(test_default_indexer test_default_indexer.cpp)
+target_link_libraries(test_default_indexer graph)
+
 add_executable(test_graph_creation test_graph_creation.cpp)
 target_link_libraries(test_graph_creation graph)
 

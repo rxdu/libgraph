@@ -1,8 +1,7 @@
 # Graph and Search
 
-![GitHub Workflow Status](https://github.com/rxdu/libgraph/workflows/CI/badge.svg)
+![GitHub Workflow Status](https://github.com/rxdu/libgraph/actions/workflows/CI/badge.svg)
 [![codecov](https://codecov.io/gh/rxdu/libgraph/branch/master/graph/badge.svg)](https://codecov.io/gh/rxdu/libgraph)
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/rxdu/libgraph.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rxdu/libgraph/context:cpp)
 
 C++ class templates for constructing graphs and search. This library is distributed under **MIT license**.
 

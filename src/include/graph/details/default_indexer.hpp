@@ -28,8 +28,12 @@ namespace rdu {
  * [3]
  * https://stackoverflow.com/questions/10539305/generic-way-to-test-if-a-type-is-a-smart-pointer
  *
+ * Access value/pointer types
+ * [4]
+ * https://stackoverflow.com/questions/14466620/c-template-specialization-calling-methods-on-types-that-could-be-pointers-or/14466705
+ *
  * SFINAE:
- * [4] https://cpppatterns.com/patterns/class-template-sfinae.html
+ * [5] https://cpppatterns.com/patterns/class-template-sfinae.html
  *
  */
 
@@ -69,50 +73,72 @@ struct is_shared_ptr : std::false_type {};
 template <typename T>
 struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
-template <typename State, typename Enable = void>
-struct DefaultIndexer;
+template <typename T>
+T *get_ptr(T &obj) {
+  return &obj;
+}
 
-// when State has a member "id_"
+template <typename T>
+T *get_ptr(const T &obj) {
+  return &obj;
+}
+
+template <typename T>
+T *get_ptr(T *obj) {
+  return obj;
+}
+
+template <typename T>
+std::shared_ptr<T> get_ptr(std::shared_ptr<T> obj) {
+  return obj;
+}
+
+/*---------------------------------------------------------------------------------*/
+
 template <typename State>
-struct DefaultIndexer<
-    State, typename std::enable_if<has_member_id_<typename std::remove_pointer<
-               typename std::remove_const<typename std::remove_reference<
-                   State>::type>::type>::type>::value>::type> {
+struct DefaultIndexer {
+  // check id
   template <
       typename T = State,
-      typename std::enable_if<(!std::is_pointer<T>::value &&
-                               !is_shared_ptr<T>::value)>::type * = nullptr>
-  int64_t operator()(const State &state) const {
-    return static_cast<int64_t>(state.id_);
+      std::enable_if_t<
+          has_member_id<typename std::remove_pointer<typename std::remove_const<
+              typename std::remove_reference<T>::type>::type>::type>::value,
+          bool> = true>
+  int64_t operator()(T state) const {
+    return static_cast<int64_t>(get_ptr(state)->id);
   }
 
-  template <typename T = State, typename std::enable_if<(
-                                    std::is_pointer<T>::value ||
-                                    is_shared_ptr<T>::value)>::type * = nullptr>
-  int64_t operator()(State state) const {
-    return static_cast<int64_t>(state->id_);
-  }
-};
-
-// when State has a member "id"
-template <typename State>
-struct DefaultIndexer<
-    State, typename std::enable_if<has_member_id<typename std::remove_pointer<
-               typename std::remove_const<typename std::remove_reference<
-                   State>::type>::type>::type>::value>::type> {
   template <
       typename T = State,
-      typename std::enable_if<(!std::is_pointer<T>::value &&
-                               !is_shared_ptr<T>::value)>::type * = nullptr>
-  int64_t operator()(const State &state) const {
-    return static_cast<int64_t>(state.id);
+      std::enable_if_t<
+          has_member_id<typename std::remove_pointer<typename std::remove_const<
+              typename std::remove_reference<T>::type>::type>::type>::value,
+          bool> = true>
+  int64_t operator()(std::shared_ptr<T> state) const {
+    return static_cast<int64_t>(get_ptr(state)->id);
   }
 
-  template <typename T = State, typename std::enable_if<(
-                                    std::is_pointer<T>::value ||
-                                    is_shared_ptr<T>::value)>::type * = nullptr>
-  int64_t operator()(State state) const {
-    return static_cast<int64_t>(state->id);
+  // check id_
+  template <
+      typename T = State,
+      std::enable_if_t<
+          has_member_id_<
+              typename std::remove_pointer<typename std::remove_const<
+                  typename std::remove_reference<T>::type>::type>::type>::value,
+          bool> = true>
+  int64_t operator()(T state) const {
+    return static_cast<int64_t>(get_ptr(state)->id_);
+  }
+
+  template <
+      typename T = State,
+      std::enable_if_t<
+          has_member_id_<
+              typename std::remove_pointer<typename std::remove_const<
+                  typename std::remove_reference<T>::type>::type>::type>::value,
+          bool> = true>
+  int64_t operator()(std::shared_ptr<T> state) const {
+    return static_cast<int64_t>(get_ptr(state)->id_);
   }
 };
 }  // namespace rdu

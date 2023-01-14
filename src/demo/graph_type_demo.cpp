@@ -29,6 +29,43 @@ double CalcHeuristicPtr(StateExample *node1, StateExample *node2) {
   return 0.0;
 }
 
+void SharedPtrTypeGraphDemo() {
+  std::vector<std::shared_ptr<StateExample>> nodes;
+
+  // create nodes
+  for (int i = 0; i < 9; i++) {
+    nodes.push_back(std::make_shared<StateExample>(i));
+  }
+
+  // create a graph
+  Graph<std::shared_ptr<StateExample>> graph_sharedptr;
+
+  graph_sharedptr.AddEdge(nodes[0], nodes[1], 1.0);
+  graph_sharedptr.AddEdge(nodes[0], nodes[3], 1.5);
+  graph_sharedptr.AddEdge(nodes[1], nodes[0], 2.0);
+  graph_sharedptr.AddEdge(nodes[1], nodes[4], 2.5);
+  graph_sharedptr.AddEdge(nodes[1], nodes[2], 1.0);
+  graph_sharedptr.AddEdge(nodes[2], nodes[1], 1.5);
+  graph_sharedptr.AddEdge(nodes[2], nodes[5], 2.0);
+  graph_sharedptr.AddEdge(nodes[3], nodes[0], 2.5);
+  graph_sharedptr.AddEdge(nodes[3], nodes[4], 2.5);
+  graph_sharedptr.AddEdge(nodes[4], nodes[1], 2.5);
+  graph_sharedptr.AddEdge(nodes[4], nodes[3], 2.5);
+  graph_sharedptr.AddEdge(nodes[4], nodes[5], 2.5);
+  graph_sharedptr.AddEdge(nodes[5], nodes[2], 2.5);
+  graph_sharedptr.AddEdge(nodes[5], nodes[4], 2.5);
+  graph_sharedptr.AddEdge(nodes[5], nodes[8], 2.5);
+  graph_sharedptr.AddEdge(nodes[7], nodes[4], 2.5);
+  graph_sharedptr.AddEdge(nodes[7], nodes[8], 2.5);
+  graph_sharedptr.AddEdge(nodes[8], nodes[5], 2.5);
+  graph_sharedptr.AddEdge(nodes[8], nodes[7], 2.5);
+
+  auto all_edges = graph_sharedptr.GetAllEdges();
+  for (auto &e : all_edges) e->PrintEdge();
+
+  // no need to deallocate memory, all data structures are copied to graph
+}
+
 void ValueTypeGraphDemo() {
   std::vector<StateExample> nodes;
 
@@ -111,6 +148,10 @@ int main(int argc, char **argv) {
   std::cout << "\n------------- pointer type graph -------------\n"
             << std::endl;
   PointerTypeGraphDemo();
+
+  std::cout << "\n------------- shared pointer type graph -------------\n"
+            << std::endl;
+  //   SharedPtrTypeGraphDemo();
 
   return 0;
 }
