@@ -15,7 +15,7 @@
 namespace robosw {
 template <typename State, typename Transition, typename StateIndexer>
 typename Tree<State, Transition, StateIndexer>::vertex_iterator
-Tree<State, Transition, StateIndexer>::AddVertex(State state) {
+Tree<State, Transition, StateIndexer>::AddRoot(State state) {
   // only add root vertex if tree is empty
   if (!TreeType::vertex_map_.empty()) return TreeType::vertex_end();
   root_ = TreeType::ObtainVertexFromVertexMap(state);
