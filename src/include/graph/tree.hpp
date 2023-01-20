@@ -32,8 +32,8 @@
  *
  */
 
-#ifndef TREE_HPP
-#define TREE_HPP
+#ifndef GRAPH_TREE_HPP
+#define GRAPH_TREE_HPP
 
 #include <vector>
 #include <cstdint>
@@ -85,7 +85,7 @@ class Tree : public Graph<State, Transition, StateIndexer> {
    */
   ///@{
   /// This function is used to create a root vertex only
-  vertex_iterator AddVertex(State state);
+  vertex_iterator AddRoot(State state);
 
   // /// This function checks if a vertex exists in the graph and remove it if
   // presents. void RemoveVertex(int64_t state_id) { RemoveSubtree(state_id); };
@@ -149,6 +149,9 @@ class Tree : public Graph<State, Transition, StateIndexer> {
 
  protected:
   vertex_iterator root_{vertex_iterator(TreeType::vertex_map_.end())};
+
+ private:
+  vertex_iterator AddVertex(State state);
 };
 
 template <typename State, typename Transition = double,
@@ -158,4 +161,4 @@ using Tree_t = Tree<State, Transition, StateIndexer>;
 
 #include "graph/details/tree_impl.hpp"
 
-#endif /* TREE_HPP */
+#endif /* GRAPH_TREE_HPP */

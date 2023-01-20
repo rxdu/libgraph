@@ -43,7 +43,7 @@ TEST_F(TreeModificationTest, RootVertexMod) {
   ASSERT_EQ(tree.GetRootVertex(), tree.vertex_end())
       << "Root vertex should not exist";
 
-  tree.AddVertex(nodes[0]);
+  tree.AddRoot(nodes[0]);
   ASSERT_EQ(tree.GetRootVertex()->GetVertexID(), 0)
       << "Root vertex should have id 0";
 
@@ -70,8 +70,8 @@ TEST_F(TreeModificationTest, VertexMod) {
 
   ASSERT_EQ(tree.GetTotalVertexNumber(), 0) << "Tree should have no vertex now";
 
-  tree.AddVertex(nodes[0]);
-  tree.AddVertex(nodes[1]);
+  tree.AddRoot(nodes[0]);
+  tree.AddRoot(nodes[1]);
 
   ASSERT_EQ(tree.GetTotalVertexNumber(), 1)
       << "Failed to add vertices to pointer-type tree ";
