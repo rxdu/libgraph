@@ -1,7 +1,8 @@
 # TODO List
 
 - [] A* and Dijkstra algorithms currently assume double type cost. Generic type cost with proper comparator defined should also be allowed.
-- [] Fix const_iterator for Vertex and Edge
+- [] Refactor iterators and fix const_iterator for Vertex and Edge
+- [] Update edges_to and vertices_from data structure for higher efficiency removal
 - [*] Default indexer doesn't work if State is a std::shared_ptr<T> type
 - [*] Dynamic priority queue
 - [*] Improve unit test coverage
