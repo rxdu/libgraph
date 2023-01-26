@@ -69,24 +69,20 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
     // remove upstream connections
     // e.g. other vertices that connect to the vertex to be deleted
     for (auto &asv : vtx->vertices_from) {
-      for (auto eit = asv->edges_to.begin(); eit != asv->edges_to.end(); eit++)
-        if (eit->dst->vertex_id == vtx->vertex_id) {
-          asv->edges_to.erase(eit);
-          break;
-        }
+      asv->edges_to.erase(
+          std::remove_if(asv->edges_to.begin(), asv->edges_to.end(),
+                         [&vtx](Edge edge) { return ((edge.dst) == vtx); }),
+          asv->edges_to.end());
     }
 
     // remove downstream connections
     // e.g. other vertices that are connected by the vertex to be deleted
     for (auto &edge : vtx->edges_to) {
       auto &target_vertex = edge.dst;
-      for (auto vfi = target_vertex->vertices_from.begin();
-           vfi != target_vertex->vertices_from.end(); vfi++) {
-        if ((*vfi)->vertex_id == vtx->vertex_id) {
-          target_vertex->vertices_from.erase(vfi);
-          break;
-        }
-      }
+      target_vertex->vertices_from.erase(
+          std::remove(target_vertex->vertices_from.begin(),
+                      target_vertex->vertices_from.end(), vtx),
+          target_vertex->vertices_from.end());
     }
 
     // remove from vertex map
