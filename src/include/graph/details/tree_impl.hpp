@@ -11,6 +11,7 @@
 #define TREE_IMPL_HPP
 
 #include <type_traits>
+#include <queue>
 
 namespace robosw {
 template <typename State, typename Transition, typename StateIndexer>
@@ -61,31 +62,29 @@ void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id) {
   if (vtx != TreeType::vertex_end()) {
     // remove from other vertices that connect to the vertex to be deleted
     for (auto &asv : vtx->vertices_from) {
-      for (auto eit = asv->edges_to.begin(); eit != asv->edges_to.end();
-           eit++) {
-        if ((*eit).dst == vtx) {
-          asv->edges_to.erase(eit);
-          break;
-        }
-      }
+      asv->edges_to.erase(
+          std::remove_if(asv->edges_to.begin(), asv->edges_to.end(),
+                         [&vtx](Edge edge) { return ((edge.dst) == vtx); }),
+          asv->edges_to.end());
     }
 
     // remove all subsequent vertices
+    // iterate through all vertices of the subtree
     std::vector<vertex_iterator> child_vertices;
-    child_vertices.push_back(vtx);
-    std::vector<vertex_iterator> direct_children = vtx->GetNeighbours();
-    while (!direct_children.empty()) {
-      // add direct children
-      child_vertices.insert(child_vertices.end(), direct_children.begin(),
-                            direct_children.end());
-      std::vector<vertex_iterator> all_children;
-      for (auto &vtx : direct_children) {
-        auto chds = vtx->GetNeighbours();
-        if (!chds.empty())
-          all_children.insert(all_children.end(), chds.begin(), chds.end());
+    std::queue<vertex_iterator> queue;
+    queue.push(vtx);
+    while (!queue.empty()) {
+      auto node = queue.front();
+      child_vertices.push_back(node);
+      for (auto it = node->edges_to.begin(); it != node->edges_to.end(); ++it) {
+        if (!it->dst->is_checked) {
+          queue.push(it->dst);
+        }
       }
-      direct_children = all_children;
+      node->is_checked = true;
+      queue.pop();
     }
+
     for (auto &vtx : child_vertices) {
       // remove from vertex map
       auto vptr = TreeType::vertex_map_[vtx->GetVertexID()];
