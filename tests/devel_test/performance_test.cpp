@@ -17,7 +17,7 @@
 // user
 #include "graph/astar.h"
 
-using namespace robosw;
+using namespace xmotion;
 
 #define GRID_SIZE 100
 

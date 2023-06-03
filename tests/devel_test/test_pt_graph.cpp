@@ -9,7 +9,7 @@
 #include "graph/algorithms/astar.hpp"
 #include "graph/algorithms/dijkstra.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 #define ROW_SIZE 4
 #define COL_SIZE 4

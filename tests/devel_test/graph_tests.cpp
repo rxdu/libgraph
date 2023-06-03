@@ -17,7 +17,7 @@
 #include "graph/astar.h"
 #include "demo/state_example.h"
 
-using namespace robosw;
+using namespace xmotion;
 
 std::vector<std::tuple<StateExample,double>> GetNeighbour(StateExample node)
 {

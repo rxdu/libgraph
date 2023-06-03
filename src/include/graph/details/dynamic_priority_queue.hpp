@@ -28,7 +28,7 @@
 
 #include "graph/details/default_indexer.hpp"
 
-namespace robosw {
+namespace xmotion {
 /// A priority queue implementation that supports element priority update.
 template <typename T, typename Comparator = std::less<T>,
           typename ItemIndexer = DefaultIndexer<T>>
@@ -165,6 +165,6 @@ class DynamicPriorityQueue {
     array_[index] = std::move(tmp);
   }
 };
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* DYNAMIC_PRIORITY_QUEUE_HPP */

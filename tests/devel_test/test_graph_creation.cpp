@@ -17,7 +17,7 @@
 // user
 #include "graph/graph.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 struct StateExample
 {

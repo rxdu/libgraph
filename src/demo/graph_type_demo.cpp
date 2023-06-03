@@ -18,7 +18,7 @@
 #include "graph/graph.hpp"
 #include "state_example.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 void ValueTypeGraphDemo();
 void PointerTypeGraphDemo();

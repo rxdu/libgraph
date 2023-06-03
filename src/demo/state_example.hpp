@@ -12,7 +12,7 @@
 
 #include <cstdint>
 
-namespace robosw {
+namespace xmotion {
 
 struct StateExample {
   StateExample(uint64_t id) : id(id){};
@@ -20,6 +20,6 @@ struct StateExample {
   int64_t id;
 };
 
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* STATE_EXAMPLE_HPP */

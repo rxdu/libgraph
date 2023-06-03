@@ -43,7 +43,7 @@
 
 #include "graph/graph.hpp"
 
-namespace robosw {
+namespace xmotion {
 /// Tree class template.
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
@@ -157,7 +157,7 @@ class Tree : public Graph<State, Transition, StateIndexer> {
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
 using Tree_t = Tree<State, Transition, StateIndexer>;
-}  // namespace robosw
+}  // namespace xmotion
 
 #include "graph/details/tree_impl.hpp"
 

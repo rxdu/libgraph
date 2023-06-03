@@ -48,7 +48,7 @@ using enable_if_t = typename enable_if<B, T>::type;
 }
 #endif
 
-namespace robosw {
+namespace xmotion {
 #define GENERATE_HAS_MEM_VAR(member)                   \
                                                        \
   template <class T>                                   \
@@ -178,6 +178,6 @@ struct DefaultIndexer {
     return static_cast<int64_t>(get_ptr(state)->id_);
   }
 };
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* STATE_INDEXER_HPP */

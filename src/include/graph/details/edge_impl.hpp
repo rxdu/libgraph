@@ -10,7 +10,7 @@
 #ifndef EDGE_IMPL_HPP
 #define EDGE_IMPL_HPP
 
-namespace robosw {
+namespace xmotion {
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::Edge::operator==(
     const Graph<State, Transition, StateIndexer>::Edge &other) {
@@ -24,6 +24,6 @@ void Graph<State, Transition, StateIndexer>::Edge::PrintEdge() {
             << dst->GetVertexID() << " , cost - " << cost << std::endl;
 }
 
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* EDGE_IMPL_HPP */

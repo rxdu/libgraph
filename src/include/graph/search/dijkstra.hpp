@@ -26,7 +26,7 @@
 #include "graph/search/common.hpp"
 #include "graph/details/dynamic_priority_queue.hpp"
 
-namespace robosw {
+namespace xmotion {
 /// Dijkstra search algorithm.
 class Dijkstra {
  public:
@@ -177,6 +177,6 @@ class Dijkstra {
     return PathType();
   };
 };
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* DIJKSTRA_HPP */

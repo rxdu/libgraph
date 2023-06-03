@@ -18,7 +18,7 @@
 #include "graph/search/astar.hpp"
 #include "graph/search/dijkstra.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 #define ROW_SIZE 4
 #define COL_SIZE 4

@@ -15,7 +15,7 @@
 #include "graph/details/dynamic_priority_queue.hpp"
 #include "graph/graph.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 struct TestElement {
   TestElement() = default;

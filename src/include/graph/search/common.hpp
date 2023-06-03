@@ -13,7 +13,7 @@
 #include <iostream>
 #include "graph/graph.hpp"
 
-namespace robosw {
+namespace xmotion {
 template <typename State>
 using Path = std::vector<State>;
 
@@ -48,6 +48,6 @@ static std::vector<VertexIterator> ReconstructPath(VertexIterator start_vtx,
   return path;
 }
 }  // namespace utils
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* COMMON_HPP */

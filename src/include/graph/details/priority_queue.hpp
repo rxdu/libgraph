@@ -13,7 +13,7 @@
 #include <utility>
 #include <queue>
 
-namespace robosw {
+namespace xmotion {
 template <typename T>
 struct PQElementComparator {
   bool operator()(const T &lhs, const T &rhs) const {
@@ -43,6 +43,6 @@ class PriorityQueue {
 
   inline size_t GetQueueElementNumber() const { return elements.size(); }
 };
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* PRIORITY_QUEUE_HPP */

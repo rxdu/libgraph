@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <queue>
 
-namespace robosw {
+namespace xmotion {
 template <typename State, typename Transition, typename StateIndexer>
 typename Tree<State, Transition, StateIndexer>::vertex_iterator
 Tree<State, Transition, StateIndexer>::AddRoot(State state) {
@@ -122,6 +122,6 @@ void Tree<State, Transition, StateIndexer>::ClearAll() {
   TreeType::vertex_map_.clear();
   root_ = TreeType::vertex_end();
 }
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* TREE_IMPL_HPP */
