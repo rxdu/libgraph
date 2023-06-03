@@ -12,7 +12,7 @@
 
 #include <type_traits>
 
-namespace robosw {
+namespace xmotion {
 template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>::Graph(
     const Graph<State, Transition, StateIndexer> &other) {
@@ -193,6 +193,6 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
 
   return vertex_iterator(it);
 }
-}  // namespace robosw
+}  // namespace xmotion
 
 #endif /* GRAPH_IMPL_HPP */

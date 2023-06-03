@@ -17,7 +17,7 @@
 #include "graph/graph.hpp"
 #include "graph/search/astar.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 #define ROW_SIZE 4
 #define COL_SIZE 4

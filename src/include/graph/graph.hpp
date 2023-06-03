@@ -37,7 +37,7 @@
 
 #include "graph/details/default_indexer.hpp"
 
-namespace robosw {
+namespace xmotion {
 /// Graph class template.
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
@@ -326,7 +326,7 @@ class Graph {
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
 using Graph_t = Graph<State, Transition, StateIndexer>;
-}  // namespace robosw
+}  // namespace xmotion
 
 #include "graph/details/edge_impl.hpp"
 #include "graph/details/vertex_impl.hpp"

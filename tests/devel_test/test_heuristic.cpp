@@ -9,7 +9,7 @@
 #include "graph/algorithms/astar.hpp"
 #include "demo/state_example.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 double CalcHeuristic(StateExample node1, StateExample node2)
 {

@@ -16,7 +16,7 @@
 #include "graph/search/astar.hpp"
 #include "graph/search/dijkstra.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 struct Index {
   int64_t x;

@@ -2,7 +2,7 @@
 
 #include "graph/details/default_indexer.hpp"
 
-using namespace robosw;
+using namespace xmotion;
 
 struct StateExample {
   StateExample(uint64_t id) : id(id){};
