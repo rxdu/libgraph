@@ -46,7 +46,7 @@ This is a header-only library. There are multiple ways you can integrate this li
 
 1. Simply copy content of the "src" folder to your project and include "graph/graph.hpp". 
 2. If you're using CMake, you could integrate the library to your project by adding this repository as a git submodule. Then use "add_subdirectory()" in your CMakeLists.txt to add the library to your build tree.
-3. You can build and install this library to your system path and use CMake "find_package(graph REQUIRED)" to find the library and add dependency by using "target_link_libraries(your_app PRIVATE rdu::graph)".
+3. You can build and install this library to your system path and use CMake "find_package(graph REQUIRED)" to find the library and add dependency by using "target_link_libraries(your_app PRIVATE xmotion::graph)".
 
 ## 3. Build the demo & pack the library
 
@@ -62,7 +62,7 @@ $ cpack
 Demo programs will be built and put into "build/bin" folder. A ".deb" package would be generated inside "build" folder. Install the library with the ".deb" package using command "dpkg", for example
 
 ```
-$ sudo dpkg -i libgraph_1.1_amd64.deb
+$ sudo dpkg -i graph_1.1_amd64.deb
 ```
 
 ## 4. Build document

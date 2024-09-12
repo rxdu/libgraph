@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(libgraph VERSION 2.0.1)
+project(graph VERSION 2.0.1)
 
 ## Project Options
 option(BUILD_TESTING "Build tests" OFF)
@@ -98,7 +98,7 @@ endforeach()
 
 # targets to install
 install(TARGETS graph
-    EXPORT libgraphTargets
+    EXPORT graphTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
@@ -110,19 +110,19 @@ install(DIRECTORY src/include/graph
 # export target configuration 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-    libgraphConfigVersion.cmake
+    graphConfigVersion.cmake
     VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
     COMPATIBILITY SameMajorVersion)
 
-install(EXPORT libgraphTargets
-    FILE libgraphTargets.cmake
-    NAMESPACE rdu::
-    DESTINATION lib/cmake/libgraph)
+install(EXPORT graphTargets
+    FILE graphTargets.cmake
+    NAMESPACE xmotion::
+    DESTINATION lib/cmake/graph)
 
-configure_file(cmake/libgraphConfig.cmake.in libgraphConfig.cmake @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libgraphConfig.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/libgraphConfigVersion.cmake"
-        DESTINATION lib/cmake/libgraph)
+configure_file(cmake/graphConfig.cmake.in graphConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/graphConfig.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/graphConfigVersion.cmake"
+        DESTINATION lib/cmake/graph)
 
 # Packaging support
 set(CPACK_PACKAGE_VENDOR "Ruixiang Du")
