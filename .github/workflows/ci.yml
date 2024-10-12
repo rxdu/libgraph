@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Update submodules
       run: git submodule update --init --recursive
     - name: Configure and build
@@ -35,7 +35,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Update submodules
       run: git submodule update --init --recursive
     - name: Install tools
