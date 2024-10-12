@@ -16,11 +16,11 @@ jobs:
     # The type of runner that the job will run on
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-20.04]
+        os: [ubuntu-24.04, ubuntu-22.04, ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Update submodules
       run: git submodule update --init --recursive
     - name: Configure and build
@@ -31,11 +31,11 @@ jobs:
     # The type of runner that the job will run on
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-20.04]
+        os: [ubuntu-24.04, ubuntu-22.04, ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Update submodules
       run: git submodule update --init --recursive
     - name: Install tools
@@ -44,9 +44,29 @@ jobs:
       run: mkdir build && cd build && cmake -DBUILD_TESTING=ON -DCOVERAGE_CHECK=on .. && cmake --build .
     - name: Run tests
       run: cd ./build && make test
-    - name: Collect coverage data
-      run: /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info && /usr/bin/lcov --remove ./build/coverage.info "/usr/*" "*/googletest/googletest/*" "*/tests/unit_test/*" --output-file ./build/coverage.info
+    - name: Collect coverage data (ubuntu 24.04)
+      if: matrix.os == 'ubuntu-24.04'
+      run: |
+        /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info \
+            --rc geninfo_unexecuted_blocks=1 --ignore-errors mismatch
+        /usr/bin/lcov --remove \
+            ./build/coverage.info \
+            "/usr/*" \
+            "*/googletest/googletest/*" \
+            "*/tests/unit_test/*" \
+            --output-file ./build/coverage.info
+    - name: Collect coverage data (other than ubuntu 24.04)
+      if: matrix.os != 'ubuntu-24.04'
+      run: |
+        /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info
+        /usr/bin/lcov --remove \
+            ./build/coverage.info \
+            "/usr/*" \
+            "*/googletest/googletest/*" \
+            "*/tests/unit_test/*" \
+            --output-file ./build/coverage.info
     - name: Show coverage summary
       run: /usr/bin/lcov --list ./build/coverage.info
     - name: Upload report to codecov
+      if: github.ref == 'refs/heads/main'
       run: bash <(curl -s https://codecov.io/bash) -f ./build/coverage.info
