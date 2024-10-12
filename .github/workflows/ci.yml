@@ -67,6 +67,11 @@ jobs:
             --output-file ./build/coverage.info
     - name: Show coverage summary
       run: /usr/bin/lcov --list ./build/coverage.info
-    - name: Upload report to codecov
+    - uses: codecov/codecov-action@v4
       if: github.ref == 'refs/heads/main'
-      run: bash <(curl -s https://codecov.io/bash) -f ./build/coverage.info
+      with:
+        fail_ci_if_error: true 
+        files: ./build/coverage.info
+        flags: unittests # optional
+        token: ${{ secrets.CODECOV_TOKEN }} # required
+        verbose: true # optional (default = false)
