@@ -17,7 +17,7 @@
 using namespace xmotion;
 
 struct TestState {
-  TestState(uint64_t id) : id_(id){};
+  TestState(uint64_t id) : id_(id) {};
 
   int64_t id_;
 };
@@ -83,6 +83,14 @@ TEST_F(GraphModificationTest, EdgeMod) {
 
   graph.AddEdge(nodes[0], nodes[1], 1.2);
   graph.AddEdge(nodes[1], nodes[2], 1.5);
+
+  // print edges
+  {
+    auto edges = graph.GetAllEdges();
+    for (auto &edge : edges) {
+      edge->PrintEdge();
+    }
+  }
 
   ASSERT_EQ(graph.GetTotalEdgeNumber(), 2)
       << "Failed to add directed edges to pointer-type graph";
