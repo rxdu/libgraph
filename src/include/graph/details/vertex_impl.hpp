@@ -29,8 +29,8 @@ Graph<State, Transition, StateIndexer>::Vertex::FindEdge(int64_t dst_id) {
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-template <class T = State, typename std::enable_if<
-                               !std::is_integral<T>::value>::type * = nullptr>
+template <class T, typename std::enable_if<
+                               !std::is_integral<T>::value>::type *>
 typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator
 Graph<State, Transition, StateIndexer>::Vertex::FindEdge(T dst_state) {
   typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator it;
