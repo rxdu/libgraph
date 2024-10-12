@@ -70,6 +70,7 @@ jobs:
       with:
         fail_ci_if_error: true 
         files: ./build/coverage.info
+        exclude: tests, src/demo
         flags: unittests # optional
         token: ${{ secrets.CODECOV_TOKEN }} # required
         verbose: true # optional (default = false)
