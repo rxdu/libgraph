@@ -62,7 +62,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
 ## Build library
-add_subdirectory(src)
+# Add libraries
+add_library(graph INTERFACE)
+target_compile_definitions(graph INTERFACE -DMINIMAL_PRINTOUT)
+target_include_directories(graph INTERFACE
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include>)
+
+add_subdirectory(demo)
 
 # Build tests
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
