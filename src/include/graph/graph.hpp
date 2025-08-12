@@ -81,6 +81,27 @@ class Graph {
       return (Vertex *const)(VertexMapTypeIterator::operator->()->second);
     }
     Vertex &operator*() { return *(VertexMapTypeIterator::operator*().second); }
+    
+    // Add const version of operator-> for use in hash/equality
+    const Vertex *operator->() const {
+      return (Vertex *const)(VertexMapTypeIterator::operator->()->second);
+    }
+    
+    // Hash support for vertex_iterator
+    struct Hash {
+      size_t operator()(const vertex_iterator& iter) const {
+        // Use the vertex_id for hashing since it's unique
+        return std::hash<int64_t>()(iter->vertex_id);
+      }
+    };
+    
+    // Equality comparison for vertex_iterator (for unordered containers)
+    struct Equal {
+      bool operator()(const vertex_iterator& a, const vertex_iterator& b) const {
+        // Two iterators are equal if they point to the same vertex (same ID)
+        return a->vertex_id == b->vertex_id;
+      }
+    };
   };
   ///@}
 
