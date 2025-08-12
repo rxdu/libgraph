@@ -40,8 +40,8 @@ static std::vector<VertexIterator> ReconstructPath(VertexIterator start_vtx,
 #ifndef MINIMAL_PRINTOUT
   auto traj_s = path.begin();
   auto traj_e = path.end() - 1;
-  std::cout << "starting vertex id: " << (*traj_s)->vertex_id_ << std::endl;
-  std::cout << "finishing vertex id: " << (*traj_e)->vertex_id_ << std::endl;
+  std::cout << "starting vertex id: " << (*traj_s)->vertex_id << std::endl;
+  std::cout << "finishing vertex id: " << (*traj_e)->vertex_id << std::endl;
   std::cout << "path length: " << path.size() << std::endl;
   std::cout << "total cost: " << path.back()->g_cost << std::endl;
 #endif

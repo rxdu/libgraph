@@ -120,10 +120,10 @@ class Graph {
 
     // do not allow copy or assign
     Vertex() = delete;
-    Vertex(const State &other) = delete;
-    Vertex &operator=(const State &other) = delete;
-    Vertex(State &&other) = delete;
-    Vertex &operator=(State &&other) = delete;
+    Vertex(const Vertex &other) = delete;
+    Vertex &operator=(const Vertex &other) = delete;
+    Vertex(Vertex &&other) = delete;
+    Vertex &operator=(Vertex &&other) = delete;
     ///@}
 
     // generic attributes

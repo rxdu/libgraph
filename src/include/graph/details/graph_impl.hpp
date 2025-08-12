@@ -69,20 +69,18 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
     // remove upstream connections
     // e.g. other vertices that connect to the vertex to be deleted
     for (auto &asv : vtx->vertices_from) {
-      asv->edges_to.erase(
-          std::remove_if(asv->edges_to.begin(), asv->edges_to.end(),
-                         [&vtx](Edge edge) { return ((edge.dst) == vtx); }),
-          asv->edges_to.end());
+      // Use list::remove_if with value capture to avoid iterator invalidation
+      asv->edges_to.remove_if([vtx](const Edge& edge) { 
+        return edge.dst == vtx; 
+      });
     }
 
     // remove downstream connections
     // e.g. other vertices that are connected by the vertex to be deleted
     for (auto &edge : vtx->edges_to) {
       auto &target_vertex = edge.dst;
-      target_vertex->vertices_from.erase(
-          std::remove(target_vertex->vertices_from.begin(),
-                      target_vertex->vertices_from.end(), vtx),
-          target_vertex->vertices_from.end());
+      // Use list::remove for vertex_iterator (simpler and more efficient)
+      target_vertex->vertices_from.remove(vtx);
     }
 
     // remove from vertex map
@@ -101,7 +99,7 @@ void Graph<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
   auto it = src_vertex->FindEdge(dstate);
   if (it != src_vertex->edge_end()) {
     it->cost = trans;
-    std::cout << "updated cost: " << trans << std::endl;
+    // std::cout << "updated cost: " << trans << std::endl;
     return;
   }
 
@@ -122,10 +120,8 @@ bool Graph<State, Transition, StateIndexer>::RemoveEdge(State sstate,
          it != src_vertex->edges_to.end(); ++it) {
       if (it->dst == dst_vertex) {
         src_vertex->edges_to.erase(it);
-        dst_vertex->vertices_from.erase(
-            std::remove(dst_vertex->vertices_from.begin(),
-                        dst_vertex->vertices_from.end(), src_vertex),
-            dst_vertex->vertices_from.end());
+        // Use list::remove for consistency and efficiency
+        dst_vertex->vertices_from.remove(src_vertex);
         return true;
       }
     }
