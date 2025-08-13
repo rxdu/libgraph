@@ -26,31 +26,32 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include <unordered_map>
-
-#include <list>
-#include <vector>
+#include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <algorithm>
+#include <list>
 #include <type_traits>
+#include <unordered_map>
+#include <vector>
 
 #include "graph/details/default_indexer.hpp"
+#include "graph/edge.hpp"   // Independent Edge class
+#include "graph/vertex.hpp" // Independent Vertex class
 
 namespace xmotion {
 /// Graph class template.
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
 class Graph {
- public:
-  class Edge;
-  class Vertex;
+public:
+  // Use independent Edge and Vertex classes
+  using Edge = xmotion::Edge<State, Transition, StateIndexer>;
+  using Vertex = xmotion::Vertex<State, Transition, StateIndexer>;
   using GraphType = Graph<State, Transition, StateIndexer>;
 
-  typedef std::unordered_map<int64_t, Vertex *> VertexMapType;
-  typedef typename VertexMapType::iterator VertexMapTypeIterator;
+  using VertexMapType = std::unordered_map<int64_t, Vertex *>;
+  using VertexMapTypeIterator = typename VertexMapType::iterator;
 
- public:
   /*---------------------------------------------------------------------------------*/
   /*                              Vertex Iterator */
   /*---------------------------------------------------------------------------------*/
@@ -58,164 +59,57 @@ class Graph {
   /// Vertex iterator for unified access.
   /// Wraps the "value" part of VertexMapType::iterator
   class const_vertex_iterator : public VertexMapTypeIterator {
-   public:
-    const_vertex_iterator() : VertexMapTypeIterator(){};
+  public:
+    const_vertex_iterator() : VertexMapTypeIterator() {};
     explicit const_vertex_iterator(VertexMapTypeIterator s)
-        : VertexMapTypeIterator(s){};
+        : VertexMapTypeIterator(s) {};
 
-    const Vertex *operator->() const {
-      return (Vertex *const)(VertexMapTypeIterator::operator->()->second);
-    }
-    const Vertex &operator*() const {
-      return *(VertexMapTypeIterator::operator*().second);
-    }
+    const Vertex *operator->() const;
+    const Vertex &operator*() const;
   };
 
   class vertex_iterator : public const_vertex_iterator {
-   public:
-    vertex_iterator() : const_vertex_iterator(){};
+  public:
+    vertex_iterator() : const_vertex_iterator() {};
     explicit vertex_iterator(VertexMapTypeIterator s)
-        : const_vertex_iterator(s){};
+        : const_vertex_iterator(s) {};
 
-    Vertex *operator->() {
-      return (Vertex *const)(VertexMapTypeIterator::operator->()->second);
-    }
-    Vertex &operator*() { return *(VertexMapTypeIterator::operator*().second); }
-    
-    // Add const version of operator-> for use in hash/equality
-    const Vertex *operator->() const {
-      return (Vertex *const)(VertexMapTypeIterator::operator->()->second);
-    }
-    
+    Vertex *operator->();
+    Vertex &operator*();
+    const Vertex *operator->() const;
+
     // Hash support for vertex_iterator
     struct Hash {
-      size_t operator()(const vertex_iterator& iter) const {
-        // Use the vertex_id for hashing since it's unique
-        return std::hash<int64_t>()(iter->vertex_id);
-      }
+      size_t operator()(const vertex_iterator &iter) const;
     };
-    
+
     // Equality comparison for vertex_iterator (for unordered containers)
     struct Equal {
-      bool operator()(const vertex_iterator& a, const vertex_iterator& b) const {
-        // Two iterators are equal if they point to the same vertex (same ID)
-        return a->vertex_id == b->vertex_id;
-      }
+      bool operator()(const vertex_iterator &a, const vertex_iterator &b) const;
     };
   };
   ///@}
 
   /*---------------------------------------------------------------------------------*/
-  /*                               Edge Template */
+  /*                              Edge Iterator */
   /*---------------------------------------------------------------------------------*/
+  /** @name Edge Access
+   *  Edge iterators to access edges in the vertex.
+   */
   ///@{
-  /// Edge class template.
-  struct Edge {
-    Edge(vertex_iterator src, vertex_iterator dst, Transition c)
-        : src(src), dst(dst), cost(c){};
-
-    vertex_iterator src;
-    vertex_iterator dst;
-    Transition cost;
-
-    /// Check if current edge is identical to the other (all src, dst, cost).
-    bool operator==(const Edge &other);
-
-    /// Print edge information, assuming member "cost" is printable.
-    void PrintEdge();
-  };
+  using edge_iterator = typename Vertex::edge_iterator;
+  using const_edge_iterator = typename Vertex::const_edge_iterator;
   ///@}
 
-  /*---------------------------------------------------------------------------------*/
-  /*                              Vertex Template */
-  /*---------------------------------------------------------------------------------*/
-  ///@{
-  /// Vertex class template.
-  struct Vertex {
-    /** @name Big Five
-     *  Edge iterators to access vertices in the graph.
-     */
-    ///@{
-    Vertex(State s, int64_t id) : state(s), vertex_id(id) {}
-    ~Vertex() = default;
-
-    // do not allow copy or assign
-    Vertex() = delete;
-    Vertex(const Vertex &other) = delete;
-    Vertex &operator=(const Vertex &other) = delete;
-    Vertex(Vertex &&other) = delete;
-    Vertex &operator=(Vertex &&other) = delete;
-    ///@}
-
-    // generic attributes
-    State state;
-    const int64_t vertex_id;
-    StateIndexer GetStateIndex;
-
-    // edges connecting to other vertices
-    typedef std::list<Edge> EdgeListType;
-    EdgeListType edges_to;
-
-    // vertices that contain edges connecting to current vertex
-    std::list<vertex_iterator> vertices_from;
-
-    // attributes for search algorithms
-    bool is_checked = false;
-    bool is_in_openlist = false;
-    double f_cost = std::numeric_limits<double>::max();
-    double g_cost = std::numeric_limits<double>::max();
-    double h_cost = std::numeric_limits<double>::max();
-    vertex_iterator search_parent;
-
-    /** @name Edge access.
-     *  Edge iterators to access vertices in the graph.
-     */
-    ///@{
-    // edge iterator for easy access
-    typedef typename EdgeListType::iterator edge_iterator;
-    typedef typename EdgeListType::const_iterator const_edge_iterator;
-    edge_iterator edge_begin() { return edges_to.begin(); }
-    edge_iterator edge_end() { return edges_to.end(); }
-    const_edge_iterator edge_begin() const { return edges_to.cbegin(); }
-    const_edge_iterator edge_end() const { return edges_to.cend(); }
-    ///@}
-
-    /** @name Edge Operations
-     *  Modify or query edge information of the vertex.
-     */
-    ///@{
-    /// Returns true if two vertices have the same id. Otherwise, return false.
-    bool operator==(const Vertex &other);
-
-    /// Returns the id of current vertex.
-    int64_t GetVertexID() const { return vertex_id; }
-
-    /// Look for the edge connecting to the vertex with give id.
-    edge_iterator FindEdge(int64_t dst_id);
-
-    /// Look for the edge connecting to the vertex with give state.
-    template <
-        class T = State,
-        typename std::enable_if<!std::is_integral<T>::value>::type * = nullptr>
-    edge_iterator FindEdge(T dst_state);
-
-    /// Check if the vertex with given id or state is a neighbour of current
-    /// vertex.
-    template <typename T>
-    bool CheckNeighbour(T dst);
-
-    /// Get all neighbor vertices of this vertex.
-    std::vector<vertex_iterator> GetNeighbours();
-
-    /// Clear exiting search info before a new search
-    void ClearVertexSearchInfo();
-  };
-  ///@}
+public:
+  // Note: Edge and Vertex classes are now defined independently in their own
+  // headers The type aliases above (using Edge = ..., using Vertex = ...) make
+  // them available as if they were nested classes for backward compatibility
 
   /*---------------------------------------------------------------------------------*/
   /*                               Graph Template */
   /*---------------------------------------------------------------------------------*/
- public:
+public:
   /** @name Big Five
    *  Constructor, copy/move constructor, copy/move assignment operator,
    * destructor.
@@ -255,14 +149,6 @@ class Graph {
   const_vertex_iterator vertex_end() const {
     return const_vertex_iterator{vertex_map_.end()};
   }
-  ///@}
-
-  /** @name Edge Access
-   *  Edge iterators to access edges in the vertex.
-   */
-  ///@{
-  typedef typename Vertex::edge_iterator edge_iterator;
-  typedef typename Vertex::const_edge_iterator const_edge_iterator;
   ///@}
 
   /** @name Graph Operations
@@ -327,7 +213,7 @@ class Graph {
   void ClearAll();
   ///@}
 
- protected:
+protected:
   /** @name Internal variables and functions.
    *  Internal variables and functions.
    */
@@ -347,10 +233,10 @@ class Graph {
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
 using Graph_t = Graph<State, Transition, StateIndexer>;
-}  // namespace xmotion
+} // namespace xmotion
 
 #include "graph/details/edge_impl.hpp"
-#include "graph/details/vertex_impl.hpp"
 #include "graph/details/graph_impl.hpp"
+#include "graph/details/vertex_impl.hpp"
 
 #endif /* GRAPH_HPP */

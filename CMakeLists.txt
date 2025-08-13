@@ -3,33 +3,34 @@ project(graph VERSION 2.0.3)
 
 ## Project Options
 option(BUILD_TESTING "Build tests" OFF)
+option(BUILD_SAMPLES "Build samples" ON)
 option(STATIC_CHECK "Perform static check" OFF)
 option(COVERAGE_CHECK "Perform coverage check" OFF)
 
 # sanity check of the options
-if(COVERAGE_CHECK)
-    set(BUILD_TESTING ON)
-endif()
+if (COVERAGE_CHECK)
+  set(BUILD_TESTING ON)
+endif ()
 
 ## generate symbols for IDE indexer
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(STATIC_CHECK)
-    find_program(CPPCHECK cppcheck)
-    if(CPPCHECK)
-        message(STATUS "Found cppcheck")
-        set(CMAKE_CXX_CPPCHECK cppcheck;--std=c++11;--enable=all)
-    endif()
-endif()
+if (STATIC_CHECK)
+  find_program(CPPCHECK cppcheck)
+  if (CPPCHECK)
+    message(STATUS "Found cppcheck")
+    set(CMAKE_CXX_CPPCHECK cppcheck;--std=c++11;--enable=all)
+  endif ()
+endif ()
 
-if(COVERAGE_CHECK)
-    find_program(GCOV gcov)
-    if(GCOV)
-        message(STATUS "Found gcov")
-        set(CMAKE_BUILD_TYPE Debug)
-        set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
-    endif()
-endif()
+if (COVERAGE_CHECK)
+  find_program(GCOV gcov)
+  if (GCOV)
+    message(STATUS "Found gcov")
+    set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+  endif ()
+endif ()
 
 ## Additional cmake module path
 set(USER_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -43,14 +44,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## Choose build type
 set(default_build_type "Release")
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
   # Set the possible values of build type for cmake-gui
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
+      "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif ()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 ## Use GNUInstallDirs to install libraries into correct locations on all platforms.
@@ -66,21 +67,23 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
 add_library(graph INTERFACE)
 target_compile_definitions(graph INTERFACE -DMINIMAL_PRINTOUT)
 target_include_directories(graph INTERFACE
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-	$<INSTALL_INTERFACE:include>)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
 
-add_subdirectory(demo)
+if (BUILD_SAMPLES)
+  add_subdirectory(sample)
+endif ()
 
 # Build tests
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-    message(STATUS "Tests will be built")
-    enable_testing()
-    include(GoogleTest)
-    set(BUILD_TESTS ON)
-    add_subdirectory(tests)
-else()
-    message(STATUS "Tests will not be built")
-endif()
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+  message(STATUS "Tests will be built")
+  enable_testing()
+  include(GoogleTest)
+  set(BUILD_TESTS ON)
+  add_subdirectory(tests)
+else ()
+  message(STATUS "Tests will not be built")
+endif ()
 
 # Show installation path
 message(STATUS "Project will be installed to ${CMAKE_INSTALL_PREFIX} with 'make install'")
@@ -89,19 +92,19 @@ message(STATUS "Project will be installed to ${CMAKE_INSTALL_PREFIX} with 'make 
 set(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
 set(INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation directory for header files")
-if(WIN32 AND NOT CYGWIN)
-    set(DEF_INSTALL_CMAKEDIR CMake)
-else()
-    set(DEF_INSTALL_CMAKEDIR share/cmake/${PROJECT_NAME})
-endif()
+if (WIN32 AND NOT CYGWIN)
+  set(DEF_INSTALL_CMAKEDIR CMake)
+else ()
+  set(DEF_INSTALL_CMAKEDIR share/cmake/${PROJECT_NAME})
+endif ()
 set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
 
 # Report to user
-foreach(p LIB BIN INCLUDE CMAKE)
-    file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${INSTALL_${p}DIR} _path)
-    message(STATUS " - To install ${p} components to ${_path}")
-    unset(_path)
-endforeach()
+foreach (p LIB BIN INCLUDE CMAKE)
+  file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${INSTALL_${p}DIR} _path)
+  message(STATUS " - To install ${p} components to ${_path}")
+  unset(_path)
+endforeach ()
 
 # targets to install
 install(TARGETS graph
@@ -128,8 +131,8 @@ install(EXPORT graphTargets
 
 configure_file(cmake/graphConfig.cmake.in graphConfig.cmake @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/graphConfig.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/graphConfigVersion.cmake"
-        DESTINATION lib/cmake/graph)
+    "${CMAKE_CURRENT_BINARY_DIR}/graphConfigVersion.cmake"
+    DESTINATION lib/cmake/graph)
 
 # Packaging support
 set(CPACK_PACKAGE_VENDOR "Ruixiang Du")
@@ -143,7 +146,7 @@ set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
 set(CPACK_GENERATOR "DEB")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Ruixiang Du (ruixiang.du@gmail.com)") 
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Ruixiang Du (ruixiang.du@gmail.com)")
 # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libasio-dev")
 set(CPACK_SOURCE_IGNORE_FILES /.git /dist /.*build.* /\\\\.DS_Store)
 include(CPack)

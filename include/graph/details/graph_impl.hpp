@@ -13,6 +13,58 @@
 #include <type_traits>
 
 namespace xmotion {
+
+/*---------------------------------------------------------------------------------*/
+/*                         Iterator Implementations                               */
+/*---------------------------------------------------------------------------------*/
+
+// const_vertex_iterator implementations
+template <typename State, typename Transition, typename StateIndexer>
+const typename Graph<State, Transition, StateIndexer>::Vertex*
+Graph<State, Transition, StateIndexer>::const_vertex_iterator::operator->() const {
+  return (const Vertex*)(VertexMapTypeIterator::operator->()->second);
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+const typename Graph<State, Transition, StateIndexer>::Vertex&
+Graph<State, Transition, StateIndexer>::const_vertex_iterator::operator*() const {
+  return *(VertexMapTypeIterator::operator*().second);
+}
+
+// vertex_iterator implementations
+template <typename State, typename Transition, typename StateIndexer>
+typename Graph<State, Transition, StateIndexer>::Vertex*
+Graph<State, Transition, StateIndexer>::vertex_iterator::operator->() {
+  return (Vertex*)(VertexMapTypeIterator::operator->()->second);
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+typename Graph<State, Transition, StateIndexer>::Vertex&
+Graph<State, Transition, StateIndexer>::vertex_iterator::operator*() {
+  return *(VertexMapTypeIterator::operator*().second);
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+const typename Graph<State, Transition, StateIndexer>::Vertex*
+Graph<State, Transition, StateIndexer>::vertex_iterator::operator->() const {
+  return (const Vertex*)(VertexMapTypeIterator::operator->()->second);
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+size_t Graph<State, Transition, StateIndexer>::vertex_iterator::Hash::operator()(
+    const vertex_iterator& iter) const {
+  return std::hash<int64_t>()(iter->vertex_id);
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+bool Graph<State, Transition, StateIndexer>::vertex_iterator::Equal::operator()(
+    const vertex_iterator& a, const vertex_iterator& b) const {
+  return a->vertex_id == b->vertex_id;
+}
+
+/*---------------------------------------------------------------------------------*/
+/*                         Graph Class Implementations                            */
+/*---------------------------------------------------------------------------------*/
 template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>::Graph(
     const Graph<State, Transition, StateIndexer> &other) {

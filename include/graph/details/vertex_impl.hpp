@@ -2,7 +2,7 @@
  * vertex_impl.hpp
  *
  * Created on: Sep 04, 2018 01:43
- * Description:
+ * Description: Implementation for independent Vertex class
  *
  * Copyright (c) 2018 Ruixiang Du (rdu)
  */
@@ -11,18 +11,20 @@
 #define VERTEX_IMPL_HPP
 
 namespace xmotion {
+
 template <typename State, typename Transition, typename StateIndexer>
-bool Graph<State, Transition, StateIndexer>::Vertex::operator==(
-    const Graph<State, Transition, StateIndexer>::Vertex &other) {
+bool Vertex<State, Transition, StateIndexer>::operator==(
+    const Vertex<State, Transition, StateIndexer>& other) const {
   if (vertex_id == other.vertex_id) return true;
   return false;
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator
-Graph<State, Transition, StateIndexer>::Vertex::FindEdge(int64_t dst_id) {
-  typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator it;
+typename Vertex<State, Transition, StateIndexer>::edge_iterator
+Vertex<State, Transition, StateIndexer>::FindEdge(int64_t dst_id) {
+  edge_iterator it;
   for (it = edge_begin(); it != edge_end(); ++it) {
+    // Access vertex through Graph's vertex_iterator -> operator (handles dereferencing automatically)
     if (it->dst->vertex_id == dst_id) return it;
   }
   return it;
@@ -31,10 +33,11 @@ Graph<State, Transition, StateIndexer>::Vertex::FindEdge(int64_t dst_id) {
 template <typename State, typename Transition, typename StateIndexer>
 template <class T, typename std::enable_if<
                                !std::is_integral<T>::value>::type *>
-typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator
-Graph<State, Transition, StateIndexer>::Vertex::FindEdge(T dst_state) {
-  typename Graph<State, Transition, StateIndexer>::Vertex::edge_iterator it;
+typename Vertex<State, Transition, StateIndexer>::edge_iterator
+Vertex<State, Transition, StateIndexer>::FindEdge(T dst_state) {
+  edge_iterator it;
   for (it = edge_begin(); it != edge_end(); ++it) {
+    // Access vertex through Graph's vertex_iterator -> operator (handles dereferencing automatically)
     if (this->GetStateIndex(it->dst->state) == this->GetStateIndex(dst_state))
       return it;
   }
@@ -43,23 +46,29 @@ Graph<State, Transition, StateIndexer>::Vertex::FindEdge(T dst_state) {
 
 template <typename State, typename Transition, typename StateIndexer>
 template <typename T>
-bool Graph<State, Transition, StateIndexer>::Vertex::CheckNeighbour(T dst) {
+bool Vertex<State, Transition, StateIndexer>::CheckNeighbour(T dst) {
   auto res = FindEdge(dst);
   if (res != edge_end()) return true;
   return false;
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-std::vector<typename Graph<State, Transition, StateIndexer>::vertex_iterator>
-Graph<State, Transition, StateIndexer>::Vertex::GetNeighbours() {
-  std::vector<typename Graph<State, Transition, StateIndexer>::vertex_iterator>
-      nbs;
-  for (auto it = edge_begin(); it != edge_end(); ++it) nbs.push_back(it->dst);
+std::vector<typename Vertex<State, Transition, StateIndexer>::vertex_iterator>
+Vertex<State, Transition, StateIndexer>::GetNeighbours() {
+  std::vector<vertex_iterator> nbs;
+  for (auto it = edge_begin(); it != edge_end(); ++it) 
+    nbs.push_back(it->dst);
   return nbs;
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-void Graph<State, Transition, StateIndexer>::Vertex::ClearVertexSearchInfo() {
+void Vertex<State, Transition, StateIndexer>::PrintVertex() const {
+  std::cout << "Vertex: id - " << vertex_id << std::endl;
+}
+
+// Add missing ClearVertexSearchInfo if it's used elsewhere
+template <typename State, typename Transition, typename StateIndexer>
+void Vertex<State, Transition, StateIndexer>::ClearVertexSearchInfo() {
   is_checked = false;
   is_in_openlist = false;  // to be removed
   search_parent = vertex_iterator();
