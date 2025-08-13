@@ -10,15 +10,15 @@
 #ifndef GRAPH_VERTEX_HPP
 #define GRAPH_VERTEX_HPP
 
-#include <list>
-#include <vector>
-#include <cstdint>
-#include <limits>
-#include <unordered_map>
-#include <iostream>
-#include <type_traits>
-#include "graph/details/default_indexer.hpp"
 #include "graph/edge.hpp"
+#include "graph/impl/default_indexer.hpp"
+#include <cstdint>
+#include <iostream>
+#include <limits>
+#include <list>
+#include <type_traits>
+#include <unordered_map>
+#include <vector>
 
 namespace xmotion {
 
@@ -124,6 +124,6 @@ struct Vertex {
 }  // namespace xmotion
 
 // Include implementation after all declarations
-#include "graph/details/vertex_impl.hpp"
+#include "graph/impl/vertex_impl.hpp"
 
 #endif /* GRAPH_VERTEX_HPP */

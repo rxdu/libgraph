@@ -34,8 +34,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "graph/details/default_indexer.hpp"
-#include "graph/edge.hpp"   // Independent Edge class
+#include "graph/edge.hpp" // Independent Edge class
+#include "graph/impl/default_indexer.hpp"
 #include "graph/vertex.hpp" // Independent Vertex class
 
 namespace xmotion {
@@ -235,8 +235,8 @@ template <typename State, typename Transition = double,
 using Graph_t = Graph<State, Transition, StateIndexer>;
 } // namespace xmotion
 
-#include "graph/details/edge_impl.hpp"
-#include "graph/details/graph_impl.hpp"
-#include "graph/details/vertex_impl.hpp"
+#include "graph/impl/edge_impl.hpp"
+#include "graph/impl/graph_impl.hpp"
+#include "graph/impl/vertex_impl.hpp"
 
 #endif /* GRAPH_HPP */

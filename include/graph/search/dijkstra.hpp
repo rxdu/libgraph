@@ -23,8 +23,8 @@
 #include <memory>
 
 #include "graph/graph.hpp"
+#include "graph/impl/dynamic_priority_queue.hpp"
 #include "graph/search/common.hpp"
-#include "graph/details/dynamic_priority_queue.hpp"
 
 namespace xmotion {
 /// Dijkstra search algorithm.

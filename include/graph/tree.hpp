@@ -159,6 +159,6 @@ template <typename State, typename Transition = double,
 using Tree_t = Tree<State, Transition, StateIndexer>;
 }  // namespace xmotion
 
-#include "graph/details/tree_impl.hpp"
+#include "graph/impl/tree_impl.hpp"
 
 #endif /* GRAPH_TREE_HPP */

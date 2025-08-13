@@ -13,7 +13,7 @@
 
 #include "gtest/gtest.h"
 
-#include "graph/details/default_indexer.hpp"
+#include "graph/impl/default_indexer.hpp"
 
 using namespace xmotion;
 

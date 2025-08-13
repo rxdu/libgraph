@@ -53,6 +53,6 @@ struct Edge {
 }  // namespace xmotion
 
 // Include implementation after all declarations
-#include "graph/details/edge_impl.hpp"
+#include "graph/impl/edge_impl.hpp"
 
 #endif /* GRAPH_EDGE_HPP */

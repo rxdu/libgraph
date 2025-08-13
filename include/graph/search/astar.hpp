@@ -26,9 +26,9 @@
 #include <memory>
 
 #include "graph/graph.hpp"
+#include "graph/impl/dynamic_priority_queue.hpp"
+#include "graph/impl/priority_queue.hpp"
 #include "graph/search/common.hpp"
-#include "graph/details/priority_queue.hpp"
-#include "graph/details/dynamic_priority_queue.hpp"
 
 namespace xmotion {
 /// A* search algorithm.

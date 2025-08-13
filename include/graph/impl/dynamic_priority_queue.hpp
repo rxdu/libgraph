@@ -26,7 +26,7 @@
 #include <unordered_map>
 #include <algorithm>
 
-#include "graph/details/default_indexer.hpp"
+#include "graph/impl/default_indexer.hpp"
 
 namespace xmotion {
 /// A priority queue implementation that supports element priority update.
