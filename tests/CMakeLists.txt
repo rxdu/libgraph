@@ -21,7 +21,11 @@ add_executable(utests
     unit_test/graph_search_test.cpp
     unit_test/graph_search_inc_test.cpp
     unit_test/tree_bigfive_test.cpp
-    unit_test/tree_mod_test.cpp)
+    unit_test/tree_mod_test.cpp
+    # New critical safety tests
+    unit_test/edge_independent_test.cpp
+    unit_test/vertex_independent_test.cpp
+    unit_test/error_condition_test.cpp)
 target_link_libraries(utests PRIVATE gtest gmock gtest_main graph)
 # get_target_property(PRIVATE_HEADERS graph INCLUDE_DIRECTORIES)
 target_include_directories(utests PRIVATE ${PRIVATE_HEADERS})
