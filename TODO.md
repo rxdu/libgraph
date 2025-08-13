@@ -2,20 +2,58 @@
 
 ## ✅ Completed in Latest Session
 
-### Critical Fixes Applied:
-1. **Fixed compilation error**: Changed `vertex_id_` to `vertex_id` in search/common.hpp
-2. **Removed debug output**: Commented out `std::cout` in graph_impl.hpp:104
-3. **Fixed Vertex constructors**: Corrected parameter types from `State&` to `Vertex&`
-4. **Fixed iterator invalidation**: 
+### Major Refactoring Achievements:
+1. **Code Architecture Refactoring** ✅ COMPLETED
+   - **Independent Edge and Vertex Classes**: Moved from nested classes to independent template classes
+   - **Separate Header Files**: Created `include/graph/edge.hpp` and `include/graph/vertex.hpp`
+   - **Maintained Backward Compatibility**: Used type aliases in Graph class
+   - **Fixed Circular Dependencies**: Proper forward declarations and iterator type management
+   
+2. **Interface/Implementation Separation** ✅ COMPLETED
+   - **Iterator Implementation Moved**: Moved `const_vertex_iterator` and `vertex_iterator` implementations to `graph_impl.hpp`
+   - **Clean Header Interface**: `graph.hpp` now contains only declarations
+   - **Better Code Organization**: Clear separation between interface and implementation
+
+3. **Modernization Improvements** ✅ COMPLETED
+   - **Modern Type Aliases**: Replaced all `typedef` with `using` declarations
+   - **Updated Include Structure**: Reorganized includes with `graph/impl/` path structure
+   - **Consistent Naming**: Standardized type naming conventions
+   - **Fixed Include Path Consistency**: Standardized all includes to use `graph/impl/` instead of mixed `graph/details/`
+
+### Previous Critical Fixes:
+4. **Fixed compilation error**: Changed `vertex_id_` to `vertex_id` in search/common.hpp
+5. **Removed debug output**: Commented out `std::cout` in graph_impl.hpp:104
+6. **Fixed Vertex constructors**: Corrected parameter types from `State&` to `Vertex&`
+7. **Fixed iterator invalidation**: 
    - Used `list::remove_if` with value capture in RemoveVertex
    - Used `list::remove` in RemoveEdge for consistency
-5. **Prevented infinite loops in ReconstructPath**:
+8. **Prevented infinite loops in ReconstructPath**:
    - Added cycle detection using `unordered_set`
    - Implemented custom Hash and Equal functors for vertex_iterator
    - Added self-loop detection for uninitialized parents
    - Added const `operator->()` to vertex_iterator for hash operations
 
 All 43 unit tests pass successfully after these changes.
+
+## 🟦 Additional Refactoring Opportunities Identified
+
+### Code Organization Improvements
+- [ ] **Move search algorithms to separate files**: Currently AStar and Dijkstra are in `search/` but could benefit from separate `.hpp/.ipp` pattern
+- [x] ~~**Standardize include paths**: Some includes use `graph/details/` while others use `graph/impl/` - should be consistent~~ ✅ COMPLETED
+- [ ] **Extract common search functionality**: Both AStar and Dijkstra share similar structure, could extract base class
+- [ ] **Consolidate duplicate code**: Search algorithms have nearly identical PerformSearch structure
+
+### Template Design Improvements  
+- [ ] **Extract search algorithm interfaces**: Create common base template for search algorithms
+- [ ] **Simplify template parameter lists**: Long template parameter lists in search methods could be simplified
+- [ ] **Use template aliases for complex types**: Reduce verbosity of nested template types
+- [ ] **Consider CRTP pattern**: For search algorithm polymorphism without virtual functions
+
+### Header Structure Optimization
+- [ ] **Further separate interface/implementation**: Some inline functions could be moved to implementation files
+- [ ] **Optimize include dependencies**: Reduce compilation dependencies by minimizing includes in headers
+- [ ] **Add header guards consistency**: Ensure all headers follow same guard naming pattern
+- [ ] **Create forward declaration headers**: For frequently used but complex types
 
 ## 🔴 Critical Issues (Priority 1)
 
@@ -101,7 +139,7 @@ All 43 unit tests pass successfully after these changes.
 - [ ] Add concepts (C++20) for better template constraints
 
 ### Language Features
-- [ ] Replace typedef with using aliases
+- [x] ~~Replace typedef with using aliases~~ ✅ COMPLETED (all `typedef` replaced with `using`)
 - [ ] Use nullptr consistently instead of NULL/0
 - [ ] Add [[nodiscard]] attributes
 - [ ] Use std::string_view for string parameters
@@ -187,13 +225,13 @@ All 43 unit tests pass successfully after these changes.
 
 ## Known Limitations
 
-- [] A* and Dijkstra algorithms currently assume double type cost. Generic type cost with proper comparator defined should also be allowed.
-- [] Refactor iterators and fix const_iterator for Vertex and Edge
-- [] Update edges_to and vertices_from data structure for higher efficiency removal
+- [ ] A* and Dijkstra algorithms currently assume double type cost. Generic type cost with proper comparator defined should also be allowed.
+- [x] ~~Refactor iterators and fix const_iterator for Vertex and Edge~~ ✅ COMPLETED (moved implementations to graph_impl.hpp)
+- [ ] Update edges_to and vertices_from data structure for higher efficiency removal
 - [*] Default indexer doesn't work if State is a std::shared_ptr<T> type
 - [*] Dynamic priority queue
 - [*] Improve unit test coverage
 - [*] Issue: state type cannot be std::shared_ptr<T>
 - [*] Convenience functions to access vertex information
-- [*] Implement iterators for vertex and edge to unify the accessing interface
+- [x] ~~Implement iterators for vertex and edge to unify the accessing interface~~ ✅ COMPLETED (proper iterator implementations)
 - [*] Update unit tests for basic function test

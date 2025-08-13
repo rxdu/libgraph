@@ -74,14 +74,14 @@ The library is organized around three main template classes in the `xmotion` nam
 ### State Indexing System
 
 The library uses a StateIndexer functor to generate unique indices for graph vertices:
-- **DefaultIndexer** (`src/include/graph/details/default_indexer.hpp`): Automatically works with states that have `GetId()`, `id_`, or `id`
+- **DefaultIndexer** (`src/include/graph/impl/default_indexer.hpp`): Automatically works with states that have `GetId()`, `id_`, or `id`
 - Custom indexers can be defined by implementing `operator()(State)` returning `int64_t`
 
 ### Priority Queue Implementation
 
 The search algorithms rely on specialized priority queues:
-- **PriorityQueue** (`src/include/graph/details/priority_queue.hpp`): Basic priority queue
-- **DynamicPriorityQueue** (`src/include/graph/details/dynamic_priority_queue.hpp`): Supports priority updates, crucial for efficient graph searches
+- **PriorityQueue** (`src/include/graph/impl/priority_queue.hpp`): Basic priority queue
+- **DynamicPriorityQueue** (`src/include/graph/impl/dynamic_priority_queue.hpp`): Supports priority updates, crucial for efficient graph searches
 
 ## Testing Structure
 
