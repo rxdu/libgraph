@@ -74,6 +74,8 @@ if (BUILD_SAMPLES)
   add_subdirectory(sample)
 endif ()
 
+# Shared_ptr support validation completed - tests integrated into main test suite
+
 # Build tests
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   message(STATUS "Tests will be built")

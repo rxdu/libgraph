@@ -28,7 +28,9 @@ add_executable(utests
     unit_test/error_condition_test.cpp
     # Memory and thread safety tests
     unit_test/memory_management_test.cpp
-    unit_test/thread_safety_test.cpp)
+    unit_test/thread_safety_test.cpp
+    # Parameterized tests for different state types
+    unit_test/parameterized_state_test.cpp)
 target_link_libraries(utests PRIVATE gtest gmock gtest_main graph)
 # get_target_property(PRIVATE_HEADERS graph INCLUDE_DIRECTORIES)
 target_include_directories(utests PRIVATE ${PRIVATE_HEADERS})
