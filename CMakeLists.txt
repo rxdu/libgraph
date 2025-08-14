@@ -28,7 +28,7 @@ if (COVERAGE_CHECK)
   if (GCOV)
     message(STATUS "Found gcov")
     set(CMAKE_BUILD_TYPE Debug)
-    set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+    set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage -fprofile-update=atomic")
   endif ()
 endif ()
 
