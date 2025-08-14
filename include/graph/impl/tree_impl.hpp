@@ -88,7 +88,7 @@ void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id) {
     for (auto &vtx : child_vertices) {
       // remove from vertex map
       auto vptr = TreeType::vertex_map_[vtx->GetVertexID()];
-      TreeType::vertex_map_.erase(vtx);
+      TreeType::vertex_map_.erase(vtx.base());
       delete vptr;
     }
   }

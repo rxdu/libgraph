@@ -51,32 +51,73 @@ public:
 
   using VertexMapType = std::unordered_map<int64_t, Vertex *>;
   using VertexMapTypeIterator = typename VertexMapType::iterator;
+  using VertexMapTypeConstIterator = typename VertexMapType::const_iterator;
 
   /*---------------------------------------------------------------------------------*/
   /*                              Vertex Iterator */
   /*---------------------------------------------------------------------------------*/
   ///@{
-  /// Vertex iterator for unified access.
-  /// Wraps the "value" part of VertexMapType::iterator
-  class const_vertex_iterator : public VertexMapTypeIterator {
+  /// Const vertex iterator for unified access.
+  /// Wraps the "value" part of VertexMapType::const_iterator
+  class const_vertex_iterator {
+  private:
+    VertexMapTypeConstIterator iter_;
+    
   public:
-    const_vertex_iterator() : VertexMapTypeIterator() {};
-    explicit const_vertex_iterator(VertexMapTypeIterator s)
-        : VertexMapTypeIterator(s) {};
+    // Iterator traits
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = const Vertex;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const Vertex*;
+    using reference = const Vertex&;
+
+    const_vertex_iterator() : iter_() {}
+    explicit const_vertex_iterator(VertexMapTypeConstIterator s) : iter_(s) {}
+    explicit const_vertex_iterator(VertexMapTypeIterator s) : iter_(s) {}
 
     const Vertex *operator->() const;
     const Vertex &operator*() const;
+    
+    const_vertex_iterator& operator++() { ++iter_; return *this; }
+    const_vertex_iterator operator++(int) { const_vertex_iterator tmp(*this); ++iter_; return tmp; }
+    
+    bool operator==(const const_vertex_iterator& other) const { return iter_ == other.iter_; }
+    bool operator!=(const const_vertex_iterator& other) const { return iter_ != other.iter_; }
+    
+    // Access to underlying iterator for compatibility
+    VertexMapTypeConstIterator base() const { return iter_; }
   };
 
-  class vertex_iterator : public const_vertex_iterator {
+  class vertex_iterator {
+  private:
+    VertexMapTypeIterator iter_;
+    
   public:
-    vertex_iterator() : const_vertex_iterator() {};
-    explicit vertex_iterator(VertexMapTypeIterator s)
-        : const_vertex_iterator(s) {};
+    // Iterator traits
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = Vertex;
+    using difference_type = std::ptrdiff_t;
+    using pointer = Vertex*;
+    using reference = Vertex&;
+
+    vertex_iterator() : iter_() {}
+    explicit vertex_iterator(VertexMapTypeIterator s) : iter_(s) {}
 
     Vertex *operator->();
     Vertex &operator*();
     const Vertex *operator->() const;
+    
+    vertex_iterator& operator++() { ++iter_; return *this; }
+    vertex_iterator operator++(int) { vertex_iterator tmp(*this); ++iter_; return tmp; }
+    
+    bool operator==(const vertex_iterator& other) const { return iter_ == other.iter_; }
+    bool operator!=(const vertex_iterator& other) const { return iter_ != other.iter_; }
+    
+    // Conversion to const_vertex_iterator
+    operator const_vertex_iterator() const { return const_vertex_iterator(iter_); }
+    
+    // Access to underlying iterator for compatibility
+    VertexMapTypeIterator base() const { return iter_; }
 
     // Hash support for vertex_iterator
     struct Hash {
@@ -195,12 +236,25 @@ public:
     return vertex_iterator{vertex_map_.find(vertex_id)};
   }
 
+  /// This function return the const vertex iterator with specified id
+  inline const_vertex_iterator FindVertex(int64_t vertex_id) const {
+    return const_vertex_iterator{vertex_map_.find(vertex_id)};
+  }
+
   /// This function return the vertex iterator with specified state
   template <class T = State, typename std::enable_if<
                                  !std::is_integral<T>::value>::type * = nullptr>
   inline vertex_iterator FindVertex(T state) {
     return vertex_iterator{vertex_map_.find(GetStateIndex(state))};
   }
+
+  /// This function return the const vertex iterator with specified state
+  template <class T = State, typename std::enable_if<
+                                 !std::is_integral<T>::value>::type * = nullptr>
+  inline const_vertex_iterator FindVertex(T state) const {
+    return const_vertex_iterator{vertex_map_.find(GetStateIndex(state))};
+  }
+
 
   /// Get total number of vertices in the graph
   int64_t GetTotalVertexNumber() const { return vertex_map_.size(); }

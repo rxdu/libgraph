@@ -23,32 +23,32 @@ namespace xmotion {
 template <typename State, typename Transition, typename StateIndexer>
 const typename Graph<State, Transition, StateIndexer>::Vertex*
 Graph<State, Transition, StateIndexer>::const_vertex_iterator::operator->() const {
-  return (const Vertex*)(VertexMapTypeIterator::operator->()->second);
+  return iter_->second;
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 const typename Graph<State, Transition, StateIndexer>::Vertex&
 Graph<State, Transition, StateIndexer>::const_vertex_iterator::operator*() const {
-  return *(VertexMapTypeIterator::operator*().second);
+  return *(iter_->second);
 }
 
 // vertex_iterator implementations
 template <typename State, typename Transition, typename StateIndexer>
 typename Graph<State, Transition, StateIndexer>::Vertex*
 Graph<State, Transition, StateIndexer>::vertex_iterator::operator->() {
-  return (Vertex*)(VertexMapTypeIterator::operator->()->second);
+  return iter_->second;
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 typename Graph<State, Transition, StateIndexer>::Vertex&
 Graph<State, Transition, StateIndexer>::vertex_iterator::operator*() {
-  return *(VertexMapTypeIterator::operator*().second);
+  return *(iter_->second);
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 const typename Graph<State, Transition, StateIndexer>::Vertex*
 Graph<State, Transition, StateIndexer>::vertex_iterator::operator->() const {
-  return (const Vertex*)(VertexMapTypeIterator::operator->()->second);
+  return iter_->second;
 }
 
 template <typename State, typename Transition, typename StateIndexer>

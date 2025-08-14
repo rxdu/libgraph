@@ -29,6 +29,8 @@ add_executable(utests
     # Memory and thread safety tests
     unit_test/memory_management_test.cpp
     unit_test/thread_safety_test.cpp
+    # Thread-safe search algorithm tests
+    unit_test/threadsafe_search_test.cpp
     # Parameterized tests for different state types
     unit_test/parameterized_state_test.cpp)
 target_link_libraries(utests PRIVATE gtest gmock gtest_main graph)
