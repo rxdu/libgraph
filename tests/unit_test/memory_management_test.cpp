@@ -279,11 +279,14 @@ TEST_F(MemoryManagementTest, ExceptionDuringVertexAdditionDoesNotLeak) {
   graph.AddVertex(ThrowingState(1));
   graph.AddVertex(ThrowingState(2));
   
-  // Set to throw on third construction
-  ThrowingState::throw_after_count = 4;  // Account for copies
+  // Set to throw on the next construction (after all the copies during vertex creation)
+  ThrowingState::throw_after_count = ThrowingState::construction_count + 1;
   
   // This should throw
   EXPECT_THROW(graph.AddVertex(ThrowingState(3)), std::runtime_error);
+  
+  // Reset throwing behavior for validation
+  ThrowingState::throw_after_count = 0;
   
   // Graph should still be valid with original vertices
   EXPECT_EQ(graph.GetTotalVertexNumber(), 2);

@@ -133,6 +133,9 @@ public:
   //  for the state object will not be managed by the graph and needs to be
   //  recycled separately.
   ~Graph();
+  
+  /// Swap function for efficient assignment operations
+  void swap(GraphType& other) noexcept;
   ///@}
 
   /** @name Vertex Access

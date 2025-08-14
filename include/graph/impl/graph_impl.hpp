@@ -11,6 +11,7 @@
 #define GRAPH_IMPL_HPP
 
 #include <type_traits>
+#include <memory>
 
 namespace xmotion {
 
@@ -70,6 +71,9 @@ Graph<State, Transition, StateIndexer>::Graph(
     const Graph<State, Transition, StateIndexer> &other) {
   for (auto &pair : other.vertex_map_) {
     auto vertex = pair.second;
+    // First ensure the vertex exists (handles isolated vertices)
+    this->AddVertex(vertex->state);
+    // Then add all edges
     for (auto &edge : vertex->edges_to)
       this->AddEdge(edge.src->state, edge.dst->state, edge.cost);
   }
@@ -85,8 +89,10 @@ template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>
     &Graph<State, Transition, StateIndexer>::operator=(
         const Graph<State, Transition, StateIndexer> &other) {
-  Graph<State, Transition, StateIndexer> temp = other;
-  std::swap(*this, temp);
+  if (this != &other) {
+    Graph<State, Transition, StateIndexer> temp(other);
+    this->swap(temp);
+  }
   return *this;
 }
 
@@ -96,6 +102,11 @@ Graph<State, Transition, StateIndexer>
         Graph<State, Transition, StateIndexer> &&other) {
   std::swap(vertex_map_, other.vertex_map_);
   return *this;
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+void Graph<State, Transition, StateIndexer>::swap(Graph& other) noexcept {
+  vertex_map_.swap(other.vertex_map_);
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -233,10 +244,11 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
   auto it = vertex_map_.find(state_id);
 
   if (it == vertex_map_.end()) {
-    auto new_vertex = new Vertex(state, state_id);
+    // Exception-safe vertex creation using RAII
+    std::unique_ptr<Vertex> new_vertex(new Vertex(state, state_id));
     new_vertex->search_parent = vertex_end();
-    vertex_map_.insert(std::make_pair(state_id, new_vertex));
-    return vertex_iterator(vertex_map_.find(state_id));
+    auto result = vertex_map_.insert(std::make_pair(state_id, new_vertex.release()));
+    return vertex_iterator(result.first);
   }
 
   return vertex_iterator(it);
