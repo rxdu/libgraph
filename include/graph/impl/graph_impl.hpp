@@ -253,6 +253,143 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
 
   return vertex_iterator(it);
 }
+
+/*---------------------------------------------------------------------------------*/
+/*                     API Polish - Convenience Methods Implementation            */
+/*---------------------------------------------------------------------------------*/
+
+// Vertex Information Access Methods
+template <typename State, typename Transition, typename StateIndexer>
+bool Graph<State, Transition, StateIndexer>::HasVertex(int64_t vertex_id) const {
+  return vertex_map_.find(vertex_id) != vertex_map_.end();
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+size_t Graph<State, Transition, StateIndexer>::GetVertexDegree(int64_t vertex_id) const {
+  return GetInDegree(vertex_id) + GetOutDegree(vertex_id);
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+size_t Graph<State, Transition, StateIndexer>::GetInDegree(int64_t vertex_id) const {
+  auto it = FindVertex(vertex_id);
+  if (it != vertex_end()) {
+    return it->vertices_from.size();
+  }
+  return 0;
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+size_t Graph<State, Transition, StateIndexer>::GetOutDegree(int64_t vertex_id) const {
+  auto it = FindVertex(vertex_id);
+  if (it != vertex_end()) {
+    return it->edges_to.size();
+  }
+  return 0;
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+std::vector<State> Graph<State, Transition, StateIndexer>::GetNeighbors(State state) const {
+  return GetNeighbors(GetStateIndex(state));
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+std::vector<State> Graph<State, Transition, StateIndexer>::GetNeighbors(int64_t vertex_id) const {
+  std::vector<State> neighbors;
+  auto it = FindVertex(vertex_id);
+  if (it != vertex_end()) {
+    for (const auto& edge : it->edges_to) {
+      neighbors.push_back(edge.dst->state);
+    }
+  }
+  return neighbors;
+}
+
+// Edge Query Methods
+template <typename State, typename Transition, typename StateIndexer>
+bool Graph<State, Transition, StateIndexer>::HasEdge(State from, State to) const {
+  auto from_it = FindVertex(from);
+  if (from_it == vertex_end()) {
+    return false;
+  }
+  
+  int64_t to_id = GetStateIndex(to);
+  for (const auto& edge : from_it->edges_to) {
+    if (edge.dst->vertex_id == to_id) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+Transition Graph<State, Transition, StateIndexer>::GetEdgeWeight(State from, State to) const {
+  auto from_it = FindVertex(from);
+  if (from_it == vertex_end()) {
+    return Transition{};
+  }
+  
+  int64_t to_id = GetStateIndex(to);
+  for (const auto& edge : from_it->edges_to) {
+    if (edge.dst->vertex_id == to_id) {
+      return edge.cost;
+    }
+  }
+  return Transition{};
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+size_t Graph<State, Transition, StateIndexer>::GetEdgeCount() const {
+  size_t count = 0;
+  for (const auto& pair : vertex_map_) {
+    count += pair.second->edges_to.size();
+  }
+  return count;
+}
+
+// Safe Vertex Access Methods
+template <typename State, typename Transition, typename StateIndexer>
+typename Graph<State, Transition, StateIndexer>::Vertex* 
+Graph<State, Transition, StateIndexer>::GetVertex(int64_t vertex_id) {
+  auto it = vertex_map_.find(vertex_id);
+  if (it != vertex_map_.end()) {
+    return it->second;
+  }
+  return nullptr;
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+const typename Graph<State, Transition, StateIndexer>::Vertex* 
+Graph<State, Transition, StateIndexer>::GetVertex(int64_t vertex_id) const {
+  auto it = vertex_map_.find(vertex_id);
+  if (it != vertex_map_.end()) {
+    return it->second;
+  }
+  return nullptr;
+}
+
+// Batch Operations
+template <typename State, typename Transition, typename StateIndexer>
+void Graph<State, Transition, StateIndexer>::AddVertices(const std::vector<State>& states) {
+  for (const auto& state : states) {
+    AddVertex(state);
+  }
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+void Graph<State, Transition, StateIndexer>::AddEdges(
+    const std::vector<std::tuple<State, State, Transition>>& edges) {
+  for (const auto& edge : edges) {
+    AddEdge(std::get<0>(edge), std::get<1>(edge), std::get<2>(edge));
+  }
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+void Graph<State, Transition, StateIndexer>::RemoveVertices(const std::vector<State>& states) {
+  for (const auto& state : states) {
+    RemoveVertex(state);
+  }
+}
+
 }  // namespace xmotion
 
 #endif /* GRAPH_IMPL_HPP */

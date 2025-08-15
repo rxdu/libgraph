@@ -270,6 +270,115 @@ public:
   void ClearAll();
   ///@}
 
+  /** @name API Polish - Convenience Methods
+   *  Additional convenience methods for improved usability.
+   */
+  ///@{
+  /* Vertex Information Access */
+  /// Check if a vertex with the given ID exists in the graph
+  bool HasVertex(int64_t vertex_id) const;
+  
+  /// Check if a vertex with the given state exists in the graph
+  template <class T = State, typename std::enable_if<
+                                 !std::is_integral<T>::value>::type * = nullptr>
+  bool HasVertex(T state) const {
+    return HasVertex(GetStateIndex(state));
+  }
+  
+  /// Get the total degree of a vertex (in-degree + out-degree)
+  size_t GetVertexDegree(int64_t vertex_id) const;
+  
+  /// Get the in-degree of a vertex (number of incoming edges)
+  size_t GetInDegree(int64_t vertex_id) const;
+  
+  /// Get the out-degree of a vertex (number of outgoing edges)
+  size_t GetOutDegree(int64_t vertex_id) const;
+  
+  /// Get all neighbor states of a vertex (vertices connected by outgoing edges)
+  std::vector<State> GetNeighbors(State state) const;
+  
+  /// Get all neighbor states of a vertex by ID
+  std::vector<State> GetNeighbors(int64_t vertex_id) const;
+  
+  /* Edge Query Methods */
+  /// Check if an edge exists between two states
+  bool HasEdge(State from, State to) const;
+  
+  /// Get the weight/transition of an edge between two states
+  /// Returns Transition{} if edge doesn't exist
+  Transition GetEdgeWeight(State from, State to) const;
+  
+  /// Get the total number of edges more efficiently (without creating vector)
+  size_t GetEdgeCount() const;
+  
+  /* Safe Vertex Access */
+  /// Get vertex pointer by ID (returns nullptr if not found)
+  Vertex* GetVertex(int64_t vertex_id);
+  const Vertex* GetVertex(int64_t vertex_id) const;
+  
+  /// Get vertex pointer by state (returns nullptr if not found)
+  template <class T = State, typename std::enable_if<
+                                 !std::is_integral<T>::value>::type * = nullptr>
+  Vertex* GetVertex(T state) {
+    return GetVertex(GetStateIndex(state));
+  }
+  
+  template <class T = State, typename std::enable_if<
+                                 !std::is_integral<T>::value>::type * = nullptr>
+  const Vertex* GetVertex(T state) const {
+    return GetVertex(GetStateIndex(state));
+  }
+  
+  /* STL-like Interface */
+  /// Check if the graph is empty
+  bool empty() const { return vertex_map_.empty(); }
+  
+  /// Get the number of vertices (same as GetTotalVertexNumber)
+  size_t size() const { return vertex_map_.size(); }
+  
+  /// Reserve space for n vertices to improve performance
+  void reserve(size_t n) { vertex_map_.reserve(n); }
+  
+  /* Batch Operations */
+  /// Add multiple vertices at once
+  void AddVertices(const std::vector<State>& states);
+  
+  /// Add multiple edges at once
+  void AddEdges(const std::vector<std::tuple<State, State, Transition>>& edges);
+  
+  /// Remove multiple vertices at once
+  void RemoveVertices(const std::vector<State>& states);
+  ///@}
+
+  /** @name Range-based For Loop Support
+   *  Support for modern C++ range-based iteration.
+   */
+  ///@{
+  /// Vertex range for non-const graphs
+  class vertex_range {
+  private:
+    Graph* graph_;
+  public:
+    explicit vertex_range(Graph* g) : graph_(g) {}
+    vertex_iterator begin() { return graph_->vertex_begin(); }
+    vertex_iterator end() { return graph_->vertex_end(); }
+  };
+  
+  /// Vertex range for const graphs
+  class const_vertex_range {
+  private:
+    const Graph* graph_;
+  public:
+    explicit const_vertex_range(const Graph* g) : graph_(g) {}
+    const_vertex_iterator begin() const { return graph_->vertex_begin(); }
+    const_vertex_iterator end() const { return graph_->vertex_end(); }
+  };
+  
+  /// Get a range of all vertices for range-based for loops
+  vertex_range vertices() { return vertex_range(this); }
+  const_vertex_range vertices() const { return const_vertex_range(this); }
+  ///@}
+
 protected:
   /** @name Internal variables and functions.
    *  Internal variables and functions.
