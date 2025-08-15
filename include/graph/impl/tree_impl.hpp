@@ -86,10 +86,8 @@ void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id) {
     }
 
     for (auto &vtx : child_vertices) {
-      // remove from vertex map
-      auto vptr = TreeType::vertex_map_[vtx->GetVertexID()];
+      // remove from vertex map - unique_ptr handles cleanup automatically
       TreeType::vertex_map_.erase(vtx.base());
-      delete vptr;
     }
   }
 }
@@ -118,8 +116,7 @@ void Tree<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
 
 template <typename State, typename Transition, typename StateIndexer>
 void Tree<State, Transition, StateIndexer>::ClearAll() {
-  for (auto &vertex_pair : TreeType::vertex_map_) delete vertex_pair.second;
-  TreeType::vertex_map_.clear();
+  TreeType::vertex_map_.clear();  // unique_ptr handles cleanup automatically
   root_ = TreeType::vertex_end();
 }
 }  // namespace xmotion

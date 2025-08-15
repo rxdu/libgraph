@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <limits>
 #include <list>
+#include <memory>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
@@ -49,7 +50,7 @@ public:
   using Vertex = xmotion::Vertex<State, Transition, StateIndexer>;
   using GraphType = Graph<State, Transition, StateIndexer>;
 
-  using VertexMapType = std::unordered_map<int64_t, Vertex *>;
+  using VertexMapType = std::unordered_map<int64_t, std::unique_ptr<Vertex>>;
   using VertexMapTypeIterator = typename VertexMapType::iterator;
   using VertexMapTypeConstIterator = typename VertexMapType::const_iterator;
 

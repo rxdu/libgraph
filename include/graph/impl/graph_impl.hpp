@@ -23,32 +23,32 @@ namespace xmotion {
 template <typename State, typename Transition, typename StateIndexer>
 const typename Graph<State, Transition, StateIndexer>::Vertex*
 Graph<State, Transition, StateIndexer>::const_vertex_iterator::operator->() const {
-  return iter_->second;
+  return iter_->second.get();
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 const typename Graph<State, Transition, StateIndexer>::Vertex&
 Graph<State, Transition, StateIndexer>::const_vertex_iterator::operator*() const {
-  return *(iter_->second);
+  return *(iter_->second.get());
 }
 
 // vertex_iterator implementations
 template <typename State, typename Transition, typename StateIndexer>
 typename Graph<State, Transition, StateIndexer>::Vertex*
 Graph<State, Transition, StateIndexer>::vertex_iterator::operator->() {
-  return iter_->second;
+  return iter_->second.get();
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 typename Graph<State, Transition, StateIndexer>::Vertex&
 Graph<State, Transition, StateIndexer>::vertex_iterator::operator*() {
-  return *(iter_->second);
+  return *(iter_->second.get());
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 const typename Graph<State, Transition, StateIndexer>::Vertex*
 Graph<State, Transition, StateIndexer>::vertex_iterator::operator->() const {
-  return iter_->second;
+  return iter_->second.get();
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -70,7 +70,7 @@ template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>::Graph(
     const Graph<State, Transition, StateIndexer> &other) {
   for (auto &pair : other.vertex_map_) {
-    auto vertex = pair.second;
+    auto& vertex = pair.second;
     // First ensure the vertex exists (handles isolated vertices)
     this->AddVertex(vertex->state);
     // Then add all edges
@@ -111,9 +111,7 @@ void Graph<State, Transition, StateIndexer>::swap(Graph& other) noexcept {
 
 template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>::~Graph() {
-  for (auto &vertex_pair : vertex_map_) {
-    delete vertex_pair.second;
-  }
+  // unique_ptr automatically handles cleanup - no manual delete needed
 };
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -146,10 +144,8 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
       target_vertex->vertices_from.remove(vtx);
     }
 
-    // remove from vertex map
-    auto vptr = it->second;
+    // remove from vertex map - unique_ptr handles cleanup automatically
     vertex_map_.erase(it);
-    delete vptr;
   }
 }
 
@@ -218,7 +214,7 @@ Graph<State, Transition, StateIndexer>::GetAllEdges() const {
   std::vector<typename Graph<State, Transition, StateIndexer>::edge_iterator>
       edges;
   for (auto &vertex_pair : vertex_map_) {
-    auto vertex = vertex_pair.second;
+    auto& vertex = vertex_pair.second;
     for (auto it = vertex->edge_begin(); it != vertex->edge_end(); ++it)
       edges.push_back(it);
   }
@@ -233,8 +229,7 @@ void Graph<State, Transition, StateIndexer>::ResetAllVertices() {
 
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::ClearAll() {
-  for (auto &vertex_pair : vertex_map_) delete vertex_pair.second;
-  vertex_map_.clear();
+  vertex_map_.clear();  // unique_ptr automatically handles cleanup
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -244,10 +239,10 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
   auto it = vertex_map_.find(state_id);
 
   if (it == vertex_map_.end()) {
-    // Exception-safe vertex creation using RAII
+    // Exception-safe vertex creation using unique_ptr (C++11 compatible)
     std::unique_ptr<Vertex> new_vertex(new Vertex(state, state_id));
     new_vertex->search_parent = vertex_end();
-    auto result = vertex_map_.insert(std::make_pair(state_id, new_vertex.release()));
+    auto result = vertex_map_.insert(std::make_pair(state_id, std::move(new_vertex)));
     return vertex_iterator(result.first);
   }
 
@@ -352,7 +347,7 @@ typename Graph<State, Transition, StateIndexer>::Vertex*
 Graph<State, Transition, StateIndexer>::GetVertex(int64_t vertex_id) {
   auto it = vertex_map_.find(vertex_id);
   if (it != vertex_map_.end()) {
-    return it->second;
+    return it->second.get();
   }
   return nullptr;
 }
@@ -362,7 +357,7 @@ const typename Graph<State, Transition, StateIndexer>::Vertex*
 Graph<State, Transition, StateIndexer>::GetVertex(int64_t vertex_id) const {
   auto it = vertex_map_.find(vertex_id);
   if (it != vertex_map_.end()) {
-    return it->second;
+    return it->second.get();
   }
   return nullptr;
 }
