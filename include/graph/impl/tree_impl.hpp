@@ -46,7 +46,12 @@ typename Tree<State, Transition, StateIndexer>::vertex_iterator
 Tree<State, Transition, StateIndexer>::GetParentVertex(int64_t state_id) {
   auto vtx = TreeType::FindVertex(state_id);
 
-  assert((vtx != TreeType::vertex_end()) && (vtx->vertices_from.size() <= 1));
+  if (vtx == TreeType::vertex_end()) {
+    throw std::invalid_argument("Vertex with given state_id does not exist in tree");
+  }
+  if (vtx->vertices_from.size() > 1) {
+    throw std::logic_error("Tree invariant violated: vertex has more than one parent");
+  }
 
   if (vtx == root_)
     return TreeType::vertex_end();

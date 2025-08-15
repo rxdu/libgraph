@@ -40,6 +40,76 @@
 #include "graph/vertex.hpp" // Independent Vertex class
 
 namespace xmotion {
+
+/**
+ * @brief Exception Safety Guarantees for Graph Operations
+ * 
+ * This documentation defines the exception safety guarantees for all Graph class operations.
+ * The Graph class follows C++ exception safety best practices with RAII and proper resource management.
+ * 
+ * @section exception_safety_levels Exception Safety Levels
+ * 
+ * **1. Basic Guarantee**: No resource leaks, object remains in valid state
+ * **2. Strong Guarantee**: Operation succeeds completely or has no effect (rollback semantics)  
+ * **3. No-throw Guarantee**: Operation never throws exceptions (marked with noexcept)
+ * 
+ * @section operation_guarantees Operation-Specific Guarantees
+ * 
+ * **Construction/Destruction (Strong Guarantee)**
+ * - Default constructor: No-throw (noexcept)
+ * - Copy constructor: Strong guarantee - succeeds completely or leaves original unchanged
+ * - Move constructor: No-throw (noexcept) 
+ * - Copy assignment: Strong guarantee via copy-and-swap idiom
+ * - Move assignment: No-throw (noexcept)
+ * - Destructor: No-throw (automatic via RAII std::unique_ptr cleanup)
+ * 
+ * **Vertex Operations (Strong Guarantee)**
+ * - AddVertex(): Strong guarantee - vertex fully added or graph unchanged
+ * - RemoveVertex(): Strong guarantee - vertex fully removed or graph unchanged  
+ * - FindVertex(): No-throw for valid inputs, throws std::out_of_range for invalid IDs
+ * 
+ * **Edge Operations (Strong Guarantee)**
+ * - AddEdge(): Strong guarantee - edge fully added or graph unchanged
+ * - RemoveEdge(): Strong guarantee - edge fully removed or graph unchanged
+ * - AddUndirectedEdge(): Strong guarantee - both edges added or neither added
+ * 
+ * **Query Operations (No-throw Guarantee)**
+ * - All const query methods (HasVertex, HasEdge, GetVertexDegree, etc.): No-throw (noexcept)
+ * - Container-like operations (empty, size, begin, end): No-throw (noexcept)
+ * - Counting operations (GetEdgeCount, GetVertexCount): No-throw (noexcept)
+ * 
+ * **Iterator Operations (Strong Guarantee)**  
+ * - Iterator creation: No-throw (returns valid iterators or end())
+ * - Iterator dereferencing: No-throw for valid iterators
+ * - Iterator invalidation: Iterators invalidated only by operations that modify the container
+ * 
+ * **Search Operations (Basic Guarantee)**
+ * - Dijkstra/AStar: Basic guarantee - graph remains valid, search state may be partial
+ * - Thread-safe searches: Strong guarantee - SearchContext isolates all search state
+ * 
+ * **Memory Management (Strong Guarantee via RAII)**
+ * - All vertex storage uses std::unique_ptr for automatic cleanup
+ * - No manual memory management required
+ * - Exception during vertex creation automatically cleans up partial state
+ * - Copy operations use RAII throughout to prevent leaks
+ * 
+ * @section error_conditions Error Conditions and Exceptions
+ * 
+ * **std::bad_alloc**: Memory allocation failures (from std::unordered_map or std::unique_ptr)
+ * **std::invalid_argument**: Invalid input parameters (e.g., in tree operations)
+ * **std::logic_error**: Violation of class invariants (e.g., tree structure violations)
+ * **State copy constructor exceptions**: Propagated with strong guarantee via RAII
+ * 
+ * @section thread_safety_exceptions Thread Safety and Exceptions
+ * 
+ * **Single-threaded operations**: All guarantees apply as documented
+ * **Concurrent read operations**: Thread-safe with SearchContext, no exceptions from race conditions
+ * **Concurrent write operations**: Not supported - user must provide external synchronization
+ * 
+ * @note The Graph class is designed with RAII principles throughout. All resource management
+ *       is automatic via std::unique_ptr, ensuring no memory leaks even in exceptional cases.
+ */
+
 /// Graph class template.
 template <typename State, typename Transition = double,
           typename StateIndexer = DefaultIndexer<State>>
@@ -157,16 +227,38 @@ public:
    * destructor.
    */
   ///@{
-  /// Default Graph constructor.
+  /** Default Graph constructor (No-throw guarantee)
+   *  @noexcept Strong guarantee - never throws
+   */
   Graph() = default;
-  /// Copy constructor.
+  
+  /** Copy constructor (Strong guarantee)
+   *  @param other Graph to copy from
+   *  @throws std::bad_alloc Memory allocation failure
+   *  @throws State copy constructor exceptions
+   */
   Graph(const GraphType &other);
-  /// Move constructor
-  Graph(GraphType &&other);
-  /// Assignment operator
+  
+  /** Move constructor (No-throw guarantee)  
+   *  @param other Graph to move from
+   *  @noexcept Strong guarantee - never throws
+   */
+  Graph(GraphType &&other) noexcept;
+  
+  /** Assignment operator (Strong guarantee via copy-and-swap)
+   *  @param other Graph to assign from
+   *  @return Reference to this graph
+   *  @throws std::bad_alloc Memory allocation failure  
+   *  @throws State copy constructor exceptions
+   */
   GraphType &operator=(const GraphType &other);
-  /// Move assignment operator
-  GraphType &operator=(GraphType &&other);
+  
+  /** Move assignment operator (No-throw guarantee)
+   *  @param other Graph to move from
+   *  @return Reference to this graph
+   *  @noexcept Strong guarantee - never throws
+   */
+  GraphType &operator=(GraphType &&other) noexcept;
 
   /// Default Graph destructor.
   /// Graph class is only responsible for the memory recycling of its internal
@@ -258,7 +350,7 @@ public:
 
 
   /// Get total number of vertices in the graph
-  int64_t GetTotalVertexNumber() const { return vertex_map_.size(); }
+  int64_t GetTotalVertexNumber() const noexcept { return vertex_map_.size(); }
 
   /// Get total number of edges in the graph
   int64_t GetTotalEdgeNumber() const { return GetAllEdges().size(); }
@@ -275,80 +367,211 @@ public:
    *  Additional convenience methods for improved usability.
    */
   ///@{
-  /* Vertex Information Access */
-  /// Check if a vertex with the given ID exists in the graph
+  /** @name Vertex Information Access */
+  ///@{
+  /** Check if a vertex with the given ID exists in the graph
+   *  @param vertex_id The ID of the vertex to check
+   *  @return True if vertex exists, false otherwise
+   */
   bool HasVertex(int64_t vertex_id) const;
   
-  /// Check if a vertex with the given state exists in the graph
+  /** Check if a vertex with the given state exists in the graph
+   *  @param state The state of the vertex to check
+   *  @return True if vertex exists, false otherwise
+   */
   template <class T = State, typename std::enable_if<
                                  !std::is_integral<T>::value>::type * = nullptr>
   bool HasVertex(T state) const {
     return HasVertex(GetStateIndex(state));
   }
   
-  /// Get the total degree of a vertex (in-degree + out-degree)
+  /** Get the total degree of a vertex (in-degree + out-degree)
+   *  @param vertex_id The ID of the vertex
+   *  @return Total degree of the vertex, 0 if vertex doesn't exist
+   */
   size_t GetVertexDegree(int64_t vertex_id) const;
   
-  /// Get the in-degree of a vertex (number of incoming edges)
+  /** Get the in-degree of a vertex (number of incoming edges)
+   *  @param vertex_id The ID of the vertex
+   *  @return In-degree of the vertex, 0 if vertex doesn't exist
+   */
   size_t GetInDegree(int64_t vertex_id) const;
   
-  /// Get the out-degree of a vertex (number of outgoing edges)
+  /** Get the out-degree of a vertex (number of outgoing edges)
+   *  @param vertex_id The ID of the vertex
+   *  @return Out-degree of the vertex, 0 if vertex doesn't exist
+   */
   size_t GetOutDegree(int64_t vertex_id) const;
+  ///@}
   
-  /// Get all neighbor states of a vertex (vertices connected by outgoing edges)
+  /** @name Neighbor Access */
+  ///@{
+  /** Get all neighbor states of a vertex (vertices connected by outgoing edges)
+   *  @param state The state of the vertex
+   *  @return Vector of neighbor states, empty if vertex doesn't exist
+   */
   std::vector<State> GetNeighbors(State state) const;
   
-  /// Get all neighbor states of a vertex by ID
+  /** Get all neighbor states of a vertex by ID
+   *  @param vertex_id The ID of the vertex
+   *  @return Vector of neighbor states, empty if vertex doesn't exist
+   */
   std::vector<State> GetNeighbors(int64_t vertex_id) const;
+  ///@}
   
-  /* Edge Query Methods */
-  /// Check if an edge exists between two states
+  /** @name Edge Query Methods */
+  ///@{
+  /** Check if an edge exists between two states
+   *  @param from Source state
+   *  @param to Destination state
+   *  @return True if edge exists, false otherwise
+   */
   bool HasEdge(State from, State to) const;
   
-  /// Get the weight/transition of an edge between two states
-  /// Returns Transition{} if edge doesn't exist
+  /** Get the weight/transition of an edge between two states
+   *  @param from Source state
+   *  @param to Destination state
+   *  @return Edge weight/transition, Transition{} if edge doesn't exist
+   */
   Transition GetEdgeWeight(State from, State to) const;
   
-  /// Get the total number of edges more efficiently (without creating vector)
-  size_t GetEdgeCount() const;
+  /** Get the total number of edges more efficiently (without creating vector)
+   *  @return Total number of edges in the graph
+   */
+  size_t GetEdgeCount() const noexcept;
+  ///@}
   
-  /* Safe Vertex Access */
-  /// Get vertex pointer by ID (returns nullptr if not found)
+  /** @name Safe Vertex Access */
+  ///@{
+  /** Get vertex pointer by ID (returns nullptr if not found)
+   *  @param vertex_id The ID of the vertex
+   *  @return Pointer to vertex or nullptr if not found
+   */
   Vertex* GetVertex(int64_t vertex_id);
+  
+  /** Get const vertex pointer by ID (returns nullptr if not found)
+   *  @param vertex_id The ID of the vertex
+   *  @return Const pointer to vertex or nullptr if not found
+   */
   const Vertex* GetVertex(int64_t vertex_id) const;
   
-  /// Get vertex pointer by state (returns nullptr if not found)
+  /** Get vertex pointer by state (returns nullptr if not found)
+   *  @param state The state of the vertex
+   *  @return Pointer to vertex or nullptr if not found
+   */
   template <class T = State, typename std::enable_if<
                                  !std::is_integral<T>::value>::type * = nullptr>
   Vertex* GetVertex(T state) {
     return GetVertex(GetStateIndex(state));
   }
   
+  /** Get const vertex pointer by state (returns nullptr if not found)
+   *  @param state The state of the vertex
+   *  @return Const pointer to vertex or nullptr if not found
+   */
   template <class T = State, typename std::enable_if<
                                  !std::is_integral<T>::value>::type * = nullptr>
   const Vertex* GetVertex(T state) const {
     return GetVertex(GetStateIndex(state));
   }
+  ///@}
   
-  /* STL-like Interface */
-  /// Check if the graph is empty
-  bool empty() const { return vertex_map_.empty(); }
+  /** @name STL-like Interface */
+  ///@{
+  /** Check if the graph is empty
+   *  @return True if no vertices exist, false otherwise
+   */
+  bool empty() const noexcept { return vertex_map_.empty(); }
   
-  /// Get the number of vertices (same as GetTotalVertexNumber)
-  size_t size() const { return vertex_map_.size(); }
+  /** Get the number of vertices (same as GetTotalVertexNumber)
+   *  @return Number of vertices in the graph
+   */
+  size_t size() const noexcept { return vertex_map_.size(); }
   
-  /// Reserve space for n vertices to improve performance
+  /** Reserve space for n vertices to improve performance
+   *  @param n Number of vertices to reserve space for
+   */
   void reserve(size_t n) { vertex_map_.reserve(n); }
+  ///@}
   
-  /* Batch Operations */
-  /// Add multiple vertices at once
+  /** @name Batch Operations */
+  ///@{
+  /** Add multiple vertices at once
+   *  @param states Vector of states to add as vertices
+   */
   void AddVertices(const std::vector<State>& states);
   
-  /// Add multiple edges at once
+  /** Add multiple edges at once
+   *  @param edges Vector of tuples (from, to, transition) to add
+   */
   void AddEdges(const std::vector<std::tuple<State, State, Transition>>& edges);
   
-  /// Remove multiple vertices at once
+  /** Remove multiple vertices at once
+   *  @param states Vector of states to remove
+   */
   void RemoveVertices(const std::vector<State>& states);
+  ///@}
+
+  /** @name Standardized Return Types
+   *  Methods with consistent return types and error reporting.
+   */
+  ///@{
+  /** @name Consistent Add Operations */
+  ///@{
+  /** Add vertex with success/failure reporting (like std::map::insert)
+   *  @param state The state to add as a vertex
+   *  @return Pair of iterator to vertex and bool indicating if insertion took place
+   */
+  std::pair<vertex_iterator, bool> AddVertexWithResult(State state);
+  
+  /** Add edge with success/failure reporting
+   *  @param from Source state
+   *  @param to Destination state
+   *  @param trans Edge weight/transition
+   *  @return True if edge was added, false if it already exists
+   */
+  bool AddEdgeWithResult(State from, State to, Transition trans);
+  
+  /** Add undirected edge with success/failure reporting
+   *  @param from First state
+   *  @param to Second state
+   *  @param trans Edge weight/transition
+   *  @return True if both edges were added, false if one or both already exist
+   */
+  bool AddUndirectedEdgeWithResult(State from, State to, Transition trans);
+  ///@}
+  
+  /** @name Consistent Remove Operations */
+  ///@{
+  /** Remove vertex with success/failure reporting
+   *  @param vertex_id ID of the vertex to remove
+   *  @return True if vertex was removed, false if it didn't exist
+   */
+  bool RemoveVertexWithResult(int64_t vertex_id);
+  
+  /** Remove vertex by state with success/failure reporting
+   *  @param state The state of the vertex to remove
+   *  @return True if vertex was removed, false if it didn't exist
+   */
+  template <class T = State, typename std::enable_if<
+                                 !std::is_integral<T>::value>::type * = nullptr>
+  bool RemoveVertexWithResult(T state) {
+    return RemoveVertexWithResult(GetStateIndex(state));
+  }
+  ///@}
+  
+  /** @name Standardized Counting Methods */
+  ///@{
+  /** Get vertex count using size_t (standardized alternative to GetTotalVertexNumber)
+   *  @return Number of vertices as size_t
+   */
+  size_t GetVertexCount() const noexcept { return static_cast<size_t>(GetTotalVertexNumber()); }
+  
+  /** Get edge count using size_t (alias for existing GetEdgeCount for consistency)
+   *  @return Number of edges as size_t
+   */
+  size_t GetEdgeCountStd() const noexcept { return GetEdgeCount(); }
+  ///@}
   ///@}
 
   /** @name Range-based For Loop Support

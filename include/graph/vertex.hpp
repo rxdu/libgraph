@@ -84,10 +84,10 @@ struct Vertex {
    *  Edge iterators to access edges in the vertex
    */
   ///@{
-  edge_iterator edge_begin() { return edges_to.begin(); }
-  edge_iterator edge_end() { return edges_to.end(); }
-  const_edge_iterator edge_begin() const { return edges_to.cbegin(); }
-  const_edge_iterator edge_end() const { return edges_to.cend(); }
+  edge_iterator edge_begin() noexcept { return edges_to.begin(); }
+  edge_iterator edge_end() noexcept { return edges_to.end(); }
+  const_edge_iterator edge_begin() const noexcept { return edges_to.cbegin(); }
+  const_edge_iterator edge_end() const noexcept { return edges_to.cend(); }
   ///@}
 
   /** @name Edge Operations
@@ -98,7 +98,7 @@ struct Vertex {
   bool operator==(const Vertex& other) const;
 
   /// Returns the id of current vertex
-  int64_t GetVertexID() const { return vertex_id; }
+  int64_t GetVertexID() const noexcept { return vertex_id; }
 
   /// Check if a vertex with given state or id is a neighbor of current vertex
   template <class T = State,

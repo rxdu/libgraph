@@ -331,6 +331,133 @@ TEST_F(GraphModificationTest, BatchOperations) {
   ASSERT_FALSE(graph.HasVertex(3)) << "Vertex 3 should be removed";
 }
 
+TEST_F(GraphModificationTest, StandardizedReturnTypesAddVertex) {
+  Graph<TestState *> graph;
+  
+  // Test AddVertexWithResult - new vertex
+  auto result1 = graph.AddVertexWithResult(nodes[0]);
+  ASSERT_TRUE(result1.second) << "Should return true for new vertex";
+  ASSERT_EQ(result1.first->vertex_id, 0) << "Should return iterator to added vertex";
+  ASSERT_EQ(graph.size(), 1) << "Graph should have 1 vertex";
+  
+  // Test AddVertexWithResult - existing vertex
+  auto result2 = graph.AddVertexWithResult(nodes[0]);
+  ASSERT_FALSE(result2.second) << "Should return false for existing vertex";
+  ASSERT_EQ(result2.first->vertex_id, 0) << "Should return iterator to existing vertex";
+  ASSERT_EQ(graph.size(), 1) << "Graph size should remain 1";
+  
+  // Test different vertex
+  auto result3 = graph.AddVertexWithResult(nodes[1]);
+  ASSERT_TRUE(result3.second) << "Should return true for new vertex";
+  ASSERT_EQ(result3.first->vertex_id, 1) << "Should return iterator to new vertex";
+  ASSERT_EQ(graph.size(), 2) << "Graph should have 2 vertices";
+}
+
+TEST_F(GraphModificationTest, StandardizedReturnTypesAddEdge) {
+  Graph<TestState *> graph;
+  
+  // Add vertices first
+  graph.AddVertex(nodes[0]);
+  graph.AddVertex(nodes[1]);
+  graph.AddVertex(nodes[2]);
+  
+  // Test AddEdgeWithResult - new edge
+  ASSERT_TRUE(graph.AddEdgeWithResult(nodes[0], nodes[1], 1.5)) 
+      << "Should return true for new edge";
+  ASSERT_EQ(graph.GetEdgeCount(), 1) << "Should have 1 edge";
+  ASSERT_TRUE(graph.HasEdge(nodes[0], nodes[1])) << "Edge should exist";
+  
+  // Test AddEdgeWithResult - update existing edge
+  ASSERT_TRUE(graph.AddEdgeWithResult(nodes[0], nodes[1], 2.0)) 
+      << "Should return true when updating existing edge";
+  ASSERT_EQ(graph.GetEdgeCount(), 1) << "Should still have 1 edge";
+  ASSERT_DOUBLE_EQ(graph.GetEdgeWeight(nodes[0], nodes[1]), 2.0) 
+      << "Edge weight should be updated";
+  
+  // Test AddEdgeWithResult - non-existent vertices
+  ASSERT_FALSE(graph.AddEdgeWithResult(nodes[0], nodes[5], 3.0)) 
+      << "Should return false for non-existent destination vertex";
+  ASSERT_FALSE(graph.AddEdgeWithResult(nodes[5], nodes[1], 3.0)) 
+      << "Should return false for non-existent source vertex";
+  ASSERT_EQ(graph.GetEdgeCount(), 1) << "Edge count should remain unchanged";
+}
+
+TEST_F(GraphModificationTest, StandardizedReturnTypesAddUndirectedEdge) {
+  Graph<TestState *> graph;
+  
+  // Add vertices first
+  graph.AddVertex(nodes[0]);
+  graph.AddVertex(nodes[1]);
+  
+  // Test AddUndirectedEdgeWithResult - new edge
+  ASSERT_TRUE(graph.AddUndirectedEdgeWithResult(nodes[0], nodes[1], 1.5)) 
+      << "Should return true for new undirected edge";
+  ASSERT_EQ(graph.GetEdgeCount(), 2) << "Should have 2 directed edges (undirected)";
+  ASSERT_TRUE(graph.HasEdge(nodes[0], nodes[1])) << "Forward edge should exist";
+  ASSERT_TRUE(graph.HasEdge(nodes[1], nodes[0])) << "Reverse edge should exist";
+  
+  // Test AddUndirectedEdgeWithResult - non-existent vertices
+  ASSERT_FALSE(graph.AddUndirectedEdgeWithResult(nodes[0], nodes[5], 2.0)) 
+      << "Should return false for non-existent vertex";
+  ASSERT_EQ(graph.GetEdgeCount(), 2) << "Edge count should remain unchanged";
+}
+
+TEST_F(GraphModificationTest, StandardizedReturnTypesRemoveVertex) {
+  Graph<TestState *> graph;
+  
+  // Add some vertices
+  graph.AddVertex(nodes[0]);
+  graph.AddVertex(nodes[1]);
+  graph.AddEdge(nodes[0], nodes[1], 1.0);
+  
+  // Test RemoveVertexWithResult - existing vertex
+  ASSERT_TRUE(graph.RemoveVertexWithResult(0)) << "Should return true for existing vertex";
+  ASSERT_EQ(graph.size(), 1) << "Should have 1 vertex after removal";
+  ASSERT_FALSE(graph.HasVertex(0)) << "Vertex 0 should be removed";
+  
+  // Test RemoveVertexWithResult - non-existent vertex
+  ASSERT_FALSE(graph.RemoveVertexWithResult(0)) << "Should return false for non-existent vertex";
+  ASSERT_FALSE(graph.RemoveVertexWithResult(10)) << "Should return false for non-existent vertex";
+  ASSERT_EQ(graph.size(), 1) << "Size should remain unchanged";
+  
+  // Test RemoveVertexWithResult with state
+  ASSERT_TRUE(graph.RemoveVertexWithResult(nodes[1])) << "Should return true for existing vertex by state";
+  ASSERT_EQ(graph.size(), 0) << "Graph should be empty";
+}
+
+TEST_F(GraphModificationTest, StandardizedCountingMethods) {
+  Graph<TestState *> graph;
+  
+  // Test empty graph
+  ASSERT_EQ(graph.GetVertexCount(), 0) << "Empty graph should have 0 vertices";
+  ASSERT_EQ(graph.GetEdgeCountStd(), 0) << "Empty graph should have 0 edges";
+  
+  // Add vertices and edges
+  graph.AddVertex(nodes[0]);
+  graph.AddVertex(nodes[1]);
+  graph.AddVertex(nodes[2]);
+  graph.AddEdge(nodes[0], nodes[1], 1.0);
+  graph.AddEdge(nodes[1], nodes[2], 2.0);
+  
+  // Test counting methods return size_t
+  size_t vertex_count = graph.GetVertexCount();
+  size_t edge_count = graph.GetEdgeCountStd();
+  
+  ASSERT_EQ(vertex_count, 3) << "Should have 3 vertices";
+  ASSERT_EQ(edge_count, 2) << "Should have 2 edges";
+  
+  // Verify consistency with legacy methods
+  ASSERT_EQ(graph.GetVertexCount(), static_cast<size_t>(graph.GetTotalVertexNumber())) 
+      << "New method should match legacy method";
+  ASSERT_EQ(graph.GetEdgeCountStd(), graph.GetEdgeCount()) 
+      << "Std method should match existing GetEdgeCount";
+  
+  // Verify type compatibility
+  std::vector<TestState*> vertices;
+  vertices.reserve(graph.GetVertexCount()); // size_t works with reserve
+  ASSERT_EQ(vertices.capacity(), vertex_count) << "size_t should work with STL methods";
+}
+
 TEST_F(GraphModificationTest, VertexAccessEdge) {
   Graph<TestState *> graph;
 

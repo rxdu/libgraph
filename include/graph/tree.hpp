@@ -40,6 +40,7 @@
 #include <limits>
 #include <algorithm>
 #include <type_traits>
+#include <stdexcept>
 
 #include "graph/graph.hpp"
 

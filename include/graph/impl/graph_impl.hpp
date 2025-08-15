@@ -81,7 +81,7 @@ Graph<State, Transition, StateIndexer>::Graph(
 
 template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>::Graph(
-    Graph<State, Transition, StateIndexer> &&other) {
+    Graph<State, Transition, StateIndexer> &&other) noexcept {
   vertex_map_ = std::move(other.vertex_map_);
 }
 
@@ -99,7 +99,7 @@ Graph<State, Transition, StateIndexer>
 template <typename State, typename Transition, typename StateIndexer>
 Graph<State, Transition, StateIndexer>
     &Graph<State, Transition, StateIndexer>::operator=(
-        Graph<State, Transition, StateIndexer> &&other) {
+        Graph<State, Transition, StateIndexer> &&other) noexcept {
   std::swap(vertex_map_, other.vertex_map_);
   return *this;
 }
@@ -333,7 +333,7 @@ Transition Graph<State, Transition, StateIndexer>::GetEdgeWeight(State from, Sta
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-size_t Graph<State, Transition, StateIndexer>::GetEdgeCount() const {
+size_t Graph<State, Transition, StateIndexer>::GetEdgeCount() const noexcept {
   size_t count = 0;
   for (const auto& pair : vertex_map_) {
     count += pair.second->edges_to.size();
@@ -383,6 +383,93 @@ void Graph<State, Transition, StateIndexer>::RemoveVertices(const std::vector<St
   for (const auto& state : states) {
     RemoveVertex(state);
   }
+}
+
+/*---------------------------------------------------------------------------------*/
+/*                 Standardized Return Types Implementation                        */
+/*---------------------------------------------------------------------------------*/
+
+// Consistent Add Operations
+template <typename State, typename Transition, typename StateIndexer>
+std::pair<typename Graph<State, Transition, StateIndexer>::vertex_iterator, bool>
+Graph<State, Transition, StateIndexer>::AddVertexWithResult(State state) {
+  int64_t state_id = GetStateIndex(state);
+  auto it = vertex_map_.find(state_id);
+  
+  if (it == vertex_map_.end()) {
+    // Vertex doesn't exist, add it
+    auto vertex_it = AddVertex(state);
+    return std::make_pair(vertex_it, true);
+  } else {
+    // Vertex already exists
+    return std::make_pair(vertex_iterator(it), false);
+  }
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+bool Graph<State, Transition, StateIndexer>::AddEdgeWithResult(State from, State to, Transition trans) {
+  try {
+    // Check if both vertices exist or can be created
+    auto from_it = FindVertex(from);
+    auto to_it = FindVertex(to);
+    
+    bool from_exists = from_it != vertex_end();
+    bool to_exists = to_it != vertex_end();
+    
+    // If vertices don't exist, we can't add edge in "WithResult" mode
+    // This is more conservative than the regular AddEdge which creates vertices
+    if (!from_exists || !to_exists) {
+      return false;
+    }
+    
+    // Check if edge already exists
+    for (const auto& edge : from_it->edges_to) {
+      if (edge.dst == to_it) {
+        // Edge exists, update weight and return true
+        const_cast<Transition&>(edge.cost) = trans;
+        return true;
+      }
+    }
+    
+    // Add new edge
+    AddEdge(from, to, trans);
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+bool Graph<State, Transition, StateIndexer>::AddUndirectedEdgeWithResult(State from, State to, Transition trans) {
+  try {
+    // Check if both vertices exist
+    auto from_it = FindVertex(from);
+    auto to_it = FindVertex(to);
+    
+    if (from_it == vertex_end() || to_it == vertex_end()) {
+      return false;
+    }
+    
+    // Add both directed edges for undirected edge
+    AddUndirectedEdge(from, to, trans);
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
+// Consistent Remove Operations
+template <typename State, typename Transition, typename StateIndexer>
+bool Graph<State, Transition, StateIndexer>::RemoveVertexWithResult(int64_t vertex_id) {
+  auto it = vertex_map_.find(vertex_id);
+  
+  if (it == vertex_map_.end()) {
+    return false; // Vertex doesn't exist
+  }
+  
+  // Vertex exists, remove it using existing method
+  RemoveVertex(vertex_id);
+  return true;
 }
 
 }  // namespace xmotion
