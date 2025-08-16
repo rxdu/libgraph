@@ -18,7 +18,6 @@
 #include <cmath>
 #include <algorithm>
 #include <type_traits>
-#include <functional>
 #include <iostream>
 #include <memory>
 

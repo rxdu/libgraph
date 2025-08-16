@@ -16,7 +16,6 @@
 #include <utility>
 #include <cmath>
 #include <algorithm>
-#include <iostream>
 
 #include "graph/graph.hpp"
 #include "graph/search/search_context.hpp"

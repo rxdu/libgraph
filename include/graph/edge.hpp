@@ -10,7 +10,6 @@
 #ifndef GRAPH_EDGE_HPP
 #define GRAPH_EDGE_HPP
 
-#include <iostream>
 #include <unordered_map>
 
 namespace xmotion {

@@ -30,11 +30,8 @@
 #ifndef STATE_INDEXER_HPP
 #define STATE_INDEXER_HPP
 
-#include <iostream>
 #include <type_traits>
 #include <memory>
-#include <iostream>
-#include <iomanip>
 
 #if __cplusplus <= 201703L
 template <class...>

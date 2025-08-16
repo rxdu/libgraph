@@ -13,7 +13,6 @@
 #include "graph/edge.hpp"
 #include "graph/impl/default_indexer.hpp"
 #include <cstdint>
-#include <iostream>
 #include <limits>
 #include <list>
 #include <type_traits>
