@@ -25,6 +25,7 @@
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
+#include <iostream>
 
 #include "graph/impl/default_indexer.hpp"
 

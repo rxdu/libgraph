@@ -89,8 +89,7 @@ int main(int argc, char **argv) {
 
   // In order to use A* search, you need to specify how to calculate heuristic
   std::cout << "\nA* search: " << std::endl;
-  auto path_a = AStar::Search(
-      &graph, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
+  auto path_a = AStar::Search(&graph, 0, 13, CalcHeuristic);
   for (auto &e : path_a) std::cout << "id: " << indexer(e) << std::endl;
 
   // Dijkstra search

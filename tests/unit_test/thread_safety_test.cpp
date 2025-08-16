@@ -20,8 +20,7 @@
 #include "graph/tree.hpp"
 #include "graph/search/astar.hpp"
 #include "graph/search/dijkstra.hpp"
-#include "graph/search/astar_threadsafe.hpp"
-#include "graph/search/dijkstra_threadsafe.hpp"
+#include "graph/search/search_context.hpp"
 
 using namespace xmotion;
 
@@ -359,8 +358,8 @@ TEST_F(ThreadSafetyTest, ConcurrentDijkstraSearches) {
   auto search_operation = [&]() {
     try {
       for (int i = 0; i < 10; ++i) {
-        auto path = DijkstraThreadSafe::Search(&graph, ThreadSafeState(0), 
-                                              ThreadSafeState(PATH_LENGTH - 1));
+        auto path = Dijkstra::Search(&graph, ThreadSafeState(0), 
+                                     ThreadSafeState(PATH_LENGTH - 1));
         if (!path.empty()) {
           successful_searches++;
         }
@@ -411,8 +410,8 @@ TEST_F(ThreadSafetyTest, ConcurrentAStarSearches) {
         };
       
       for (int i = 0; i < 5; ++i) {
-        auto path = AStarThreadSafe::Search(&graph, ThreadSafeState(0), 
-                                           ThreadSafeState(GRID_SIZE * GRID_SIZE - 1), heuristic);
+        auto path = AStar::Search(&graph, ThreadSafeState(0), 
+                                  ThreadSafeState(GRID_SIZE * GRID_SIZE - 1), heuristic);
         if (!path.empty()) {
           successful_searches++;
         }

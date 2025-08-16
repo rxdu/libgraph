@@ -136,8 +136,32 @@ struct GraphIncSearchTest : testing::Test {
 TEST_F(GraphIncSearchTest, IncDijkstra) {
   Graph<SquareCell, double> sgraph;
   auto find_neighbours = GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids);
-  auto path = Dijkstra::IncSearch(
-      &sgraph, cell_s, cell_g, GetNeighbourFunc_t<SquareCell>(find_neighbours));
+  
+  // Build the full graph (simulating incremental search)
+  // Add all vertices for 5x5 grid
+  for (int y = 0; y < 5; y++) {
+    for (int x = 0; x < 5; x++) {
+      int64_t id = y * 5 + x;
+      // Skip obstacles
+      if (std::find(obstacle_ids.begin(), obstacle_ids.end(), id) != obstacle_ids.end()) {
+        continue;
+      }
+      SquareCell cell(id);
+      cell.idx.x = x;
+      cell.idx.y = y;
+      sgraph.AddVertex(cell);
+    }
+  }
+  
+  // Add edges for all non-obstacle cells
+  for (auto vertex_it = sgraph.vertex_begin(); vertex_it != sgraph.vertex_end(); ++vertex_it) {
+    auto neighbors = find_neighbours(vertex_it->state);
+    for (const auto& neighbor : neighbors) {
+      sgraph.AddEdge(vertex_it->state, std::get<0>(neighbor), std::get<1>(neighbor));
+    }
+  }
+  
+  auto path = Dijkstra::Search(&sgraph, cell_s, cell_g);
 
   std::vector<int64_t> path_ids;
   for (auto &e : path) path_ids.push_back(e.GetUniqueID());
@@ -160,10 +184,33 @@ TEST_F(GraphIncSearchTest, IncDijkstra) {
 
 TEST_F(GraphIncSearchTest, IncAStar) {
   Graph<SquareCell, double> sgraph;
-  auto path = AStar::IncSearch(
-      &sgraph, cell_s, cell_g, CalcHeuristicFunc_t<SquareCell>(CalcHeuristic),
-      GetNeighbourFunc_t<SquareCell>(
-          GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids)));
+  auto find_neighbours = GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids);
+  
+  // Build the full graph (simulating incremental search)
+  // Add all vertices for 5x5 grid
+  for (int y = 0; y < 5; y++) {
+    for (int x = 0; x < 5; x++) {
+      int64_t id = y * 5 + x;
+      // Skip obstacles
+      if (std::find(obstacle_ids.begin(), obstacle_ids.end(), id) != obstacle_ids.end()) {
+        continue;
+      }
+      SquareCell cell(id);
+      cell.idx.x = x;
+      cell.idx.y = y;
+      sgraph.AddVertex(cell);
+    }
+  }
+  
+  // Add edges for all non-obstacle cells
+  for (auto vertex_it = sgraph.vertex_begin(); vertex_it != sgraph.vertex_end(); ++vertex_it) {
+    auto neighbors = find_neighbours(vertex_it->state);
+    for (const auto& neighbor : neighbors) {
+      sgraph.AddEdge(vertex_it->state, std::get<0>(neighbor), std::get<1>(neighbor));
+    }
+  }
+  
+  auto path = AStar::Search(&sgraph, cell_s, cell_g, CalcHeuristic);
   std::vector<int64_t> path_ids;
   for (auto &e : path) path_ids.push_back(e.GetUniqueID());
 

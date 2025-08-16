@@ -16,6 +16,7 @@
 // user
 #include "graph/graph.hpp"
 #include "graph/search/astar.hpp"
+#include "graph/search/search_context.hpp"
 
 using namespace xmotion;
 
@@ -172,9 +173,7 @@ int main(int argc, char **argv) {
   //                                       graph.FindVertex(13));
   // for (auto &e : path) std::cout << "id: " << e->vertex_id << std::endl;
 
-  auto path = AStar::Search(
-      &graph, 0, 13,
-      CalcHeuristicFunc_t<SimpleState *>(CalcHeuristicSimpleState));
+  auto path = AStar::Search(&graph, 0, 13, CalcHeuristicSimpleState);
   for (auto &e : path)
     std::cout << "id: " << SimpleStateIndexer()(e) << std::endl;
 
@@ -218,9 +217,16 @@ int main(int argc, char **argv) {
   //---------------------------------------------------------------------
 
   Graph<SquareCell, double> sgraph;
-  auto path_i2 = AStar::IncSearch(&sgraph, cell_s, cell_g,
-                               CalcHeuristicFunc_t<SquareCell>(CalcHeuristic),
-                               GetNeighbourFunc_t<SquareCell>(find_neighbours));
+  // Note: IncSearch is deprecated in new framework
+  // Using regular search with external neighbor addition
+  auto start_vertex = sgraph.AddVertex(cell_s);
+  auto neighbors = find_neighbours(cell_s);
+  for (const auto& neighbor : neighbors) {
+    auto neighbor_vertex = sgraph.AddVertex(std::get<0>(neighbor));
+    sgraph.AddEdge(cell_s, std::get<0>(neighbor), std::get<1>(neighbor));
+  }
+  
+  auto path_i2 = AStar::Search(&sgraph, cell_s, cell_g, CalcHeuristic);
 
   std::cout << "Inc A* search2: " << std::endl;
   for (auto &e : path_i2) std::cout << "id: " << e.GetUniqueID() << std::endl;

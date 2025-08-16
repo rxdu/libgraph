@@ -18,8 +18,8 @@
 
 #include "graph/graph.hpp"
 #include "graph/search/search_context.hpp"
-#include "graph/search/dijkstra_threadsafe.hpp"
-#include "graph/search/astar_threadsafe.hpp"
+#include "graph/search/dijkstra.hpp"
+#include "graph/search/astar.hpp"
 #include "graph/impl/default_indexer.hpp"
 
 using namespace xmotion;
@@ -103,9 +103,9 @@ TEST_F(ThreadSafeSearchTest, SearchContextBasicOperations) {
 TEST_F(ThreadSafeSearchTest, DijkstraThreadSafeBasicPath) {
   SearchContext<ThreadSafeSearchState, double, DefaultIndexer<ThreadSafeSearchState>> context;
   
-  auto path = DijkstraThreadSafe::Search(&test_graph_, context,
-                                         ThreadSafeSearchState(0), 
-                                         ThreadSafeSearchState(4));
+  auto path = Dijkstra::Search(&test_graph_, context,
+                               ThreadSafeSearchState(0), 
+                               ThreadSafeSearchState(4));
   
   ASSERT_EQ(path.size(), 5);
   for (size_t i = 0; i < path.size(); ++i) {
@@ -127,10 +127,10 @@ TEST_F(ThreadSafeSearchTest, AStarThreadSafeBasicPath) {
     return std::abs(s1.id_ - s2.id_);
   };
   
-  auto path = AStarThreadSafe::Search(&test_graph_, context,
-                                      ThreadSafeSearchState(0), 
-                                      ThreadSafeSearchState(9),
-                                      heuristic);
+  auto path = AStar::Search(&test_graph_, context,
+                            ThreadSafeSearchState(0), 
+                            ThreadSafeSearchState(9),
+                            heuristic);
   
   EXPECT_FALSE(path.empty());
   EXPECT_EQ(path.front().id_, 0);
@@ -142,19 +142,19 @@ TEST_F(ThreadSafeSearchTest, AStarThreadSafeBasicPath) {
 
 TEST_F(ThreadSafeSearchTest, ConvenienceMethodsWork) {
   // Test methods that create their own context
-  auto dijkstra_path = DijkstraThreadSafe::Search(&test_graph_,
-                                                  ThreadSafeSearchState(0), 
-                                                  ThreadSafeSearchState(4));
+  auto dijkstra_path = Dijkstra::Search(&test_graph_,
+                                        ThreadSafeSearchState(0), 
+                                        ThreadSafeSearchState(4));
   EXPECT_EQ(dijkstra_path.size(), 5);
   
   auto heuristic = [](const ThreadSafeSearchState& s1, const ThreadSafeSearchState& s2) {
     return std::abs(s1.id_ - s2.id_);
   };
   
-  auto astar_path = AStarThreadSafe::Search(&test_graph_,
-                                            ThreadSafeSearchState(0), 
-                                            ThreadSafeSearchState(9),
-                                            heuristic);
+  auto astar_path = AStar::Search(&test_graph_,
+                                  ThreadSafeSearchState(0), 
+                                  ThreadSafeSearchState(9),
+                                  heuristic);
   EXPECT_FALSE(astar_path.empty());
 }
 
@@ -176,7 +176,7 @@ TEST_F(ThreadSafeSearchTest, ConcurrentDijkstraSearches) {
           int start_id = (t * 2) % 5; // 0, 2, 4, 1, 3, 0, 2, 4
           int goal_id = start_id + 5; // Bottom row
           
-          auto path = DijkstraThreadSafe::Search(&test_graph_,
+          auto path = Dijkstra::Search(&test_graph_,
                                                  ThreadSafeSearchState(start_id),
                                                  ThreadSafeSearchState(goal_id));
           
@@ -221,7 +221,7 @@ TEST_F(ThreadSafeSearchTest, ConcurrentAStarSearches) {
           int start_id = t % 10;
           int goal_id = (start_id + 5 + s) % 10;
           
-          auto path = AStarThreadSafe::Search(&test_graph_,
+          auto path = AStar::Search(&test_graph_,
                                               ThreadSafeSearchState(start_id),
                                               ThreadSafeSearchState(goal_id),
                                               heuristic);
@@ -277,7 +277,7 @@ TEST_F(ThreadSafeSearchTest, MixedConcurrentSearchAlgorithms) {
           
           if (op % 2 == 0) {
             // Use Dijkstra
-            auto path = DijkstraThreadSafe::Search(&test_graph_,
+            auto path = Dijkstra::Search(&test_graph_,
                                                    ThreadSafeSearchState(start_id),
                                                    ThreadSafeSearchState(goal_id));
             if (!path.empty()) {
@@ -287,7 +287,7 @@ TEST_F(ThreadSafeSearchTest, MixedConcurrentSearchAlgorithms) {
             }
           } else {
             // Use A*
-            auto path = AStarThreadSafe::Search(&test_graph_,
+            auto path = AStar::Search(&test_graph_,
                                                 ThreadSafeSearchState(start_id),
                                                 ThreadSafeSearchState(goal_id),
                                                 heuristic);
@@ -329,7 +329,7 @@ TEST_F(ThreadSafeSearchTest, ContextReusePerformance) {
   auto start_time = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < NUM_SEARCHES; ++i) {
     reused_context.Reset(); // Reset instead of clear for performance
-    DijkstraThreadSafe::Search(&test_graph_, reused_context,
+    Dijkstra::Search(&test_graph_, reused_context,
                                ThreadSafeSearchState(0), 
                                ThreadSafeSearchState(4));
   }
@@ -339,7 +339,7 @@ TEST_F(ThreadSafeSearchTest, ContextReusePerformance) {
   start_time = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < NUM_SEARCHES; ++i) {
     SearchContext<ThreadSafeSearchState, double, DefaultIndexer<ThreadSafeSearchState>> temp_context;
-    DijkstraThreadSafe::Search(&test_graph_, temp_context,
+    Dijkstra::Search(&test_graph_, temp_context,
                                ThreadSafeSearchState(0), 
                                ThreadSafeSearchState(4));
   }
@@ -373,7 +373,7 @@ TEST_F(ThreadSafeSearchTest, HighConcurrencyStressTest) {
           int start_id = (t * 7 + op * 3) % 10;
           int goal_id = (start_id + 5) % 10;
           
-          auto path = DijkstraThreadSafe::Search(&test_graph_,
+          auto path = Dijkstra::Search(&test_graph_,
                                                  ThreadSafeSearchState(start_id),
                                                  ThreadSafeSearchState(goal_id));
           
@@ -428,7 +428,7 @@ TEST_F(ThreadSafeSearchTest, NoPathFoundThreadSafety) {
     futures.push_back(std::async(std::launch::async, [&]() {
       try {
         // Try to find path between disconnected components
-        auto path = DijkstraThreadSafe::Search(&disconnected_graph,
+        auto path = Dijkstra::Search(&disconnected_graph,
                                                ThreadSafeSearchState(0),
                                                ThreadSafeSearchState(10));
         return path.empty(); // Should be empty (no path)

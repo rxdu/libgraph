@@ -1,195 +1,180 @@
 /*
  * astar.hpp
  *
- * Created on: Jan 18, 2016
- * Description: A* algorithm
- * Reference:
- *  	1. http://www.redblobgames.com/pathfinding/a-star/implementation.html
- *  	2. https://oopscenities.net/2012/02/24/c11-stdfunction-and-stdbind/
+ * Created on: Nov 20, 2017 15:25
+ * Description: A* search algorithm using unified search framework
+ *              Combined strategy implementation and public API
  *
- * Copyright (c) 2017 Ruixiang Du (rdu)
+ * Copyright (c) 2017-2025 Ruixiang Du (rdu)
  */
 
 #ifndef ASTAR_HPP
 #define ASTAR_HPP
 
-#include <vector>
-#include <tuple>
-#include <queue>
 #include <functional>
-#include <utility>
-#include <cmath>
-#include <algorithm>
-#include <type_traits>
-#include <functional>
-#include <iostream>
-#include <memory>
-
-#include "graph/graph.hpp"
-#include "graph/impl/dynamic_priority_queue.hpp"
-#include "graph/impl/priority_queue.hpp"
-#include "graph/search/common.hpp"
+#include <limits>
+#include "graph/search/search_algorithm.hpp"
+#include "graph/search/search_strategy.hpp"
 
 namespace xmotion {
-/// A* search algorithm.
-class AStar final {
- public:
-  /// Search using vertex id or state
-  template <typename State, typename Transition, typename StateIndexer,
-            typename VertexIdentifier>
-  static Path<State> Search(
-      std::shared_ptr<Graph<State, Transition, StateIndexer>> graph,
-      VertexIdentifier start, VertexIdentifier goal,
-      CalcHeuristicFunc_t<State, Transition> calc_heuristic) {
-    // reset last search information
-    graph->ResetAllVertices();
 
-    auto start_it = graph->FindVertex(start);
-    auto goal_it = graph->FindVertex(goal);
-
-    Path<State> path;
-    // start a new search and return result
-    if (start_it != graph->vertex_end() && goal_it != graph->vertex_end()) {
-      auto path_vtx = PerformSearch(graph, start_it, goal_it, calc_heuristic);
-      for (auto &wp : path_vtx) path.push_back(wp->state);
+/**
+ * @brief A* search strategy implementation
+ * 
+ * Implements the A* algorithm using f(n) = g(n) + h(n) where:
+ * - g(n) is the actual cost from start to node n
+ * - h(n) is the heuristic estimate from node n to goal
+ * - f(n) is the estimated total cost through node n
+ */
+template<typename State, typename Transition, typename StateIndexer, typename HeuristicFunc>
+class AStarStrategy : public SearchStrategy<AStarStrategy<State, Transition, StateIndexer, HeuristicFunc>,
+                                           State, Transition, StateIndexer> {
+private:
+    HeuristicFunc heuristic_;
+    
+public:
+    using Base = SearchStrategy<AStarStrategy<State, Transition, StateIndexer, HeuristicFunc>,
+                               State, Transition, StateIndexer>;
+    using GraphType = typename Base::GraphType;
+    using vertex_iterator = typename Base::vertex_iterator;
+    using SearchInfo = typename Base::SearchInfo;
+    using CostType = typename Base::CostType;
+    
+    explicit AStarStrategy(HeuristicFunc heuristic) noexcept
+        : heuristic_(std::move(heuristic)) {}
+    
+    CostType GetPriorityImpl(const SearchInfo& info) const noexcept {
+        return info.f_cost;
     }
-    return path;
-  }
-
-  /// Search using vertex id or state
-  template <typename State, typename Transition, typename StateIndexer,
-            typename VertexIdentifier>
-  static Path<State> Search(
-      Graph<State, Transition, StateIndexer> *graph, VertexIdentifier start,
-      VertexIdentifier goal,
-      CalcHeuristicFunc_t<State, Transition> calc_heuristic) {
-    // reset last search information
-    graph->ResetAllVertices();
-
-    auto start_it = graph->FindVertex(start);
-    auto goal_it = graph->FindVertex(goal);
-
-    Path<State> path;
-    // start a new search and return result
-    if (start_it != graph->vertex_end() && goal_it != graph->vertex_end()) {
-      auto path_vtx = PerformSearch(graph, start_it, goal_it, calc_heuristic);
-      for (auto &wp : path_vtx) path.push_back(wp->state);
+    
+    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
+                             vertex_iterator goal_vertex) const {
+        info.g_cost = 0.0;
+        info.h_cost = heuristic_(vertex->state, goal_vertex->state);
+        info.f_cost = info.g_cost + info.h_cost;
+        info.is_checked = false;
+        info.is_in_openlist = false;
+        info.parent_id = -1;
     }
-    return path;
-  }
-
-  /// Incrementally search with start state, goal state and an empty graph
-  template <typename State, typename Transition, typename StateIndexer>
-  static Path<State> IncSearch(
-      Graph<State, Transition, StateIndexer> *graph, State sstate, State gstate,
-      CalcHeuristicFunc_t<State, Transition> calc_heuristic,
-      GetNeighbourFunc_t<State, Transition> get_neighbours) {
-    auto start_vtx = graph->AddVertex(sstate);
-    auto goal_vtx = graph->AddVertex(gstate);
-    auto path_vtx = AStar::PerformSearch(graph, start_vtx, goal_vtx,
-                                         calc_heuristic, get_neighbours);
-
-    Path<State> path;
-    for (auto &wp : path_vtx) path.push_back(wp->state);
-    return path;
-  }
-
-  //------------------------------------------------------------------------------------//
-
- private:
-  template <typename State, typename Transition, typename StateIndexer>
-  static std::vector<
-      typename Graph<State, Transition, StateIndexer>::vertex_iterator>
-  PerformSearch(
-      Graph<State, Transition, StateIndexer> *graph,
-      typename Graph<State, Transition, StateIndexer>::vertex_iterator
-          start_vtx,
-      typename Graph<State, Transition, StateIndexer>::vertex_iterator goal_vtx,
-      CalcHeuristicFunc_t<State, Transition> calc_heuristic,
-      GetNeighbourFunc_t<State, Transition> get_neighbours = nullptr) {
-    //-----------------------------------------------------------------------//
-    // type definitions
-    //-----------------------------------------------------------------------//
-    using VertexIterator =
-        typename Graph<State, Transition, StateIndexer>::vertex_iterator;
-    using PathType = std::vector<VertexIterator>;
-
-    struct VertexComparator {
-      bool operator()(VertexIterator x, VertexIterator y) const {
-        return (x->f_cost < y->f_cost);
-      }
-    };
-
-    struct VertexIndexer {
-      int64_t operator()(VertexIterator vtx) const {
-        return static_cast<int64_t>(vtx->vertex_id);
-      }
-    };
-
-    //-----------------------------------------------------------------------//
-    // a* search
-    //-----------------------------------------------------------------------//
-    // open list - a list of vertices that need to be checked out
-    DynamicPriorityQueue<VertexIterator, VertexComparator, VertexIndexer>
-        openlist;
-
-    // begin with start vertex
-    start_vtx->g_cost = 0;
-    start_vtx->h_cost = 0;
-    start_vtx->f_cost = 0;
-    openlist.Push(start_vtx);
-
-    // start search iterations
-    bool found_path = false;
-    VertexIterator current_vertex;
-    while (!openlist.Empty() && found_path != true) {
-      current_vertex = openlist.Pop();
-      if (current_vertex == goal_vtx) {
-        found_path = true;
-        break;
-      }
-
-      // check all adjacent vertices (successors of current vertex)
-      if (get_neighbours != nullptr) {
-        std::vector<std::tuple<State, Transition>> neighbours =
-            get_neighbours(current_vertex->state);
-        for (auto &nb : neighbours) {
-          graph->AddEdge(current_vertex->state, std::get<0>(nb),
-                         std::get<1>(nb));
+    
+    bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
+                        vertex_iterator successor_vertex, vertex_iterator goal_vertex,
+                        CostType edge_cost) const {
+        
+        CostType new_g_cost = current_info.g_cost + edge_cost;
+        
+        if (new_g_cost < successor_info.g_cost) {
+            successor_info.g_cost = new_g_cost;
+            successor_info.h_cost = heuristic_(successor_vertex->state, goal_vertex->state);
+            successor_info.f_cost = successor_info.g_cost + successor_info.h_cost;
+            return true;
         }
-      }
-      // check all adjacent vertices (successors of current vertex)
-      for (auto &edge : current_vertex->edges_to) {
-        auto successor = edge.dst;
-        // check if the vertex has been checked (in closed list)
-        if (successor->is_checked == false) {
-          auto new_cost = current_vertex->g_cost + edge.cost;
-
-          // relax step
-          if (new_cost < successor->g_cost) {
-            // set the parent of the adjacent vertex to be the current vertex
-            successor->search_parent = current_vertex;
-            successor->g_cost = new_cost;
-            successor->h_cost =
-                calc_heuristic(successor->state, goal_vtx->state);
-            successor->f_cost = successor->g_cost + successor->h_cost;
-            openlist.Push(successor);
-          }
-        }
-      }
+        
+        return false;
     }
-
-    //-----------------------------------------------------------------------//
-    // reconstruct path
-    //-----------------------------------------------------------------------//
-    if (found_path) {
-      std::cout << "path found with cost " << goal_vtx->g_cost << std::endl;
-      return utils::ReconstructPath(start_vtx, goal_vtx);
-    }
-    std::cout << "failed to find a path" << std::endl;
-    return PathType();
-  };
+    
+    // Use default implementations for optional methods
+    using Base::ProcessVertexImpl;
+    using Base::IsGoalReachedImpl;
 };
-}  // namespace xmotion
+
+/**
+ * @brief Helper function to create A* strategy with automatic type deduction
+ */
+template<typename State, typename Transition, typename StateIndexer, typename HeuristicFunc>
+AStarStrategy<State, Transition, StateIndexer, typename std::decay<HeuristicFunc>::type>
+MakeAStarStrategy(const HeuristicFunc& heuristic) {
+    return AStarStrategy<State, Transition, StateIndexer, typename std::decay<HeuristicFunc>::type>(
+        heuristic);
+}
+
+/**
+ * @brief A* search algorithm - unified implementation
+ * 
+ * This implementation uses the template-based search framework with strategy pattern,
+ * eliminating code duplication and providing thread-safety through SearchContext.
+ * It maintains backward compatibility with the original AStar API.
+ */
+class AStar final {
+public:
+    /**
+     * @brief Thread-safe A* search with external search context
+     */
+    template<typename State, typename Transition, typename StateIndexer,
+             typename VertexIdentifier, typename HeuristicFunc>
+    static Path<State> Search(
+        const Graph<State, Transition, StateIndexer>* graph,
+        SearchContext<State, Transition, StateIndexer>& context,
+        VertexIdentifier start,
+        VertexIdentifier goal,
+        HeuristicFunc heuristic) {
+        
+        if (!graph) return Path<State>();
+        
+        auto start_it = graph->FindVertex(start);
+        auto goal_it = graph->FindVertex(goal);
+        
+        if (start_it == graph->vertex_end() || goal_it == graph->vertex_end()) {
+            return Path<State>();
+        }
+        
+        auto strategy = MakeAStarStrategy<State, Transition, StateIndexer>(
+            std::move(heuristic));
+        
+        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
+            ::Search(graph, context, start_it, goal_it, strategy);
+    }
+    
+    /**
+     * @brief Convenience overload with shared_ptr graph
+     */
+    template<typename State, typename Transition, typename StateIndexer,
+             typename VertexIdentifier, typename HeuristicFunc>
+    static Path<State> Search(
+        std::shared_ptr<Graph<State, Transition, StateIndexer>> graph,
+        SearchContext<State, Transition, StateIndexer>& context,
+        VertexIdentifier start,
+        VertexIdentifier goal,
+        HeuristicFunc heuristic) {
+        
+        return Search(graph.get(), context, start, goal, std::move(heuristic));
+    }
+    
+    /**
+     * @brief Legacy-compatible search that manages its own context (non-thread-safe)
+     */
+    template<typename State, typename Transition, typename StateIndexer,
+             typename VertexIdentifier, typename HeuristicFunc>
+    static Path<State> Search(
+        const Graph<State, Transition, StateIndexer>* graph,
+        VertexIdentifier start,
+        VertexIdentifier goal,
+        HeuristicFunc heuristic) {
+        
+        SearchContext<State, Transition, StateIndexer> context;
+        return Search(graph, context, start, goal, std::move(heuristic));
+    }
+    
+    /**
+     * @brief Legacy-compatible search with shared_ptr (non-thread-safe)
+     */
+    template<typename State, typename Transition, typename StateIndexer,
+             typename VertexIdentifier, typename HeuristicFunc>
+    static Path<State> Search(
+        std::shared_ptr<Graph<State, Transition, StateIndexer>> graph,
+        VertexIdentifier start,
+        VertexIdentifier goal,
+        HeuristicFunc heuristic) {
+        
+        SearchContext<State, Transition, StateIndexer> context;
+        return Search(graph.get(), context, start, goal, std::move(heuristic));
+    }
+};
+
+// Compatibility typedefs for existing code
+using AStarThreadSafe = AStar;
+using AStarV2 = AStar;  // For code that already uses V2
+
+} // namespace xmotion
 
 #endif /* ASTAR_HPP */

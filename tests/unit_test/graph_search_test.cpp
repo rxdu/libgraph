@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <cmath>
 
 #include "gtest/gtest.h"
 
@@ -161,8 +162,7 @@ TEST_F(GraphSearchTest, PointerTypeDijkstra) {
 }
 
 TEST_F(GraphSearchTest, ValueTypeAStar) {
-  Path<SimpleState> path = AStar::Search(
-      &graph_val, 0, 13, CalcHeuristicFunc_t<SimpleState>(CalcHeuristicVal));
+  Path<SimpleState> path = AStar::Search(&graph_val, 0, 13, CalcHeuristicVal);
   std::vector<int64_t> path_ids;
   for (auto &e : path) path_ids.push_back(e.GetUniqueID());
 
@@ -171,8 +171,7 @@ TEST_F(GraphSearchTest, ValueTypeAStar) {
 }
 
 TEST_F(GraphSearchTest, PointerTypeAStar) {
-  Path<SimpleState *> path = AStar::Search(
-      &graph_ptr, 0, 13, CalcHeuristicFunc_t<SimpleState *>(CalcHeuristicPtr));
+  Path<SimpleState *> path = AStar::Search(&graph_ptr, 0, 13, CalcHeuristicPtr);
   std::vector<int64_t> path_ids;
   for (auto &e : path) path_ids.push_back(e->GetUniqueID());
 
@@ -184,7 +183,6 @@ TEST_F(GraphSearchTest, NoPathFound) {
   Path<SimpleState> path1 = Dijkstra::Search(&graph_val, 0, 15);
   ASSERT_TRUE(path1.empty()) << "No path should be found by Dijkstra";
 
-  Path<SimpleState> path2 = AStar::Search(
-      &graph_val, 0, 15, CalcHeuristicFunc_t<SimpleState>(CalcHeuristicVal));
+  Path<SimpleState> path2 = AStar::Search(&graph_val, 0, 15, CalcHeuristicVal);
   ASSERT_TRUE(path2.empty()) << "No path should be found by A*";
 }

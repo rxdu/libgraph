@@ -41,4 +41,4 @@ gtest_discover_tests(utests)
 add_test(NAME gtest_all COMMAND utests)
 
 # additional tests 
-# add_subdirectory(devel_test)
+add_subdirectory(devel_test)

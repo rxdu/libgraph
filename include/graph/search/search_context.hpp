@@ -12,8 +12,16 @@
 
 #include <unordered_map>
 #include <limits>
+#include <vector>
 
 namespace xmotion {
+
+/**
+ * @brief Type alias for search result paths
+ * @tparam State The state type stored in the path
+ */
+template <typename State>
+using Path = std::vector<State>;
 
 /// Forward declarations
 template <typename State, typename Transition, typename StateIndexer>
@@ -35,6 +43,7 @@ class SearchContext {
 public:
   using GraphType = Graph<State, Transition, StateIndexer>;
   using vertex_iterator = typename GraphType::vertex_iterator;
+  using const_vertex_iterator = typename GraphType::const_vertex_iterator;
   using VertexId = int64_t;
 
   /**
@@ -110,11 +119,29 @@ public:
   }
 
   /**
+   * @brief Get search information for a const vertex iterator
+   * @param vertex_it Const iterator to the vertex
+   * @return Reference to search information
+   */
+  SearchVertexInfo& GetSearchInfo(const_vertex_iterator vertex_it) {
+    return GetSearchInfo(vertex_it->vertex_id);
+  }
+
+  /**
    * @brief Get search information for a vertex iterator (const version)  
    * @param vertex_it Iterator to the vertex
    * @return Const reference to search information
    */
   const SearchVertexInfo& GetSearchInfo(vertex_iterator vertex_it) const {
+    return GetSearchInfo(vertex_it->vertex_id);
+  }
+
+  /**
+   * @brief Get search information for a const vertex iterator (const version)  
+   * @param vertex_it Const iterator to the vertex
+   * @return Const reference to search information
+   */
+  const SearchVertexInfo& GetSearchInfo(const_vertex_iterator vertex_it) const {
     return GetSearchInfo(vertex_it->vertex_id);
   }
 

@@ -43,3 +43,6 @@ target_link_libraries(test_dijkstra graph)
 
 add_executable(test_astar test_astar.cpp)
 target_link_libraries(test_astar graph)
+
+add_executable(test_search_framework test_search_framework.cpp)
+target_link_libraries(test_search_framework graph)
