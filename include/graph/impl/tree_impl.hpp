@@ -47,10 +47,13 @@ Tree<State, Transition, StateIndexer>::GetParentVertex(int64_t state_id) {
   auto vtx = TreeType::FindVertex(state_id);
 
   if (vtx == TreeType::vertex_end()) {
-    throw std::invalid_argument("Vertex with given state_id does not exist in tree");
+    throw std::invalid_argument("GetParentVertex: Vertex with state_id " + 
+                                std::to_string(state_id) + " does not exist in tree");
   }
   if (vtx->vertices_from.size() > 1) {
-    throw std::logic_error("Tree invariant violated: vertex has more than one parent");
+    throw std::logic_error("Tree invariant violated: Vertex with state_id " + 
+                          std::to_string(state_id) + " has " + 
+                          std::to_string(vtx->vertices_from.size()) + " parents (expected at most 1)");
   }
 
   if (vtx == root_)

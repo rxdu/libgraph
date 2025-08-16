@@ -27,7 +27,7 @@
 
 namespace xmotion {
 /// Dijkstra search algorithm.
-class Dijkstra {
+class Dijkstra final {
  public:
   /// Search using vertex id or state
   template <typename State, typename Transition, typename StateIndexer,

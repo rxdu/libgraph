@@ -101,10 +101,10 @@ class DynamicPriorityQueue {
   }
 
   /// Check whether the queue is empty
-  bool Empty() const { return (element_num_ == 0); }
+  bool Empty() const noexcept { return (element_num_ == 0); }
 
   /// Get number of elements in the queue
-  std::size_t GetQueueElementNumber() const { return element_num_; }
+  std::size_t GetQueueElementNumber() const noexcept { return element_num_; }
 
   /// Check whether an element is in the queue
   bool Contains(const T& element) const {

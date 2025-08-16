@@ -24,7 +24,7 @@
 namespace xmotion {
 
 /// Thread-safe Dijkstra search algorithm using external search context
-class DijkstraThreadSafe {
+class DijkstraThreadSafe final {
 public:
   /**
    * @brief Thread-safe Dijkstra search with external context

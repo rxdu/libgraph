@@ -13,10 +13,9 @@
 namespace xmotion {
 
 template <typename State, typename Transition, typename StateIndexer>
-bool Vertex<State, Transition, StateIndexer>::operator==(
+inline bool Vertex<State, Transition, StateIndexer>::operator==(
     const Vertex<State, Transition, StateIndexer>& other) const {
-  if (vertex_id == other.vertex_id) return true;
-  return false;
+  return vertex_id == other.vertex_id;
 }
 
 template <typename State, typename Transition, typename StateIndexer>

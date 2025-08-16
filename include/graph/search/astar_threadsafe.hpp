@@ -24,7 +24,7 @@
 namespace xmotion {
 
 /// Thread-safe A* search algorithm using external search context
-class AStarThreadSafe {
+class AStarThreadSafe final {
 public:
   /**
    * @brief Thread-safe A* search with external context

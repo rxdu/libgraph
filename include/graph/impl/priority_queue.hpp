@@ -39,9 +39,9 @@ class PriorityQueue {
     return best_item;
   }
 
-  inline bool Empty() const { return elements.empty(); }
+  inline bool Empty() const noexcept { return elements.empty(); }
 
-  inline size_t GetQueueElementNumber() const { return elements.size(); }
+  inline size_t GetQueueElementNumber() const noexcept { return elements.size(); }
 };
 }  // namespace xmotion
 
