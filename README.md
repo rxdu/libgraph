@@ -109,6 +109,66 @@ struct YourStateIndexFunction
 
 See "simple_graph_demo.cpp" in "demo" folder for a working example.
 
-## 6. Known limitations
+## 6. Performance Testing
+
+This library includes comprehensive performance benchmarks to evaluate graph operations and search algorithms across different scales.
+
+### Quick Performance Test
+
+Run the unified benchmark suite to get a complete performance analysis:
+
+```bash
+# Build the library with benchmarks
+mkdir build && cd build
+cmake -DBUILD_TESTING=ON ..
+cmake --build .
+
+# Run comprehensive performance tests
+../scripts/run_unified_benchmarks.sh
+```
+
+The benchmark generates a single comprehensive report file that includes:
+
+- **Micro-benchmarks**: Operation-level performance analysis (edge lookup, vertex removal, search context)
+- **Large-scale benchmarks**: Realistic workload testing (10K-1M+ vertices)
+- **Memory scaling**: Memory usage patterns by graph size
+- **Concurrent performance**: Multi-threaded search throughput
+- **Optimization targets**: Specific recommendations with expected improvements
+
+### Performance Results
+
+The test outputs results to `performance_results/unified_benchmark_results_<timestamp>.txt` with sections:
+
+1. **Edge Lookup Performance**: Current O(n) linear search analysis
+2. **Vertex Removal Performance**: Current O(m²) removal operation analysis  
+3. **Search Context Performance**: Memory allocation vs. reuse patterns
+4. **Concurrent Search Performance**: Threading scalability analysis
+5. **Graph Construction Performance**: Large-scale graph creation benchmarks
+6. **Search Algorithm Scaling**: Dijkstra/BFS/DFS performance comparison
+7. **Memory Scaling Analysis**: Memory efficiency by graph size
+8. **Optimization Recommendations**: Specific targets for performance improvements
+
+### System Requirements
+
+- **Memory**: 2GB+ recommended for large-scale tests
+- **CPU**: Multi-core recommended for concurrent benchmarks
+- **Time**: 2-5 minutes depending on system performance
+
+### Using Results for Optimization
+
+The benchmark results serve as baseline measurements for quantitative evaluation of performance optimizations:
+
+1. **Save baseline**: Keep initial benchmark results for comparison
+2. **Implement optimization**: Make targeted improvements (e.g., hash-based edge lookup)
+3. **Re-run benchmarks**: Execute the same test suite
+4. **Compare results**: Analyze performance improvements quantitatively
+
+Example optimization targets identified:
+- **Edge Lookup**: O(n) → O(1) hash-based lookup (10-100x improvement expected)
+- **Vertex Removal**: O(m²) → O(m) bidirectional references (2-10x improvement expected)
+- **Memory Pooling**: Reduce context allocation overhead (20-50% improvement expected)
+- **Context Reuse**: Systematic reuse patterns (30-70% improvement expected)
+
+## 7. Known limitations
 
 * [TODO List](./TODO.md)

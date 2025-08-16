@@ -49,3 +49,7 @@ target_link_libraries(test_search_framework graph)
 
 add_executable(test_dfs test_dfs.cpp)
 target_link_libraries(test_dfs graph)
+
+
+add_executable(test_unified_benchmarks test_unified_benchmarks.cpp)
+target_link_libraries(test_unified_benchmarks graph)
