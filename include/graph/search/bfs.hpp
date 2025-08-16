@@ -24,16 +24,15 @@ namespace xmotion {
  * makes the priority queue behave like a FIFO queue. BFS guarantees finding
  * the shortest path in terms of number of edges (unweighted graphs).
  */
-template<typename State, typename Transition, typename StateIndexer>
-class BfsStrategy : public SearchStrategy<BfsStrategy<State, Transition, StateIndexer>,
-                                         State, Transition, StateIndexer> {
+template<typename State, typename Transition, typename StateIndexer, typename CostType = double>
+class BfsStrategy : public SearchStrategy<BfsStrategy<State, Transition, StateIndexer, CostType>,
+                                         State, Transition, StateIndexer, CostType> {
 public:
-    using Base = SearchStrategy<BfsStrategy<State, Transition, StateIndexer>,
-                               State, Transition, StateIndexer>;
+    using Base = SearchStrategy<BfsStrategy<State, Transition, StateIndexer, CostType>,
+                               State, Transition, StateIndexer, CostType>;
     using GraphType = typename Base::GraphType;
     using vertex_iterator = typename Base::vertex_iterator;
     using SearchInfo = typename Base::SearchInfo;
-    using CostType = typename Base::CostType;
     
     BfsStrategy() = default;
     
@@ -55,9 +54,9 @@ public:
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
                         CostType edge_cost) const {
         // In BFS, we only process each vertex once (first visit)
-        if (successor_info.g_cost == std::numeric_limits<double>::max()) {
-            successor_info.g_cost = current_info.g_cost + 1.0;  // Increase depth
-            successor_info.h_cost = 0.0;  // No heuristic in BFS
+        if (successor_info.g_cost == std::numeric_limits<CostType>::max()) {
+            successor_info.g_cost = current_info.g_cost + CostType{1};  // Increase depth
+            successor_info.h_cost = CostType{};  // No heuristic in BFS
             successor_info.f_cost = successor_info.g_cost;  // f = g for BFS
             return true;
         }
@@ -72,9 +71,9 @@ public:
 /**
  * @brief Helper function to create BFS strategy with automatic type deduction
  */
-template<typename State, typename Transition, typename StateIndexer>
-BfsStrategy<State, Transition, StateIndexer> MakeBfsStrategy() {
-    return BfsStrategy<State, Transition, StateIndexer>();
+template<typename State, typename Transition, typename StateIndexer, typename CostType = double>
+BfsStrategy<State, Transition, StateIndexer, CostType> MakeBfsStrategy() {
+    return BfsStrategy<State, Transition, StateIndexer, CostType>();
 }
 
 /**
@@ -89,10 +88,10 @@ public:
      * @brief Thread-safe BFS search with external search context
      */
     template<typename State, typename Transition, typename StateIndexer,
-             typename VertexIdentifier>
+             typename VertexIdentifier, typename CostType = double>
     static Path<State> Search(
         const Graph<State, Transition, StateIndexer>* graph,
-        SearchContext<State, Transition, StateIndexer>& context,
+        SearchContext<State, Transition, StateIndexer, CostType>& context,
         VertexIdentifier start,
         VertexIdentifier goal) {
         
@@ -105,8 +104,8 @@ public:
             return Path<State>();
         }
         
-        auto strategy = MakeBfsStrategy<State, Transition, StateIndexer>();
-        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
+        auto strategy = MakeBfsStrategy<State, Transition, StateIndexer, CostType>();
+        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer, CostType>
             ::Search(graph, context, start_it, goal_it, strategy);
     }
     

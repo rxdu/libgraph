@@ -37,8 +37,9 @@ class Graph;
  * @tparam State The state type used in the graph
  * @tparam Transition The transition/cost type used in edges
  * @tparam StateIndexer The indexer functor for state types
+ * @tparam CostType The numeric type used for costs (defaults to double)
  */
-template <typename State, typename Transition, typename StateIndexer>
+template <typename State, typename Transition, typename StateIndexer, typename CostType = double>
 class SearchContext {
 public:
   using GraphType = Graph<State, Transition, StateIndexer>;
@@ -55,18 +56,18 @@ public:
   struct SearchVertexInfo {
     bool is_checked = false;
     bool is_in_openlist = false;
-    double f_cost = std::numeric_limits<double>::max();
-    double g_cost = std::numeric_limits<double>::max(); 
-    double h_cost = std::numeric_limits<double>::max();
+    CostType f_cost = std::numeric_limits<CostType>::max();
+    CostType g_cost = std::numeric_limits<CostType>::max(); 
+    CostType h_cost = std::numeric_limits<CostType>::max();
     VertexId parent_id = -1;
 
     /// Reset all search information to initial state
     void Reset() {
       is_checked = false;
       is_in_openlist = false;
-      f_cost = std::numeric_limits<double>::max();
-      g_cost = std::numeric_limits<double>::max();
-      h_cost = std::numeric_limits<double>::max();
+      f_cost = std::numeric_limits<CostType>::max();
+      g_cost = std::numeric_limits<CostType>::max();
+      h_cost = std::numeric_limits<CostType>::max();
       parent_id = -1;
     }
   };

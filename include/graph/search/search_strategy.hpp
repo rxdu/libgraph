@@ -27,14 +27,15 @@ namespace xmotion {
  * @tparam State The state type used in the graph
  * @tparam Transition The transition/cost type used in edges
  * @tparam StateIndexer The indexer functor for state types
+ * @tparam CostType The numeric type used for costs (defaults to double)
  */
-template<typename Derived, typename State, typename Transition, typename StateIndexer>
+template<typename Derived, typename State, typename Transition, typename StateIndexer, typename CostType = double>
 class SearchStrategy {
 public:
     using GraphType = Graph<State, Transition, StateIndexer>;
     using vertex_iterator = typename GraphType::const_vertex_iterator;
-    using SearchInfo = typename SearchContext<State, Transition, StateIndexer>::SearchVertexInfo;
-    using CostType = double; // TODO: Make this configurable in future versions
+    using SearchInfo = typename SearchContext<State, Transition, StateIndexer, CostType>::SearchVertexInfo;
+    // CostType is now a template parameter - no longer hardcoded to double
     
     /**
      * @brief Calculate priority for vertex in open list

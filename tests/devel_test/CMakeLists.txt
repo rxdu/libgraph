@@ -46,3 +46,6 @@ target_link_libraries(test_astar graph)
 
 add_executable(test_search_framework test_search_framework.cpp)
 target_link_libraries(test_search_framework graph)
+
+add_executable(test_dfs test_dfs.cpp)
+target_link_libraries(test_dfs graph)

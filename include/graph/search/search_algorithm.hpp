@@ -32,15 +32,15 @@ namespace xmotion {
  * @tparam State The state type used in the graph
  * @tparam Transition The transition/cost type used in edges
  * @tparam StateIndexer The indexer functor for state types
+ * @tparam CostType The numeric type used for costs (defaults to double)
  */
-template<typename SearchStrategy, typename State, typename Transition, typename StateIndexer>
+template<typename SearchStrategy, typename State, typename Transition, typename StateIndexer, typename CostType = double>
 class SearchAlgorithm final {
 public:
     using GraphType = Graph<State, Transition, StateIndexer>;
     using vertex_iterator = typename GraphType::const_vertex_iterator;
-    using SearchContextType = SearchContext<State, Transition, StateIndexer>;
+    using SearchContextType = SearchContext<State, Transition, StateIndexer, CostType>;
     using SearchInfo = typename SearchContextType::SearchVertexInfo;
-    using CostType = typename SearchStrategy::CostType;
     
     /**
      * @brief Priority queue comparator using search strategy
@@ -84,9 +84,11 @@ public:
             throw std::invalid_argument("Graph pointer cannot be null");
         }
         
-        if (start == graph->vertex_end() || goal == graph->vertex_end()) {
+        if (start == graph->vertex_end()) {
             return Path<State>();
         }
+        
+        // Allow goal to be vertex_end() for complete traversals like DFS::TraverseAll
         
         return PerformSearch(graph, context, start, goal, strategy);
     }
