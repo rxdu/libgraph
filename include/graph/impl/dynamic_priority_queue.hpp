@@ -43,10 +43,15 @@ class DynamicPriorityQueue {
   /// Construct a queue with given elements
   DynamicPriorityQueue(const std::vector<T>& elements) {
     array_.resize(elements.size() * 2);
-    for (std::size_t i = 0; i < elements.size(); ++i)
+    for (std::size_t i = 0; i < elements.size(); ++i) {
       array_[i + 1] = elements[i];
+      element_map_[GetItemIndex(elements[i])] = i + 1;
+    }
     element_num_ = elements.size();
-    for (int i = element_num_ / 2; i > 0; --i) PercolateDown(i);
+    // Build heap using Floyd's algorithm
+    for (int i = element_num_ / 2; i > 0; --i) {
+      PercolateDown(i);
+    }
   }
 
   /// Push new element to queue, update value if element already exists
@@ -130,40 +135,65 @@ class DynamicPriorityQueue {
 
   void DeleteMin() {
     if (Empty()) return;
-    array_[1] = std::move(array_[element_num_--]);
-    PercolateDown(1);
+    
+    // Remove the min element from map
+    element_map_.erase(GetItemIndex(array_[1]));
+    
+    if (element_num_ > 1) {
+      // Move last element to root
+      array_[1] = std::move(array_[element_num_]);
+      element_map_[GetItemIndex(array_[1])] = 1;
+    }
+    element_num_--;
+    
+    if (element_num_ > 0) {
+      PercolateDown(1);
+    }
   }
 
   void PercolateUp(const T& element, std::size_t index) {
-    T new_element = element;
-    // copy new element to position 0, avoid comparing with non-existing element
-    array_[0] = std::move(new_element);
-    // keep floating up until heap-order property is satisfied
-    for (; Compare(element, array_[index / 2]); index /= 2) {
+    // Use sentinel at position 0 for cleaner loop
+    array_[0] = element;
+    
+    // Bubble up, updating map for each moved element
+    while (index > 1 && Compare(element, array_[index / 2])) {
       array_[index] = std::move(array_[index / 2]);
+      element_map_[GetItemIndex(array_[index])] = index;
+      index /= 2;
     }
-    // insert new element
-    array_[index] = std::move(new_element);
+    
+    // Place element at final position
+    array_[index] = element;
     element_map_[GetItemIndex(element)] = index;
   }
 
   void PercolateDown(std::size_t index) {
+    T tmp = std::move(array_[index]);
     std::size_t child;
-    T tmp = array_[index];
-    // keep sinking down until heap-order property is satisfied
-    for (; index * 2 <= element_num_; index = child) {
+    
+    // Sink down, updating map for each moved element
+    while (index * 2 <= element_num_) {
       child = index * 2;
-      // check which child is smaller (if right child exists)
-      if (child != element_num_ && Compare(array_[child + 1], array_[child]))
+      
+      // Find smaller child
+      if (child != element_num_ && 
+          Compare(array_[child + 1], array_[child])) {
         ++child;
-      // float child up if desired (according to Compare())
-      if (Compare(array_[child], tmp))
+      }
+      
+      // Check if we need to continue sinking
+      if (Compare(array_[child], tmp)) {
         array_[index] = std::move(array_[child]);
-      else
+        element_map_[GetItemIndex(array_[index])] = index;
+        index = child;
+      } else {
         break;
+      }
     }
-    // place element at the new location
+    
+    // Place element at final position
     array_[index] = std::move(tmp);
+    element_map_[GetItemIndex(array_[index])] = index;
   }
 };
 }  // namespace xmotion

@@ -13,6 +13,7 @@ mark_as_advanced(
 add_executable(utests 
     unit_test/state_indexer_test.cpp
     unit_test/priority_queue_test.cpp
+    unit_test/priority_queue_map_test.cpp
     unit_test/pq_with_graph_test.cpp
     unit_test/graph_bigfive_test.cpp
     unit_test/graph_type_test.cpp

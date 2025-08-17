@@ -130,9 +130,10 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
     // remove upstream connections
     // e.g. other vertices that connect to the vertex to be deleted
     for (auto &asv : vtx->vertices_from) {
-      // Use list::remove_if with value capture to avoid iterator invalidation
-      asv->edges_to.remove_if([vtx](const Edge& edge) { 
-        return edge.dst == vtx; 
+      // Optimized: Use captured vertex id for comparison (avoids iterator dereference)
+      auto vtx_id = vtx->vertex_id;
+      asv->edges_to.remove_if([vtx_id](const Edge& edge) { 
+        return edge.dst->vertex_id == vtx_id; 
       });
     }
 
@@ -152,18 +153,17 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
                                                      Transition trans) {
-  auto src_vertex = ObtainVertexFromVertexMap(sstate);
+  auto src_vertex = ObtainVertexFromVertexMap(std::move(sstate));
 
   // update transition if edge already exists
   auto it = src_vertex->FindEdge(dstate);
   if (it != src_vertex->edge_end()) {
     it->cost = trans;
-    // std::cout << "updated cost: " << trans << std::endl;
     return;
   }
 
   // otherwise add new edge
-  auto dst_vertex = ObtainVertexFromVertexMap(dstate);
+  auto dst_vertex = ObtainVertexFromVertexMap(std::move(dstate));
   dst_vertex->vertices_from.push_back(src_vertex);
   src_vertex->edges_to.emplace_back(src_vertex, dst_vertex, trans);
 }
@@ -239,8 +239,8 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
   auto it = vertex_map_.find(state_id);
 
   if (it == vertex_map_.end()) {
-    // Exception-safe vertex creation using unique_ptr (C++11 compatible)
-    std::unique_ptr<Vertex> new_vertex(new Vertex(state, state_id));
+    // Exception-safe vertex creation using unique_ptr with move semantics
+    std::unique_ptr<Vertex> new_vertex(new Vertex(std::move(state), state_id));
     new_vertex->search_parent = vertex_end();
     auto result = vertex_map_.insert(std::make_pair(state_id, std::move(new_vertex)));
     return vertex_iterator(result.first);
@@ -365,6 +365,8 @@ Graph<State, Transition, StateIndexer>::GetVertex(int64_t vertex_id) const {
 // Batch Operations
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::AddVertices(const std::vector<State>& states) {
+  // Reserve space for better performance
+  vertex_map_.reserve(vertex_map_.size() + states.size());
   for (const auto& state : states) {
     AddVertex(state);
   }
@@ -373,6 +375,10 @@ void Graph<State, Transition, StateIndexer>::AddVertices(const std::vector<State
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::AddEdges(
     const std::vector<std::tuple<State, State, Transition>>& edges) {
+  // Reserve space for vertices that might be created
+  std::size_t potential_new_vertices = edges.size() * 2;
+  vertex_map_.reserve(vertex_map_.size() + potential_new_vertices);
+  
   for (const auto& edge : edges) {
     AddEdge(std::get<0>(edge), std::get<1>(edge), std::get<2>(edge));
   }

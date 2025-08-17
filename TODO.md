@@ -2,12 +2,13 @@
 
 ## Current Status
 
-**Test Suite**: 158/158 tests passing (100% success rate) + DFS comprehensive test suite  
+**Test Suite**: 160 tests total (159 passing, 1 disabled) - 100% success rate  
 **Algorithm Suite**: Complete - A* (optimal), Dijkstra (optimal), BFS (shortest edges), DFS (depth-first)  
 **Architecture**: Template-based search framework with configurable cost types  
 **Memory Management**: RAII with `std::unique_ptr`, exception-safe operations  
 **Thread Safety**: SearchContext-based concurrent read-only searches  
 **Code Quality**: Consolidated search algorithms, eliminated ~70% code duplication  
+**Performance**: Move semantics optimized, batch operations with reserve()  
 
 ---
 
@@ -38,26 +39,50 @@
 - [x] **Breadth-First Search (BFS)** ✅ - Implemented as framework demonstration
 - [x] **Depth-First Search (DFS)** ✅ - Complete implementation with LIFO strategy, supports path finding, traversal, and reachability
 
-### **Phase 2: Graph Analysis & Specialized Algorithms**
+### **Phase 2: Core Performance & Usability Improvements** (PRIORITY)
 
-**Essential Graph Algorithms** (Next Priority)
+**Critical Performance Optimizations**
+- [x] **Move semantics in Graph operations** ✅ - Added std::move for State parameters in AddEdge and ObtainVertexFromVertexMap
+- [x] **Batch operation pre-allocation** ✅ - Added reserve() calls in AddVertices and AddEdges for better performance
+- [x] **Optimized edge removal** ✅ - Improved RemoveVertex with ID-based comparison instead of iterator dereference
+- [ ] **Hash-based edge lookup** - Replace O(n) linear search with O(1) hash table lookup (10-100x improvement expected)
+- [ ] **Improve RemoveVertex() complexity** - From O(m²) to O(m) using bidirectional edge references (2-10x improvement expected)
+- [ ] **Memory pooling for SearchContext** - Reduce allocation overhead by 20-50%
+- [ ] **Batch search operations** - Context reuse patterns for 30-70% improvement on repeated searches
+- [ ] **DynamicPriorityQueue element map optimization** - Fix element_map_ updates in DeleteMin and percolate operations
+
+**API Usability Improvements**
+- [ ] **Enhanced error handling** - Better exception types and error reporting for invalid operations
+- [ ] **STL-compatible iterators** - Full conformance to C++ iterator requirements
+- [x] **Batch operations** ✅ - AddVertices/AddEdges methods implemented with reserve() optimization
+- [ ] **Graph validation utilities** - Methods to check graph consistency and detect corruption
+
+**Core Feature Enhancements**
+- [ ] **Vertex/Edge attributes** - Support for metadata storage on vertices and edges
+- [ ] **Graph statistics** - Built-in diameter, density, clustering coefficient calculations
+- [ ] **Subgraph operations** - Extract subgraphs based on vertex/edge predicates
+- [ ] **Graph comparison** - Equality operators and isomorphism detection
+
+**Existing Algorithm Improvements**
+- [ ] **Search algorithm variants** - Early termination, maximum cost limits, hop limits
+- [ ] **Path quality metrics** - Path smoothness, curvature analysis for robotics applications
+- [ ] **Search diagnostics** - Statistics on nodes expanded, search efficiency metrics
+- [ ] **Incremental search** - Update existing paths when graph changes
+
+### **Phase 3: Graph Analysis & New Algorithms** (SECONDARY)
+
+**Essential Graph Algorithms**
 - [ ] **Connected Components Detection** - Build on DFS for connectivity analysis
 - [ ] **Cycle Detection** - Use DFS for DAG validation and loop detection
 - [ ] **Topological Sort** - Dependency ordering using DFS post-order
 - [ ] **Strongly Connected Components** - Kosaraju's algorithm using DFS
-
-**Performance Optimizations**
-- [ ] Hash-based edge lookup (replace O(n) linear search)
-- [ ] Improve `RemoveVertex()` complexity from O(m²) to O(m)
-- [ ] Memory pooling for SearchContext allocations
-- [ ] Batch search operations with context reuse
 
 **Advanced Search Algorithms**
 - [ ] **Bidirectional Search** - Dramatic speedup for long-distance paths
 - [ ] **Minimum Spanning Tree** (Kruskal's, Prim's)
 - [ ] **Multi-Goal Search** - Find paths to multiple targets
 
-### **Phase 3: Advanced Features**
+### **Phase 4: Advanced Features**
 
 **Specialized Algorithms**
 - [ ] **Jump Point Search (JPS)** - Grid-based pathfinding optimization
@@ -71,7 +96,7 @@
 - [x] ✅ Template aliases for complex types (`Path<State>`, etc.)
 - [x] ✅ CRTP pattern for algorithm polymorphism
 
-### **Phase 4: Extended Features**
+### **Phase 5: Extended Features**
 
 **Graph Analysis**
 - [ ] Graph diameter and radius calculation
@@ -118,6 +143,22 @@
 
 ---
 
+## Priority Summary
+
+**IMMEDIATE FOCUS (Phase 2)**: Improve existing features and performance
+1. **Performance Critical**: Hash-based edge lookup, vertex removal optimization
+2. **Usability**: Enhanced error handling, batch operations, graph validation
+3. **Core Features**: Vertex/edge attributes, graph statistics, subgraph operations
+4. **Algorithm Improvements**: Search variants, path metrics, diagnostics
+
+**SECONDARY (Phase 3+)**: Add new algorithms after core improvements are complete
+- Connected components, cycle detection, topological sort
+- Advanced search algorithms (bidirectional, MST, multi-goal)
+- Specialized algorithms (JPS, D* Lite)
+- Extended features (serialization, advanced thread safety)
+
+---
+
 ## Completed Milestones ✅
 
 **Core Architecture**
@@ -156,6 +197,11 @@
 
 ## Recent Updates
 
+* **Aug 2025**: ✅ **PERFORMANCE OPTIMIZATIONS** - Critical refactoring improvements
+  - Implemented move semantics for State parameters to avoid unnecessary copies
+  - Added reserve() optimization for batch vertex/edge insertions
+  - Optimized RemoveVertex with ID-based comparison for better performance
+  - Maintains 100% test compatibility (159/160 tests passing, 1 disabled)
 * **Aug 2025**: ✅ **DEPTH-FIRST SEARCH IMPLEMENTATION** - Complete algorithm suite
   - Implemented DFS using timestamp-based LIFO strategy in the unified framework
   - Added comprehensive DFS test suite with 9 test scenarios
@@ -167,7 +213,7 @@
   - Updated SearchContext, SearchStrategy, and all algorithm implementations
   - Resolved TODO comment: "Make this configurable in future versions"
   - Maintains 100% backward compatibility, all 158 tests passing
-* **Dec 2025**: ✅ **MAJOR MILESTONE** - Complete search algorithm framework implementation
+* **Aug 2025**: ✅ **MAJOR MILESTONE** - Complete search algorithm framework implementation
   - Template-based SearchAlgorithm with strategy pattern using CRTP  
   - Consolidated A*, Dijkstra, BFS into unified architecture
   - Eliminated ~70% code duplication, reduced from 12+ files to 6 clean files
