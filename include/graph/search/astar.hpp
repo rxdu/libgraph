@@ -26,15 +26,15 @@ namespace xmotion {
  * - h(n) is the heuristic estimate from node n to goal
  * - f(n) is the estimated total cost through node n
  */
-template<typename State, typename Transition, typename StateIndexer, typename HeuristicFunc, typename CostType = double>
-class AStarStrategy : public SearchStrategy<AStarStrategy<State, Transition, StateIndexer, HeuristicFunc, CostType>,
-                                           State, Transition, StateIndexer, CostType> {
+template<typename State, typename Transition, typename StateIndexer, typename HeuristicFunc>
+class AStarStrategy : public SearchStrategy<AStarStrategy<State, Transition, StateIndexer, HeuristicFunc>,
+                                           State, Transition, StateIndexer> {
 private:
     HeuristicFunc heuristic_;
     
 public:
-    using Base = SearchStrategy<AStarStrategy<State, Transition, StateIndexer, HeuristicFunc, CostType>,
-                               State, Transition, StateIndexer, CostType>;
+    using Base = SearchStrategy<AStarStrategy<State, Transition, StateIndexer, HeuristicFunc>,
+                               State, Transition, StateIndexer>;
     using GraphType = typename Base::GraphType;
     using vertex_iterator = typename Base::vertex_iterator;
     using SearchInfo = typename Base::SearchInfo;
@@ -42,15 +42,16 @@ public:
     explicit AStarStrategy(HeuristicFunc heuristic) noexcept
         : heuristic_(std::move(heuristic)) {}
     
-    CostType GetPriorityImpl(const SearchInfo& info) const noexcept {
+    double GetPriorityImpl(const SearchInfo& info) const noexcept {
         return info.f_cost;
     }
     
     void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
                              vertex_iterator goal_vertex) const {
-        info.g_cost = CostType{};
-        info.h_cost = heuristic_(vertex->state, goal_vertex->state);
-        info.f_cost = info.g_cost + info.h_cost;
+        info.g_cost = 0.0;
+        double h_cost = heuristic_(vertex->state, goal_vertex->state);
+        info.h_cost = h_cost;
+        info.f_cost = info.g_cost + h_cost;
         info.is_checked = false;
         info.is_in_openlist = false;
         info.parent_id = -1;
@@ -58,14 +59,15 @@ public:
     
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        CostType edge_cost) const {
+                        double edge_cost) const {
         
-        CostType new_g_cost = current_info.g_cost + edge_cost;
+        double new_g_cost = current_info.g_cost + edge_cost;
         
         if (new_g_cost < successor_info.g_cost) {
             successor_info.g_cost = new_g_cost;
-            successor_info.h_cost = heuristic_(successor_vertex->state, goal_vertex->state);
-            successor_info.f_cost = successor_info.g_cost + successor_info.h_cost;
+            double h_cost = heuristic_(successor_vertex->state, goal_vertex->state);
+            successor_info.h_cost = h_cost;
+            successor_info.f_cost = new_g_cost + h_cost;
             return true;
         }
         
@@ -80,10 +82,10 @@ public:
 /**
  * @brief Helper function to create A* strategy with automatic type deduction
  */
-template<typename State, typename Transition, typename StateIndexer, typename HeuristicFunc, typename CostType = double>
-AStarStrategy<State, Transition, StateIndexer, typename std::decay<HeuristicFunc>::type, CostType>
+template<typename State, typename Transition, typename StateIndexer, typename HeuristicFunc>
+AStarStrategy<State, Transition, StateIndexer, typename std::decay<HeuristicFunc>::type>
 MakeAStarStrategy(const HeuristicFunc& heuristic) {
-    return AStarStrategy<State, Transition, StateIndexer, typename std::decay<HeuristicFunc>::type, CostType>(
+    return AStarStrategy<State, Transition, StateIndexer, typename std::decay<HeuristicFunc>::type>(
         heuristic);
 }
 
@@ -100,10 +102,10 @@ public:
      * @brief Thread-safe A* search with external search context
      */
     template<typename State, typename Transition, typename StateIndexer,
-             typename VertexIdentifier, typename HeuristicFunc, typename CostType = double>
+             typename VertexIdentifier, typename HeuristicFunc>
     static Path<State> Search(
         const Graph<State, Transition, StateIndexer>* graph,
-        SearchContext<State, Transition, StateIndexer, CostType>& context,
+        SearchContext<State, Transition, StateIndexer>& context,
         VertexIdentifier start,
         VertexIdentifier goal,
         HeuristicFunc heuristic) {
@@ -117,10 +119,10 @@ public:
             return Path<State>();
         }
         
-        auto strategy = MakeAStarStrategy<State, Transition, StateIndexer, HeuristicFunc, CostType>(
+        auto strategy = MakeAStarStrategy<State, Transition, StateIndexer, HeuristicFunc>(
             std::move(heuristic));
         
-        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer, CostType>
+        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
             ::Search(graph, context, start_it, goal_it, strategy);
     }
     

@@ -41,9 +41,8 @@ class Graph;
  * @tparam State The state type used in the graph
  * @tparam Transition The transition/cost type used in edges
  * @tparam StateIndexer The indexer functor for state types
- * @tparam CostType The numeric type used for costs (defaults to double)
  */
-template <typename State, typename Transition, typename StateIndexer, typename CostType = double>
+template <typename State, typename Transition, typename StateIndexer>
 class SearchContext {
 public:
   using GraphType = Graph<State, Transition, StateIndexer>;
@@ -117,28 +116,34 @@ public:
       SetAttribute("is_in_openlist", in_list);
     }
 
-    // Cost values (using template parameter CostType)
-    CostType GetGCost() const {
-      return GetAttributeOr<CostType>("g_cost", std::numeric_limits<CostType>::max());
+    // Cost values (flexible types via attributes)
+    template<typename T = double>
+    T GetGCost() const {
+      return GetAttributeOr<T>("g_cost", std::numeric_limits<T>::max());
     }
     
-    void SetGCost(CostType cost) {
+    template<typename T>
+    void SetGCost(const T& cost) {
       SetAttribute("g_cost", cost);
     }
     
-    CostType GetHCost() const {
-      return GetAttributeOr<CostType>("h_cost", std::numeric_limits<CostType>::max());
+    template<typename T = double>
+    T GetHCost() const {
+      return GetAttributeOr<T>("h_cost", std::numeric_limits<T>::max());
     }
     
-    void SetHCost(CostType cost) {
+    template<typename T>
+    void SetHCost(const T& cost) {
       SetAttribute("h_cost", cost);
     }
     
-    CostType GetFCost() const {
-      return GetAttributeOr<CostType>("f_cost", std::numeric_limits<CostType>::max());
+    template<typename T = double>
+    T GetFCost() const {
+      return GetAttributeOr<T>("f_cost", std::numeric_limits<T>::max());
     }
     
-    void SetFCost(CostType cost) {
+    template<typename T>
+    void SetFCost(const T& cost) {
       SetAttribute("f_cost", cost);
     }
 
@@ -162,11 +167,12 @@ public:
       BoolProperty& operator=(bool value) { info->SetAttribute(key, value); return *this; }
     };
     
+    template<typename T = double>
     struct CostProperty {
       SearchVertexInfo* info;
       const char* key;
-      operator CostType() const { return info->GetAttributeOr<CostType>(key, std::numeric_limits<CostType>::max()); }
-      CostProperty& operator=(CostType value) { info->SetAttribute(key, value); return *this; }
+      operator T() const { return info->GetAttributeOr<T>(key, std::numeric_limits<T>::max()); }
+      CostProperty& operator=(const T& value) { info->SetAttribute(key, value); return *this; }
     };
     
     struct ParentProperty {
@@ -179,9 +185,9 @@ public:
     // Legacy field accessors that behave like the old direct field access
     BoolProperty is_checked{this, "is_checked"};
     BoolProperty is_in_openlist{this, "is_in_openlist"};
-    CostProperty f_cost{this, "f_cost"};
-    CostProperty g_cost{this, "g_cost"};
-    CostProperty h_cost{this, "h_cost"};
+    CostProperty<double> f_cost{this, "f_cost"};
+    CostProperty<double> g_cost{this, "g_cost"};
+    CostProperty<double> h_cost{this, "h_cost"};
     ParentProperty parent_id{this, "parent_id"};
 
     // Flexible attribute methods
@@ -427,30 +433,25 @@ public:
   // =========================================================================
 
   /**
-   * @brief Set g-cost using either legacy field or flexible attribute
+   * @brief Set g-cost with flexible type support
    * @param vertex_id Vertex identifier
    * @param cost The cost value
-   * @param use_legacy If true, uses legacy g_cost field; if false, uses "g_cost" attribute
    */
-  void SetGCost(VertexId vertex_id, CostType cost, bool use_legacy = true) {
-    if (use_legacy) {
-      GetSearchInfo(vertex_id).g_cost = cost;
-    } else {
-      SetVertexAttribute(vertex_id, "g_cost", cost);
-    }
+  template<typename T>
+  void SetGCost(VertexId vertex_id, const T& cost) {
+    GetSearchInfo(vertex_id).SetGCost(cost);
   }
 
   /**
-   * @brief Get g-cost from either legacy field or flexible attribute
+   * @brief Get g-cost with flexible type support
    * @param vertex_id Vertex identifier
-   * @param use_legacy If true, reads legacy g_cost field; if false, reads "g_cost" attribute
    */
-  CostType GetGCost(VertexId vertex_id, bool use_legacy = true) const {
-    if (use_legacy) {
-      return HasSearchInfo(vertex_id) ? GetSearchInfo(vertex_id).g_cost : std::numeric_limits<CostType>::max();
-    } else {
-      return GetVertexAttributeOr<CostType>(vertex_id, "g_cost", std::numeric_limits<CostType>::max());
+  template<typename T = double>
+  T GetGCost(VertexId vertex_id) const {
+    if (HasSearchInfo(vertex_id)) {
+      return GetSearchInfo(vertex_id).template GetGCost<T>();
     }
+    return std::numeric_limits<T>::max();
   }
 
   /**

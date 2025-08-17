@@ -26,12 +26,12 @@ namespace xmotion {
  * The strategy uses negative timestamps as priorities to make the priority queue
  * behave like a stack (most recently added vertices get processed first).
  */
-template<typename State, typename Transition, typename StateIndexer, typename CostType = double>
-class DfsStrategy : public SearchStrategy<DfsStrategy<State, Transition, StateIndexer, CostType>,
-                                         State, Transition, StateIndexer, CostType> {
+template<typename State, typename Transition, typename StateIndexer>
+class DfsStrategy : public SearchStrategy<DfsStrategy<State, Transition, StateIndexer>,
+                                         State, Transition, StateIndexer> {
 public:
-    using Base = SearchStrategy<DfsStrategy<State, Transition, StateIndexer, CostType>,
-                               State, Transition, StateIndexer, CostType>;
+    using Base = SearchStrategy<DfsStrategy<State, Transition, StateIndexer>,
+                               State, Transition, StateIndexer>;
     using GraphType = typename Base::GraphType;
     using vertex_iterator = typename Base::vertex_iterator;
     using SearchInfo = typename Base::SearchInfo;
@@ -48,7 +48,7 @@ public:
      * Uses negative timestamps to ensure that vertices added more recently
      * get higher priority in the min-heap, creating LIFO behavior.
      */
-    CostType GetPriorityImpl(const SearchInfo& info) const noexcept {
+    double GetPriorityImpl(const SearchInfo& info) const noexcept {
         // Use negative g_cost (which stores timestamp) for LIFO behavior
         // More recent timestamps (higher values) become lower priorities (more negative)
         return -info.g_cost;
@@ -62,8 +62,8 @@ public:
     void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
                              vertex_iterator goal_vertex) const {
         // Use timestamp as g_cost to achieve LIFO behavior
-        info.g_cost = static_cast<CostType>(++timestamp_counter_);
-        info.h_cost = CostType{};  // DFS doesn't use heuristic
+        info.g_cost = static_cast<double>(++timestamp_counter_);
+        info.h_cost = 0.0;  // DFS doesn't use heuristic
         info.f_cost = info.g_cost;  // f = g for DFS
         info.is_checked = false;
         info.is_in_openlist = false;
@@ -78,12 +78,12 @@ public:
      */
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        CostType edge_cost) const {
+                        double edge_cost) const {
         // In DFS, we only process each vertex once (first visit)
-        if (successor_info.g_cost == std::numeric_limits<CostType>::max()) {
+        if (successor_info.g_cost == std::numeric_limits<double>::max()) {
             // Assign new timestamp for LIFO ordering
-            successor_info.g_cost = static_cast<CostType>(++timestamp_counter_);
-            successor_info.h_cost = CostType{};  // No heuristic in DFS
+            successor_info.g_cost = static_cast<double>(++timestamp_counter_);
+            successor_info.h_cost = 0.0;  // No heuristic in DFS
             successor_info.f_cost = successor_info.g_cost;  // f = g for DFS
             return true;
         }
@@ -98,9 +98,9 @@ public:
 /**
  * @brief Helper function to create DFS strategy with automatic type deduction
  */
-template<typename State, typename Transition, typename StateIndexer, typename CostType = double>
-DfsStrategy<State, Transition, StateIndexer, CostType> MakeDfsStrategy() {
-    return DfsStrategy<State, Transition, StateIndexer, CostType>();
+template<typename State, typename Transition, typename StateIndexer>
+DfsStrategy<State, Transition, StateIndexer> MakeDfsStrategy() {
+    return DfsStrategy<State, Transition, StateIndexer>();
 }
 
 /**
@@ -119,10 +119,10 @@ public:
      * @brief Thread-safe DFS search with external search context
      */
     template<typename State, typename Transition, typename StateIndexer,
-             typename VertexIdentifier, typename CostType = double>
+             typename VertexIdentifier>
     static Path<State> Search(
         const Graph<State, Transition, StateIndexer>* graph,
-        SearchContext<State, Transition, StateIndexer, CostType>& context,
+        SearchContext<State, Transition, StateIndexer>& context,
         VertexIdentifier start,
         VertexIdentifier goal) {
         
@@ -135,8 +135,8 @@ public:
             return Path<State>();
         }
         
-        auto strategy = MakeDfsStrategy<State, Transition, StateIndexer, CostType>();
-        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer, CostType>
+        auto strategy = MakeDfsStrategy<State, Transition, StateIndexer>();
+        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
             ::Search(graph, context, start_it, goal_it, strategy);
     }
     
@@ -144,10 +144,10 @@ public:
      * @brief Convenience overload with shared_ptr graph
      */
     template<typename State, typename Transition, typename StateIndexer,
-             typename VertexIdentifier, typename CostType = double>
+             typename VertexIdentifier>
     static Path<State> Search(
         std::shared_ptr<Graph<State, Transition, StateIndexer>> graph,
-        SearchContext<State, Transition, StateIndexer, CostType>& context,
+        SearchContext<State, Transition, StateIndexer>& context,
         VertexIdentifier start,
         VertexIdentifier goal) {
         
@@ -189,10 +189,10 @@ public:
      * Useful for connectivity analysis and cycle detection.
      */
     template<typename State, typename Transition, typename StateIndexer,
-             typename VertexIdentifier, typename CostType = double>
+             typename VertexIdentifier>
     static bool TraverseAll(
         const Graph<State, Transition, StateIndexer>* graph,
-        SearchContext<State, Transition, StateIndexer, CostType>& context,
+        SearchContext<State, Transition, StateIndexer>& context,
         VertexIdentifier start) {
         
         if (!graph) return false;
@@ -200,10 +200,10 @@ public:
         auto start_it = graph->FindVertex(start);
         if (start_it == graph->vertex_end()) return false;
         
-        auto strategy = MakeDfsStrategy<State, Transition, StateIndexer, CostType>();
+        auto strategy = MakeDfsStrategy<State, Transition, StateIndexer>();
         auto dummy_goal = graph->vertex_end();
         
-        SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer, CostType>
+        SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
             ::Search(graph, context, start_it, dummy_goal, strategy);
         
         return true;

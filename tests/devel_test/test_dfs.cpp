@@ -271,8 +271,8 @@ void TestDFSCustomCostType() {
     graph.AddEdge(s0, s1, 1);
     graph.AddEdge(s1, s2, 2);
     
-    SearchContext<SimpleState, int, SimpleStateIndexer, int> context;
-    auto path = DFS::Search<SimpleState, int, SimpleStateIndexer, int, int>(
+    SearchContext<SimpleState, int, SimpleStateIndexer> context;
+    auto path = DFS::Search<SimpleState, int, SimpleStateIndexer, int>(
         &graph, context, s0.GetId(), s2.GetId());
     
     if (!path.empty() && path.size() == 3) {

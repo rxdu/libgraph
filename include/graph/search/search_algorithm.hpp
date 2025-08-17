@@ -33,14 +33,13 @@ namespace xmotion {
  * @tparam State The state type used in the graph
  * @tparam Transition The transition/cost type used in edges
  * @tparam StateIndexer The indexer functor for state types
- * @tparam CostType The numeric type used for costs (defaults to double)
  */
-template<typename SearchStrategy, typename State, typename Transition, typename StateIndexer, typename CostType = double>
+template<typename SearchStrategy, typename State, typename Transition, typename StateIndexer>
 class SearchAlgorithm final {
 public:
     using GraphType = Graph<State, Transition, StateIndexer>;
     using vertex_iterator = typename GraphType::const_vertex_iterator;
-    using SearchContextType = SearchContext<State, Transition, StateIndexer, CostType>;
+    using SearchContextType = SearchContext<State, Transition, StateIndexer>;
     using SearchInfo = typename SearchContextType::SearchVertexInfo;
     
     /**

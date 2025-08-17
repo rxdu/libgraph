@@ -24,27 +24,27 @@ namespace xmotion {
  * (actual distance from start). This guarantees finding the optimal path
  * in graphs with non-negative edge weights.
  */
-template<typename State, typename Transition, typename StateIndexer, typename CostType = double>
-class DijkstraStrategy : public SearchStrategy<DijkstraStrategy<State, Transition, StateIndexer, CostType>,
-                                              State, Transition, StateIndexer, CostType> {
+template<typename State, typename Transition, typename StateIndexer>
+class DijkstraStrategy : public SearchStrategy<DijkstraStrategy<State, Transition, StateIndexer>,
+                                              State, Transition, StateIndexer> {
 public:
-    using Base = SearchStrategy<DijkstraStrategy<State, Transition, StateIndexer, CostType>,
-                               State, Transition, StateIndexer, CostType>;
+    using Base = SearchStrategy<DijkstraStrategy<State, Transition, StateIndexer>,
+                               State, Transition, StateIndexer>;
     using GraphType = typename Base::GraphType;
     using vertex_iterator = typename Base::vertex_iterator;
     using SearchInfo = typename Base::SearchInfo;
     
     DijkstraStrategy() = default;
     
-    CostType GetPriorityImpl(const SearchInfo& info) const noexcept {
+    double GetPriorityImpl(const SearchInfo& info) const noexcept {
         return info.g_cost;
     }
     
     void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
                              vertex_iterator goal_vertex) const {
-        info.g_cost = CostType{};
-        info.h_cost = CostType{};  // Dijkstra doesn't use heuristic
-        info.f_cost = CostType{};  // Same as g_cost for Dijkstra
+        info.g_cost = 0.0;
+        info.h_cost = 0.0;  // Dijkstra doesn't use heuristic
+        info.f_cost = 0.0;  // Same as g_cost for Dijkstra
         info.is_checked = false;
         info.is_in_openlist = false;
         info.parent_id = -1;
@@ -52,13 +52,13 @@ public:
     
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        CostType edge_cost) const {
+                        double edge_cost) const {
         
-        CostType new_cost = current_info.g_cost + edge_cost;
+        double new_cost = current_info.g_cost + edge_cost;
         
         if (new_cost < successor_info.g_cost) {
             successor_info.g_cost = new_cost;
-            successor_info.h_cost = CostType{};  // No heuristic in Dijkstra
+            successor_info.h_cost = 0.0;  // No heuristic in Dijkstra
             successor_info.f_cost = new_cost;  // f = g for Dijkstra
             return true;
         }
@@ -74,9 +74,9 @@ public:
 /**
  * @brief Helper function to create Dijkstra strategy with automatic type deduction
  */
-template<typename State, typename Transition, typename StateIndexer, typename CostType = double>
-DijkstraStrategy<State, Transition, StateIndexer, CostType> MakeDijkstraStrategy() {
-    return DijkstraStrategy<State, Transition, StateIndexer, CostType>();
+template<typename State, typename Transition, typename StateIndexer>
+DijkstraStrategy<State, Transition, StateIndexer> MakeDijkstraStrategy() {
+    return DijkstraStrategy<State, Transition, StateIndexer>();
 }
 
 /**
@@ -92,10 +92,10 @@ public:
      * @brief Thread-safe Dijkstra search with external search context
      */
     template<typename State, typename Transition, typename StateIndexer,
-             typename VertexIdentifier, typename CostType = double>
+             typename VertexIdentifier>
     static Path<State> Search(
         const Graph<State, Transition, StateIndexer>* graph,
-        SearchContext<State, Transition, StateIndexer, CostType>& context,
+        SearchContext<State, Transition, StateIndexer>& context,
         VertexIdentifier start,
         VertexIdentifier goal) {
         
@@ -108,8 +108,8 @@ public:
             return Path<State>();
         }
         
-        auto strategy = MakeDijkstraStrategy<State, Transition, StateIndexer, CostType>();
-        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer, CostType>
+        auto strategy = MakeDijkstraStrategy<State, Transition, StateIndexer>();
+        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
             ::Search(graph, context, start_it, goal_it, strategy);
     }
     
@@ -159,10 +159,10 @@ public:
      * @brief Single-source shortest paths from start to all reachable vertices
      */
     template<typename State, typename Transition, typename StateIndexer,
-             typename VertexIdentifier, typename CostType = double>
+             typename VertexIdentifier>
     static bool SearchAll(
         const Graph<State, Transition, StateIndexer>* graph,
-        SearchContext<State, Transition, StateIndexer, CostType>& context,
+        SearchContext<State, Transition, StateIndexer>& context,
         VertexIdentifier start) {
         
         if (!graph) return false;
@@ -170,10 +170,10 @@ public:
         auto start_it = graph->FindVertex(start);
         if (start_it == graph->vertex_end()) return false;
         
-        auto strategy = MakeDijkstraStrategy<State, Transition, StateIndexer, CostType>();
+        auto strategy = MakeDijkstraStrategy<State, Transition, StateIndexer>();
         auto dummy_goal = graph->vertex_end();
         
-        SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer, CostType>
+        SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
             ::Search(graph, context, start_it, dummy_goal, strategy);
         
         return true;

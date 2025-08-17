@@ -27,22 +27,20 @@ namespace xmotion {
  * @tparam State The state type used in the graph
  * @tparam Transition The transition/cost type used in edges
  * @tparam StateIndexer The indexer functor for state types
- * @tparam CostType The numeric type used for costs (defaults to double)
  */
-template<typename Derived, typename State, typename Transition, typename StateIndexer, typename CostType = double>
+template<typename Derived, typename State, typename Transition, typename StateIndexer>
 class SearchStrategy {
 public:
     using GraphType = Graph<State, Transition, StateIndexer>;
     using vertex_iterator = typename GraphType::const_vertex_iterator;
-    using SearchInfo = typename SearchContext<State, Transition, StateIndexer, CostType>::SearchVertexInfo;
-    // CostType is now a template parameter - no longer hardcoded to double
+    using SearchInfo = typename SearchContext<State, Transition, StateIndexer>::SearchVertexInfo;
     
     /**
      * @brief Calculate priority for vertex in open list
      * @param info Search information for the vertex
      * @return Priority value (lower values have higher priority in min-heap)
      */
-    inline CostType GetPriority(const SearchInfo& info) const noexcept {
+    inline double GetPriority(const SearchInfo& info) const noexcept {
         return static_cast<const Derived*>(this)->GetPriorityImpl(info);
     }
     
@@ -87,7 +85,7 @@ public:
      */
     inline bool RelaxVertex(SearchInfo& current_info, SearchInfo& successor_info,
                            vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                           CostType edge_cost) const {
+                           double edge_cost) const {
         return static_cast<const Derived*>(this)->RelaxVertexImpl(
             current_info, successor_info, successor_vertex, goal_vertex, edge_cost);
     }
