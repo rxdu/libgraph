@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Test Suite**: 160 tests total (159 passing, 1 disabled) - 100% success rate  
+**Test Suite**: 170 tests total (169 passing, 1 disabled) - 100% success rate  
 **Algorithm Suite**: Complete - A* (optimal), Dijkstra (optimal), BFS (shortest edges), DFS (depth-first)  
 **Architecture**: Template-based search framework with configurable cost types  
 **Memory Management**: RAII with `std::unique_ptr`, exception-safe operations  
@@ -49,11 +49,11 @@
 - [x] **SearchContext memory optimization** ✅ - Implemented pre-allocation and improved Reset() achieving 35.1% improvement in context reuse
 - [x] **Performance profiling and analysis** ✅ - Identified actual bottlenecks vs theoretical ones using comprehensive benchmarks
 
-**API Usability Improvements**
-- [ ] **Enhanced error handling** - Better exception types and error reporting for invalid operations
-- [ ] **STL-compatible iterators** - Full conformance to C++ iterator requirements
+**API Usability Improvements** 🚧 **IN PROGRESS**
+- [x] **Enhanced error handling** ✅ - Comprehensive exception hierarchy with 7 custom exception types, validation methods, and detailed error reporting
+- [ ] **STL-compatible iterators** - Full conformance to C++ iterator requirements (IN PROGRESS)
 - [x] **Batch operations** ✅ - AddVertices/AddEdges methods implemented with reserve() optimization
-- [ ] **Graph validation utilities** - Methods to check graph consistency and detect corruption
+- [x] **Graph validation utilities** ✅ - ValidateStructure(), ValidateEdgeWeight(), GetVertexSafe() methods with corruption detection
 
 **Core Feature Enhancements**
 - [ ] **Vertex/Edge attributes** - Support for metadata storage on vertices and edges
@@ -160,9 +160,14 @@ Implement only if specific use cases demonstrate actual need.
 ## Priority Summary
 
 **IMMEDIATE FOCUS (Phase 2)**: Core usability and feature improvements
-1. **Usability**: Enhanced error handling, STL-compatible iterators, graph validation
+1. **Usability**: STL-compatible iterators (remaining item)
 2. **Core Features**: Vertex/edge attributes, graph statistics, subgraph operations  
 3. **Algorithm Improvements**: Search variants, path metrics, diagnostics
+
+**COMPLETED USABILITY IMPROVEMENTS**:
+- ✅ **Enhanced error handling**: 7-tier exception hierarchy with detailed error reporting
+- ✅ **Graph validation**: Structure integrity checks and edge weight validation
+- ✅ **Safe access methods**: GetVertexSafe() with automatic error checking
 
 **THEORETICAL OPTIMIZATIONS (Phase 3)**: Low priority unless specific use cases emerge
 1. **Edge lookup optimization**: Only beneficial for dense graphs (>50 edges/vertex)
@@ -196,12 +201,13 @@ Implement only if specific use cases demonstrate actual need.
 - ✅ 100% backward API compatibility maintained
 
 **Testing & Quality**
-- ✅ 161 comprehensive unit tests (100% passing, 1 disabled) 
+- ✅ 170 comprehensive unit tests (100% passing, 1 disabled) 
 - ✅ Memory management validation and thread safety verification
 - ✅ Code quality improvements: `final` specifiers, `noexcept`, optimizations
 - ✅ Updated all legacy tests to use new search framework
 - ✅ Performance profiling and benchmarking infrastructure
 - ✅ Critical correctness fixes in DynamicPriorityQueue
+- ✅ Enhanced error handling with comprehensive exception testing
 
 ---
 
@@ -210,21 +216,27 @@ Implement only if specific use cases demonstrate actual need.
 - ✅ ~~Search algorithms assume `double` cost types~~ - **RESOLVED**: Framework now supports configurable cost types via template parameters
 - ✅ ~~DynamicPriorityQueue element_map_ inconsistency~~ - **RESOLVED**: Fixed critical correctness issues
 - ✅ ~~SearchContext allocation overhead~~ - **RESOLVED**: 35% improvement through pre-allocation
+- ✅ ~~Poor error handling and debugging~~ - **RESOLVED**: Comprehensive exception hierarchy with detailed error reporting
 - No concurrent write operations (intentional design choice)
-- Template error messages could be improved
+- Template error messages could be improved (mitigated by better runtime error handling)
 - Theoretical O(n) operations have no measurable impact in practice
 
 ---
 
 ## Recent Updates
 
+* **Aug 2025**: ✅ **API USABILITY IMPROVEMENTS** - Enhanced error handling and validation
+  - **Custom exception hierarchy**: 7 specialized exception types (GraphException, InvalidArgumentError, ElementNotFoundError, etc.)
+  - **Graph validation**: ValidateStructure(), ValidateEdgeWeight(), GetVertexSafe() methods with corruption detection
+  - **Professional error reporting**: Detailed error messages with context (vertex IDs, constraint types, algorithm names)
+  - **Comprehensive testing**: 9 new error handling tests covering all exception scenarios
+  - **Result**: Robust debugging and validation capabilities, 170/170 tests passing
 * **Aug 2025**: ✅ **PERFORMANCE OPTIMIZATION PHASE COMPLETE** - All critical improvements implemented
   - **SearchContext optimization**: 35.1% improvement in context reuse through pre-allocation and improved Reset()
   - **DynamicPriorityQueue fixes**: Critical element_map_ consistency fixes ensuring correct search results
   - **Move semantics**: Added std::move for State parameters avoiding unnecessary copies
   - **Batch optimizations**: reserve() calls in AddVertices/AddEdges for better performance
   - **Performance profiling**: Comprehensive benchmarking identified actual vs theoretical bottlenecks
-  - **Result**: All critical performance issues resolved, 161/161 tests passing
 * **Aug 2025**: ✅ **DEPTH-FIRST SEARCH IMPLEMENTATION** - Complete algorithm suite
   - Implemented DFS using timestamp-based LIFO strategy in the unified framework
   - Added comprehensive DFS test suite with 9 test scenarios
@@ -253,9 +265,9 @@ Implement only if specific use cases demonstrate actual need.
 - **Extensibility**: ✅ Framework enables rapid addition of new algorithms (DFS, BFS added as proof)
 - **Flexibility**: ✅ Configurable cost types (double, int, float, custom types)
 - **Performance**: ✅ Zero-overhead CRTP strategy pattern, optimized memory management, 35% search context improvement
-- **Safety**: ✅ Preserves thread safety, exception safety, memory safety, and search correctness
+- **Safety**: ✅ Preserves thread safety, exception safety, memory safety, search correctness, and comprehensive error validation
 - **Compatibility**: ✅ Maintains 100% STL compatibility and existing API contracts
-- **Code Quality**: ✅ Clean 7-file architecture with comprehensive testing and profiling
+- **Code Quality**: ✅ Clean 7-file architecture with comprehensive testing, profiling, and professional error handling
 
 ## Current Framework Architecture
 

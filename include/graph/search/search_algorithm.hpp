@@ -18,6 +18,7 @@
 #include "graph/graph.hpp"
 #include "graph/search/search_context.hpp"
 #include "graph/search/search_strategy.hpp"
+#include "graph/exceptions.hpp"
 
 namespace xmotion {
 
@@ -81,7 +82,7 @@ public:
         const SearchStrategy& strategy) {
         
         if (!graph) {
-            throw std::invalid_argument("Graph pointer cannot be null");
+            throw InvalidArgumentError("Graph pointer cannot be null");
         }
         
         if (start == graph->vertex_end()) {
@@ -193,8 +194,11 @@ private:
         
         try {
             return context.template ReconstructPath<State>(graph, goal_id);
+        } catch (const ElementNotFoundError& e) {
+            // Goal vertex not reached - return empty path
+            return Path<State>();
         } catch (const std::exception& e) {
-            // Path reconstruction failed - return empty path
+            // Other path reconstruction errors - return empty path
             return Path<State>();
         }
     }

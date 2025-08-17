@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <limits>
 #include <vector>
+#include "graph/exceptions.hpp"
 
 namespace xmotion {
 
@@ -101,10 +102,14 @@ public:
    * @brief Get search information for a vertex (const version)
    * @param vertex_id The ID of the vertex
    * @return Const reference to search information
-   * @throws std::out_of_range if vertex not found
+   * @throws ElementNotFoundError if vertex not found
    */
   const SearchVertexInfo& GetSearchInfo(VertexId vertex_id) const {
-    return search_data_.at(vertex_id);
+    auto it = search_data_.find(vertex_id);
+    if (it == search_data_.end()) {
+      throw ElementNotFoundError("Vertex", vertex_id);
+    }
+    return it->second;
   }
 
   /**
@@ -201,7 +206,7 @@ public:
     std::vector<PathState> path;
     
     if (!HasSearchInfo(goal_id)) {
-      return path; // Empty path if goal not reached
+      throw ElementNotFoundError("Goal vertex", goal_id);
     }
     
     // Check if goal was reached

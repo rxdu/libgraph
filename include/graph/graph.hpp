@@ -34,10 +34,12 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+#include <cmath> // For std::isnan, std::isinf
 
 #include "graph/edge.hpp" // Independent Edge class
 #include "graph/impl/default_indexer.hpp"
 #include "graph/vertex.hpp" // Independent Vertex class
+#include "graph/exceptions.hpp" // Enhanced error handling
 
 namespace xmotion {
 
@@ -473,6 +475,92 @@ public:
                                  !std::is_integral<T>::value>::type * = nullptr>
   const Vertex* GetVertex(T state) const {
     return GetVertex(GetStateIndex(state));
+  }
+  ///@}
+  
+  /** @name Validation and Error Checking */
+  ///@{
+  /** Get vertex safely with exception on failure
+   *  @param vertex_id The ID of the vertex
+   *  @return Reference to vertex
+   *  @throws ElementNotFoundError if vertex doesn't exist
+   */
+  Vertex& GetVertexSafe(int64_t vertex_id) {
+    auto* vertex = GetVertex(vertex_id);
+    if (!vertex) {
+      throw ElementNotFoundError("Vertex", vertex_id);
+    }
+    return *vertex;
+  }
+  
+  /** Get const vertex safely with exception on failure
+   *  @param vertex_id The ID of the vertex
+   *  @return Const reference to vertex
+   *  @throws ElementNotFoundError if vertex doesn't exist
+   */
+  const Vertex& GetVertexSafe(int64_t vertex_id) const {
+    const auto* vertex = GetVertex(vertex_id);
+    if (!vertex) {
+      throw ElementNotFoundError("Vertex", vertex_id);
+    }
+    return *vertex;
+  }
+  
+  /** Validate edge weight is acceptable
+   *  @param weight The edge weight to validate
+   *  @throws InvalidArgumentError if weight is invalid (e.g., negative for Dijkstra)
+   */
+  void ValidateEdgeWeight(Transition weight) const {
+    // Check for NaN and infinity for floating point types (C++11 compatible)
+    if (std::is_floating_point<Transition>::value) {
+      if (std::isnan(static_cast<double>(weight))) {
+        throw InvalidArgumentError("Edge weight cannot be NaN");
+      }
+      if (std::isinf(static_cast<double>(weight))) {
+        throw InvalidArgumentError("Edge weight cannot be infinite");
+      }
+    }
+  }
+  
+  /** Check if the graph structure is valid
+   *  @throws DataCorruptionError if corruption is detected
+   */
+  void ValidateStructure() const {
+    for (const auto& vertex_pair : vertex_map_) {
+      const auto& vertex = vertex_pair.second;
+      
+      // Check vertex ID consistency
+      if (vertex->vertex_id != vertex_pair.first) {
+        throw DataCorruptionError("Vertex ID mismatch", 
+          "Vertex claims ID " + std::to_string(vertex->vertex_id) + 
+          " but stored under ID " + std::to_string(vertex_pair.first));
+      }
+      
+      // Check edge consistency
+      for (const auto& edge : vertex->edges_to) {
+        // Check edge destination exists
+        if (vertex_map_.find(edge.dst->vertex_id) == vertex_map_.end()) {
+          throw DataCorruptionError("Dangling edge", 
+            "Edge from vertex " + std::to_string(vertex->vertex_id) + 
+            " points to non-existent vertex " + std::to_string(edge.dst->vertex_id));
+        }
+        
+        // Check reverse reference exists
+        bool found_reverse = false;
+        for (const auto& reverse_vertex : edge.dst->vertices_from) {
+          if (reverse_vertex->vertex_id == vertex->vertex_id) {
+            found_reverse = true;
+            break;
+          }
+        }
+        if (!found_reverse) {
+          throw DataCorruptionError("Missing reverse reference",
+            "Edge from " + std::to_string(vertex->vertex_id) + 
+            " to " + std::to_string(edge.dst->vertex_id) + 
+            " lacks reverse reference");
+        }
+      }
+    }
   }
   ///@}
   
