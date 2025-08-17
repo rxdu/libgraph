@@ -129,3 +129,56 @@ TEST_F(SimpleAttributeTest, SearchContextClearAndReset) {
     EXPECT_FALSE(context.HasVertexAttribute(2, "visited"));
     EXPECT_EQ(context.Size(), 0);
 }
+
+TEST_F(SimpleAttributeTest, ModernizedSearchVertexInfoUsage) {
+    using TestSearchContext = SearchContext<SimpleTestState, double, DefaultIndexer<SimpleTestState>>;
+    TestSearchContext context;
+    
+    // Test modern usage with convenience methods
+    auto& info = context.GetSearchInfo(1);
+    
+    // Set values using modern convenience methods
+    info.SetGCost(10.5);
+    info.SetHCost(5.2);
+    info.SetFCost(15.7);
+    info.SetChecked(true);
+    info.SetInOpenList(false);
+    info.SetParent(42);
+    
+    // Read values using modern convenience methods
+    EXPECT_EQ(info.GetGCost(), 10.5);
+    EXPECT_EQ(info.GetHCost(), 5.2);
+    EXPECT_EQ(info.GetFCost(), 15.7);
+    EXPECT_TRUE(info.GetChecked());
+    EXPECT_FALSE(info.GetInOpenList());
+    EXPECT_EQ(info.GetParent(), 42);
+    
+    // Test backward compatibility - legacy field access still works
+    EXPECT_EQ(info.g_cost, 10.5);  // Property-based access
+    EXPECT_EQ(info.h_cost, 5.2);
+    EXPECT_EQ(info.f_cost, 15.7);
+    EXPECT_TRUE(info.is_checked);
+    EXPECT_FALSE(info.is_in_openlist);
+    EXPECT_EQ(info.parent_id, 42);
+    
+    // Test that legacy assignment still works
+    info.g_cost = 20.0;
+    EXPECT_EQ(info.GetGCost(), 20.0);
+    
+    // Test custom attributes beyond the standard search fields
+    info.SetAttribute("custom_algorithm_data", std::string("dijkstra"));
+    info.SetAttribute("iteration_count", 15);
+    info.SetAttribute("branch_factor", 3.14);
+    
+    EXPECT_EQ(info.GetAttribute<std::string>("custom_algorithm_data"), "dijkstra");
+    EXPECT_EQ(info.GetAttribute<int>("iteration_count"), 15);
+    EXPECT_DOUBLE_EQ(info.GetAttribute<double>("branch_factor"), 3.14);
+    
+    // Test that Reset() clears everything
+    info.Reset();
+    EXPECT_EQ(info.GetGCost(), std::numeric_limits<double>::max());
+    EXPECT_FALSE(info.GetChecked());
+    EXPECT_EQ(info.GetParent(), -1);
+    EXPECT_FALSE(info.HasAttribute("custom_algorithm_data"));
+    EXPECT_FALSE(info.HasAttribute("iteration_count"));
+}

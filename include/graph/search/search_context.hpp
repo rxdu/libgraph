@@ -55,34 +55,18 @@ public:
    * @brief Search information for a single vertex
    * 
    * Contains all the temporary data needed during search algorithms,
-   * previously stored directly in Vertex objects.
-   * 
-   * Now includes both legacy fields (for backward compatibility) 
-   * and flexible attributes (for new algorithms).
+   * using flexible attributes for all algorithm-specific data.
+   * This provides maximum flexibility and extensibility for future algorithms.
    */
   struct SearchVertexInfo {
-    // Legacy fields for backward compatibility with existing algorithms
-    bool is_checked = false;
-    bool is_in_openlist = false;
-    CostType f_cost = std::numeric_limits<CostType>::max();
-    CostType g_cost = std::numeric_limits<CostType>::max(); 
-    CostType h_cost = std::numeric_limits<CostType>::max();
-    VertexId parent_id = -1;
-
-    // Flexible attributes for new algorithms (optional, allocated on demand)
+    // Flexible attributes for all algorithm data
     std::unique_ptr<AttributeMap> attributes;
 
     // Default constructor
     SearchVertexInfo() = default;
 
     // Copy constructor - deep copy attributes if present
-    SearchVertexInfo(const SearchVertexInfo& other) 
-        : is_checked(other.is_checked),
-          is_in_openlist(other.is_in_openlist),
-          f_cost(other.f_cost),
-          g_cost(other.g_cost),
-          h_cost(other.h_cost),
-          parent_id(other.parent_id) {
+    SearchVertexInfo(const SearchVertexInfo& other) {
       if (other.attributes) {
         attributes.reset(new AttributeMap(*other.attributes));
       }
@@ -91,12 +75,6 @@ public:
     // Copy assignment - deep copy attributes if present
     SearchVertexInfo& operator=(const SearchVertexInfo& other) {
       if (this != &other) {
-        is_checked = other.is_checked;
-        is_in_openlist = other.is_in_openlist;
-        f_cost = other.f_cost;
-        g_cost = other.g_cost;
-        h_cost = other.h_cost;
-        parent_id = other.parent_id;
         if (other.attributes) {
           attributes.reset(new AttributeMap(*other.attributes));
         } else {
@@ -114,17 +92,97 @@ public:
 
     /// Reset all search information to initial state
     void Reset() {
-      is_checked = false;
-      is_in_openlist = false;
-      f_cost = std::numeric_limits<CostType>::max();
-      g_cost = std::numeric_limits<CostType>::max();
-      h_cost = std::numeric_limits<CostType>::max();
-      parent_id = -1;
       // Clear attributes but keep the allocated AttributeMap for reuse
       if (attributes) {
         attributes->ClearAttributes();
       }
     }
+
+    // === CONVENIENCE METHODS FOR COMMON ALGORITHM DATA ===
+
+    // Boolean flags
+    bool GetChecked() const {
+      return GetAttributeOr<bool>("is_checked", false);
+    }
+    
+    void SetChecked(bool checked) {
+      SetAttribute("is_checked", checked);
+    }
+    
+    bool GetInOpenList() const {
+      return GetAttributeOr<bool>("is_in_openlist", false);
+    }
+    
+    void SetInOpenList(bool in_list) {
+      SetAttribute("is_in_openlist", in_list);
+    }
+
+    // Cost values (using template parameter CostType)
+    CostType GetGCost() const {
+      return GetAttributeOr<CostType>("g_cost", std::numeric_limits<CostType>::max());
+    }
+    
+    void SetGCost(CostType cost) {
+      SetAttribute("g_cost", cost);
+    }
+    
+    CostType GetHCost() const {
+      return GetAttributeOr<CostType>("h_cost", std::numeric_limits<CostType>::max());
+    }
+    
+    void SetHCost(CostType cost) {
+      SetAttribute("h_cost", cost);
+    }
+    
+    CostType GetFCost() const {
+      return GetAttributeOr<CostType>("f_cost", std::numeric_limits<CostType>::max());
+    }
+    
+    void SetFCost(CostType cost) {
+      SetAttribute("f_cost", cost);
+    }
+
+    // Parent tracking
+    VertexId GetParent() const {
+      return GetAttributeOr<VertexId>("parent_id", -1);
+    }
+    
+    void SetParent(VertexId parent) {
+      SetAttribute("parent_id", parent);
+    }
+
+    // === LEGACY COMPATIBILITY PROPERTIES ===
+    // These provide backward compatibility for existing code that accesses fields directly
+    
+    // Property-like accessors that can be used as lvalues for assignment
+    struct BoolProperty {
+      SearchVertexInfo* info;
+      const char* key;
+      operator bool() const { return info->GetAttributeOr<bool>(key, false); }
+      BoolProperty& operator=(bool value) { info->SetAttribute(key, value); return *this; }
+    };
+    
+    struct CostProperty {
+      SearchVertexInfo* info;
+      const char* key;
+      operator CostType() const { return info->GetAttributeOr<CostType>(key, std::numeric_limits<CostType>::max()); }
+      CostProperty& operator=(CostType value) { info->SetAttribute(key, value); return *this; }
+    };
+    
+    struct ParentProperty {
+      SearchVertexInfo* info;
+      const char* key;
+      operator VertexId() const { return info->GetAttributeOr<VertexId>(key, -1); }
+      ParentProperty& operator=(VertexId value) { info->SetAttribute(key, value); return *this; }
+    };
+
+    // Legacy field accessors that behave like the old direct field access
+    BoolProperty is_checked{this, "is_checked"};
+    BoolProperty is_in_openlist{this, "is_in_openlist"};
+    CostProperty f_cost{this, "f_cost"};
+    CostProperty g_cost{this, "g_cost"};
+    CostProperty h_cost{this, "h_cost"};
+    ParentProperty parent_id{this, "parent_id"};
 
     // Flexible attribute methods
     template<typename T>

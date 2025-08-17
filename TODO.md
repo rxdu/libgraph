@@ -61,6 +61,7 @@
 
 **Essential Graph Features**
 - [x] **Vertex/Edge attributes** - Support for metadata storage on vertices and edges ✅ (Aug 2025)
+  - ✅ **Legacy field modernization** - Removed hardcoded fields (g_cost, f_cost, etc.) from SearchVertexInfo and replaced with flexible attribute system while maintaining backward compatibility through property-based accessors
 - [ ] **Graph statistics** - Built-in diameter, density, clustering coefficient calculations
 - [ ] **Subgraph operations** - Extract subgraphs based on vertex/edge predicates
 - [ ] **Graph comparison** - Equality operators and isomorphism detection
