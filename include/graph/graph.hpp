@@ -35,6 +35,8 @@
 #include <unordered_map>
 #include <vector>
 #include <cmath> // For std::isnan, std::isinf
+#include <iterator> // For iterator_traits
+#include <utility> // For std::swap
 
 #include "graph/edge.hpp" // Independent Edge class
 #include "graph/impl/default_indexer.hpp"
@@ -144,9 +146,9 @@ public:
     using pointer = const Vertex*;
     using reference = const Vertex&;
 
-    const_vertex_iterator() : iter_() {}
-    explicit const_vertex_iterator(VertexMapTypeConstIterator s) : iter_(s) {}
-    explicit const_vertex_iterator(VertexMapTypeIterator s) : iter_(s) {}
+    const_vertex_iterator() noexcept : iter_() {}
+    explicit const_vertex_iterator(VertexMapTypeConstIterator s) noexcept : iter_(s) {}
+    explicit const_vertex_iterator(VertexMapTypeIterator s) noexcept : iter_(s) {}
 
     const Vertex *operator->() const;
     const Vertex &operator*() const;
@@ -154,11 +156,16 @@ public:
     const_vertex_iterator& operator++() { ++iter_; return *this; }
     const_vertex_iterator operator++(int) { const_vertex_iterator tmp(*this); ++iter_; return tmp; }
     
-    bool operator==(const const_vertex_iterator& other) const { return iter_ == other.iter_; }
-    bool operator!=(const const_vertex_iterator& other) const { return iter_ != other.iter_; }
+    bool operator==(const const_vertex_iterator& other) const noexcept { return iter_ == other.iter_; }
+    bool operator!=(const const_vertex_iterator& other) const noexcept { return iter_ != other.iter_; }
     
-    // Access to underlying iterator for compatibility
-    VertexMapTypeConstIterator base() const { return iter_; }
+    // Additional STL compatibility
+    void swap(const_vertex_iterator& other) noexcept {
+      std::swap(iter_, other.iter_);
+    }
+    
+    // Access to underlying iterator for STL compatibility
+    VertexMapTypeConstIterator base() const noexcept { return iter_; }
   };
 
   class vertex_iterator {
@@ -173,8 +180,8 @@ public:
     using pointer = Vertex*;
     using reference = Vertex&;
 
-    vertex_iterator() : iter_() {}
-    explicit vertex_iterator(VertexMapTypeIterator s) : iter_(s) {}
+    vertex_iterator() noexcept : iter_() {}
+    explicit vertex_iterator(VertexMapTypeIterator s) noexcept : iter_(s) {}
 
     Vertex *operator->();
     Vertex &operator*();
@@ -183,14 +190,19 @@ public:
     vertex_iterator& operator++() { ++iter_; return *this; }
     vertex_iterator operator++(int) { vertex_iterator tmp(*this); ++iter_; return tmp; }
     
-    bool operator==(const vertex_iterator& other) const { return iter_ == other.iter_; }
-    bool operator!=(const vertex_iterator& other) const { return iter_ != other.iter_; }
+    bool operator==(const vertex_iterator& other) const noexcept { return iter_ == other.iter_; }
+    bool operator!=(const vertex_iterator& other) const noexcept { return iter_ != other.iter_; }
+    
+    // Additional STL compatibility
+    void swap(vertex_iterator& other) noexcept {
+      std::swap(iter_, other.iter_);
+    }
     
     // Conversion to const_vertex_iterator
     operator const_vertex_iterator() const { return const_vertex_iterator(iter_); }
     
     // Access to underlying iterator for compatibility
-    VertexMapTypeIterator base() const { return iter_; }
+    VertexMapTypeIterator base() const noexcept { return iter_; }
 
     // Hash support for vertex_iterator
     struct Hash {
@@ -287,6 +299,14 @@ public:
   }
   const_vertex_iterator vertex_end() const {
     return const_vertex_iterator{vertex_map_.end()};
+  }
+  
+  // C++11 compatible const iterators (cbegin/cend)
+  const_vertex_iterator vertex_cbegin() const {
+    return const_vertex_iterator{vertex_map_.cbegin()};
+  }
+  const_vertex_iterator vertex_cend() const {
+    return const_vertex_iterator{vertex_map_.cend()};
   }
   ///@}
 
@@ -716,5 +736,8 @@ using Graph_t = Graph<State, Transition, StateIndexer>;
 #include "graph/impl/edge_impl.hpp"
 #include "graph/impl/graph_impl.hpp"
 #include "graph/impl/vertex_impl.hpp"
+
+// Note: STL iterator_traits work automatically with the iterator typedefs
+// defined in the iterator classes above. No explicit specialization needed.
 
 #endif /* GRAPH_HPP */
