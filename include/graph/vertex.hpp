@@ -63,6 +63,7 @@ struct Vertex {
   // Vertices that contain edges connecting to current vertex
   std::list<vertex_iterator> vertices_from;
 
+
   // Attributes for search algorithms
   // NOTE: These fields are deprecated for thread safety. Use SearchContext instead.
   // Will be removed in a future version.
@@ -125,6 +126,7 @@ struct Vertex {
   [[deprecated("Use SearchContext for thread-safe searches")]]
   void ClearVertexSearchInfo();
   ///@}
+
   
   // Friend declaration for Graph to access private members if needed
   friend class Graph<State, Transition, StateIndexer>;

@@ -13,7 +13,10 @@
 #include <unordered_map>
 #include <limits>
 #include <vector>
+#include <memory>
+#include <string>
 #include "graph/exceptions.hpp"
+#include "graph/attributes.hpp"
 
 namespace xmotion {
 
@@ -53,14 +56,61 @@ public:
    * 
    * Contains all the temporary data needed during search algorithms,
    * previously stored directly in Vertex objects.
+   * 
+   * Now includes both legacy fields (for backward compatibility) 
+   * and flexible attributes (for new algorithms).
    */
   struct SearchVertexInfo {
+    // Legacy fields for backward compatibility with existing algorithms
     bool is_checked = false;
     bool is_in_openlist = false;
     CostType f_cost = std::numeric_limits<CostType>::max();
     CostType g_cost = std::numeric_limits<CostType>::max(); 
     CostType h_cost = std::numeric_limits<CostType>::max();
     VertexId parent_id = -1;
+
+    // Flexible attributes for new algorithms (optional, allocated on demand)
+    std::unique_ptr<AttributeMap> attributes;
+
+    // Default constructor
+    SearchVertexInfo() = default;
+
+    // Copy constructor - deep copy attributes if present
+    SearchVertexInfo(const SearchVertexInfo& other) 
+        : is_checked(other.is_checked),
+          is_in_openlist(other.is_in_openlist),
+          f_cost(other.f_cost),
+          g_cost(other.g_cost),
+          h_cost(other.h_cost),
+          parent_id(other.parent_id) {
+      if (other.attributes) {
+        attributes.reset(new AttributeMap(*other.attributes));
+      }
+    }
+
+    // Copy assignment - deep copy attributes if present
+    SearchVertexInfo& operator=(const SearchVertexInfo& other) {
+      if (this != &other) {
+        is_checked = other.is_checked;
+        is_in_openlist = other.is_in_openlist;
+        f_cost = other.f_cost;
+        g_cost = other.g_cost;
+        h_cost = other.h_cost;
+        parent_id = other.parent_id;
+        if (other.attributes) {
+          attributes.reset(new AttributeMap(*other.attributes));
+        } else {
+          attributes.reset();
+        }
+      }
+      return *this;
+    }
+
+    // Move constructor
+    SearchVertexInfo(SearchVertexInfo&&) = default;
+    
+    // Move assignment
+    SearchVertexInfo& operator=(SearchVertexInfo&&) = default;
 
     /// Reset all search information to initial state
     void Reset() {
@@ -70,6 +120,50 @@ public:
       g_cost = std::numeric_limits<CostType>::max();
       h_cost = std::numeric_limits<CostType>::max();
       parent_id = -1;
+      // Clear attributes but keep the allocated AttributeMap for reuse
+      if (attributes) {
+        attributes->ClearAttributes();
+      }
+    }
+
+    // Flexible attribute methods
+    template<typename T>
+    void SetAttribute(const std::string& key, const T& value) {
+      if (!attributes) {
+        attributes.reset(new AttributeMap());
+      }
+      attributes->SetAttribute(key, value);
+    }
+
+    template<typename T>
+    const T& GetAttribute(const std::string& key) const {
+      if (!attributes) {
+        throw std::out_of_range("No attributes set on this vertex");
+      }
+      return attributes->GetAttribute<T>(key);
+    }
+
+    template<typename T>
+    T GetAttributeOr(const std::string& key, const T& default_value) const {
+      if (!attributes) {
+        return default_value;
+      }
+      return attributes->GetAttributeOr(key, default_value);
+    }
+
+    bool HasAttribute(const std::string& key) const {
+      return attributes && attributes->HasAttribute(key);
+    }
+
+    bool RemoveAttribute(const std::string& key) {
+      return attributes && attributes->RemoveAttribute(key);
+    }
+
+    std::vector<std::string> GetAttributeKeys() const {
+      if (!attributes) {
+        return std::vector<std::string>();
+      }
+      return attributes->GetAttributeKeys();
     }
   };
 
@@ -167,9 +261,10 @@ public:
   /**
    * @brief Reset all search information to initial state
    * 
-   * Unlike Clear(), this keeps the allocated memory but resets values,
+   * This keeps the allocated memory but resets values,
    * which can be more efficient for repeated searches.
    * This is the key optimization for 36% improvement shown in benchmarks.
+   * For complete clearing that removes all entries, use Clear() instead.
    */
   void Reset() {
     for (auto& pair : search_data_) {
@@ -193,6 +288,133 @@ public:
    */
   bool Empty() const {
     return search_data_.empty();
+  }
+
+  // =========================================================================
+  // FLEXIBLE ATTRIBUTE INTERFACE (for new algorithms)
+  // =========================================================================
+
+  /**
+   * @brief Set a custom attribute for a vertex in the search context
+   * @tparam T Type of the attribute value
+   * @param vertex_id Vertex identifier
+   * @param key Attribute name
+   * @param value Attribute value
+   */
+  template<typename T>
+  void SetVertexAttribute(VertexId vertex_id, const std::string& key, const T& value) {
+    auto& info = GetSearchInfo(vertex_id);
+    info.SetAttribute(key, value);
+  }
+
+  /**
+   * @brief Get a custom attribute for a vertex in the search context
+   * @tparam T Expected type of the attribute
+   * @param vertex_id Vertex identifier
+   * @param key Attribute name
+   * @return Reference to the attribute value
+   */
+  template<typename T>
+  const T& GetVertexAttribute(VertexId vertex_id, const std::string& key) const {
+    const auto& info = GetSearchInfo(vertex_id);
+    return info.template GetAttribute<T>(key);
+  }
+
+  /**
+   * @brief Get a custom attribute with default value
+   * @tparam T Expected type of the attribute
+   * @param vertex_id Vertex identifier
+   * @param key Attribute name
+   * @param default_value Default value if attribute doesn't exist
+   * @return Attribute value or default
+   */
+  template<typename T>
+  T GetVertexAttributeOr(VertexId vertex_id, const std::string& key, const T& default_value) const {
+    if (!HasSearchInfo(vertex_id)) {
+      return default_value;
+    }
+    const auto& info = GetSearchInfo(vertex_id);
+    return info.template GetAttributeOr<T>(key, default_value);
+  }
+
+  /**
+   * @brief Check if a vertex has a custom attribute
+   * @param vertex_id Vertex identifier
+   * @param key Attribute name
+   * @return true if attribute exists
+   */
+  bool HasVertexAttribute(VertexId vertex_id, const std::string& key) const {
+    if (!HasSearchInfo(vertex_id)) {
+      return false;
+    }
+    const auto& info = GetSearchInfo(vertex_id);
+    return info.HasAttribute(key);
+  }
+
+  /**
+   * @brief Get all custom attribute keys for a vertex
+   * @param vertex_id Vertex identifier
+   * @return Vector of attribute keys
+   */
+  std::vector<std::string> GetVertexAttributeKeys(VertexId vertex_id) const {
+    if (!HasSearchInfo(vertex_id)) {
+      return std::vector<std::string>();
+    }
+    const auto& info = GetSearchInfo(vertex_id);
+    return info.GetAttributeKeys();
+  }
+
+  // =========================================================================
+  // CONVENIENCE METHODS (bridge legacy and flexible approaches)
+  // =========================================================================
+
+  /**
+   * @brief Set g-cost using either legacy field or flexible attribute
+   * @param vertex_id Vertex identifier
+   * @param cost The cost value
+   * @param use_legacy If true, uses legacy g_cost field; if false, uses "g_cost" attribute
+   */
+  void SetGCost(VertexId vertex_id, CostType cost, bool use_legacy = true) {
+    if (use_legacy) {
+      GetSearchInfo(vertex_id).g_cost = cost;
+    } else {
+      SetVertexAttribute(vertex_id, "g_cost", cost);
+    }
+  }
+
+  /**
+   * @brief Get g-cost from either legacy field or flexible attribute
+   * @param vertex_id Vertex identifier
+   * @param use_legacy If true, reads legacy g_cost field; if false, reads "g_cost" attribute
+   */
+  CostType GetGCost(VertexId vertex_id, bool use_legacy = true) const {
+    if (use_legacy) {
+      return HasSearchInfo(vertex_id) ? GetSearchInfo(vertex_id).g_cost : std::numeric_limits<CostType>::max();
+    } else {
+      return GetVertexAttributeOr<CostType>(vertex_id, "g_cost", std::numeric_limits<CostType>::max());
+    }
+  }
+
+  /**
+   * @brief Set parent using either legacy field or flexible attribute
+   */
+  void SetParent(VertexId vertex_id, VertexId parent_id, bool use_legacy = true) {
+    if (use_legacy) {
+      GetSearchInfo(vertex_id).parent_id = parent_id;
+    } else {
+      SetVertexAttribute(vertex_id, "parent", parent_id);
+    }
+  }
+
+  /**
+   * @brief Get parent from either legacy field or flexible attribute
+   */
+  VertexId GetParent(VertexId vertex_id, bool use_legacy = true) const {
+    if (use_legacy) {
+      return HasSearchInfo(vertex_id) ? GetSearchInfo(vertex_id).parent_id : -1;
+    } else {
+      return GetVertexAttributeOr<VertexId>(vertex_id, "parent", -1);
+    }
   }
 
   /**

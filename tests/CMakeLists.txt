@@ -35,7 +35,9 @@ add_executable(utests
     # Thread-safe search algorithm tests
     unit_test/threadsafe_search_test.cpp
     # Parameterized tests for different state types
-    unit_test/parameterized_state_test.cpp)
+    unit_test/parameterized_state_test.cpp
+    # Simple attribute system tests
+    unit_test/simple_attributes_test.cpp)
 target_link_libraries(utests PRIVATE gtest gmock gtest_main graph)
 # get_target_property(PRIVATE_HEADERS graph INCLUDE_DIRECTORIES)
 target_include_directories(utests PRIVATE ${PRIVATE_HEADERS})
