@@ -1,128 +1,216 @@
-## API
+# libgraph Documentation
 
-Outlines of core data structures are given at this [page](./api). The main purpose of that page is to provide an API reference. Some C++ details are removed for brevity. Get more information of the actual implementation from the doxygen documentation.
+## Overview
 
-## Design
+libgraph is a modern, header-only C++11 library for graph construction and pathfinding algorithms. It provides high-performance graph operations with thread-safe concurrent searches and support for generic cost types.
 
-Graph is a type of data structure that can be used to represent pairwise relations between entities. A graph $G$ contains a collection of vertices $V$ and edges $E$, of which an edge corresponds to a connectivity relation and a vertex corresponds to an entity. A matrix or adjacency list is commonly used to implement a graph. In this library, an object-oriented implementation is used for efficient access to edges of each vertex. The structure is illustrated as follows 
+## Documentation Structure
 
-* Graph
-  * Vertex $v_1$
-    * Edge $e_{11}$ 
-    * Edge $e_{12}$
-    * ...
-  * ...
-  * Vertex $v_n$
-    * Edge $e_{n1}$ 
-    * Edge $e_{n2}$ 
-    * ...
-    * Edge $e_{nm}$ 
+### Core Documentation
 
-where $G = \{V, E\}$, $V = \{v_1, v_2, ..., v_n\}$, $E = \{E_{v_1}, ..., E_{v_n}\} = \{\{e_{11}, e_{12}, ...\}, ..., \{e_{n1}, e_{n2}, ..., e_{nm}\}\}$. 
+- **[API Reference](./api.md)** - Complete API documentation for all classes and methods
+- **[Getting Started Guide](./getting-started.md)** - Quick introduction and your first graph in 20 minutes
+- **[Tutorial Series](./tutorials/)** - Progressive learning path from basics to advanced features
 
-In practice, we usually want to associate application-specific data structures to the vertices and edges so that the graph can be meaningful for the application. For example, when we use a graph to represent a square grid, a square cell is associated with a vertex, and a connection between two cells is associated with an edge. Thus we implment the graph as a class template **Graph<State, Transition, StateIndexer>**. We uniquely associate a **State** data structure with a vertex and a **Transition** data structure to an edge. The StateIndexer is used to generate an index for the states so that any state can be uniquely identified in the graph.
+### Design Documentation
 
-## Graph Construction
+- **[Architecture Overview](./architecture.md)** - System design, template patterns, and implementation details
+- **[Search Framework](./search_framework.md)** - Unified search algorithm framework using CRTP strategy pattern
+- **[Thread Safety Design](./thread_safety_design.md)** - Concurrent search architecture and SearchContext design
 
-In the current implementation, "State" has to be defined as a class or struct. If a user-defined State class/struct has a member variable "id_" or "id" and the value is unique for each instance, the default state indexer could be used. Otherwise, you have to provide an indexer in the form of a function or functor. By default, the "Transition" type is "double". Inside the graph, a Vertex has the same ID with the State it's associated with. 
+### Advanced Topics
 
-Here is an example showing how to use the templates to construct a graph.
+- **[Performance Testing](./performance_testing.md)** - Benchmarking framework and optimization targets
+- **[Dynamic Priority Queue](./dynamic_priority_queue.md)** - Implementation details of the priority queue with update capability
+- **[Large Scale Testing](./large_scale_performance_testing.md)** - Performance analysis with graphs up to 1M+ vertices
 
-I. We first define a State type we want to use for constructing the graph.
+### Migration and Updates
 
-~~~cpp
-struct StateExample
-{
-    StateExample(uint64_t _id):id(_id){};
+- **[Cost Type Removal Summary](./costtype_removal_summary.md)** - Migration guide for generic cost type support
+- **[Search Framework Migration](./search_framework.md)** - Guide for transitioning to the unified search framework
 
-    int64_t id;
+## Library Architecture
+
+### Template System
+
+The library is built around three main template parameters:
+
+```cpp
+template<typename State, typename Transition = double, typename StateIndexer = DefaultIndexer<State>>
+class Graph;
+```
+
+- **State**: Your vertex data type (locations, game states, network nodes, etc.)
+- **Transition**: Edge weight/cost type (defaults to `double`, supports custom types)
+- **StateIndexer**: Functor for generating unique IDs from states (auto-detects `id`, `id_`, or `GetId()`)
+
+### Core Components
+
+#### Graph Data Structure
+
+The graph uses an adjacency list representation with O(m+n) space complexity:
+
+* **Graph** container
+  * **Vertex** collection (hash map with O(1) average access)
+    * **Edge** list (linked list for each vertex)
+    * State data storage
+    * Reverse references for efficient operations
+  * Thread-safe search support via external SearchContext
+  * RAII memory management with `std::unique_ptr`
+
+#### Search Algorithms
+
+Four algorithms implemented with unified framework:
+
+| Algorithm | Use Case | Time Complexity | Optimality |
+|-----------|----------|-----------------|------------|
+| **Dijkstra** | Shortest paths in weighted graphs | O((m+n) log n) | Guaranteed optimal |
+| **A\*** | Heuristic-guided pathfinding | O((m+n) log n)* | Optimal with admissible heuristic |
+| **BFS** | Shortest paths by edge count | O(m+n) | Optimal for unweighted |
+| **DFS** | Graph traversal, reachability | O(m+n) | Not optimal for paths |
+
+*\*A* performance depends on heuristic quality*
+
+## Quick Example
+
+```cpp
+#include "graph/graph.hpp"
+#include "graph/search/dijkstra.hpp"
+
+using namespace xmotion;
+
+// Define your state type
+struct Location {
+    int id;
+    std::string name;
+    double x, y;  // Coordinates
+    
+    Location(int i, const std::string& n, double x, double y) 
+        : id(i), name(n), x(x), y(y) {}
 };
-~~~
 
-II. Then we can create a few objects of class StateExample
-
-~~~cpp
-std::vector<StateExample*> nodes;
-
-// create nodes to be bundled with the graph vertices
-for(int i = 0; i < 9; i++) {
-	nodes.push_back(new StateExample(i));
-~~~
-
-III. Now use those nodes to construct a graph. Note that the graph is of type "Graph<StateExample*, double, DefaultStateIndexer<StateExample*>>" in this example. Since the latter two type parameters use the default types, you only need to explicitly specify the first one.
-
-~~~cpp
-// create a graph
-Graph<StateExample*> graph;
-
-// we only store a pointer in the graph to avoid copying possibly large data
-graph.AddEdge(nodes[0], nodes[1], 1.0);
-graph.AddEdge(nodes[0], nodes[2], 1.5);
-graph.AddEdge(nodes[1], nodes[2], 2.0);
-graph.AddEdge(nodes[2], nodes[3], 2.5);
-~~~
-
-IV. Now you've got a graph. You can print all edges of this graph in the following way
-
-~~~cpp
-auto all_edges = graph.GetAllEdges();
-
-for(auto e : all_edges)
-	e->PrintEdge();
-~~~
-
-You will get the output
-
-~~~
-Edge: start - 0 , end - 1 , cost - 1
-Edge: start - 0 , end - 2 , cost - 1.5
-Edge: start - 1 , end - 2 , cost - 2
-Edge: start - 2 , end - 3 , cost - 2.5
-~~~
-
-You can use iterators to access vertices and edges
-
-~~~cpp
-for (auto it = graph.vertex_begin(); it != graph.vertex_end(); ++it)
-{
-  std::cout << "edges of vertex: " << (*it).vertex_id_ << std::endl;
-  
-  for (auto ite = it->edge_begin(); ite != it->edge_end(); ++ite)
-    std::cout << "edge " << (*ite).dst_->vertex_id_ << std::endl;
+int main() {
+    // Create graph
+    Graph<Location> map;
+    
+    // Add vertices
+    Location home{0, "Home", 0.0, 0.0};
+    Location work{1, "Work", 10.0, 5.0};
+    Location store{2, "Store", 3.0, 2.0};
+    
+    map.AddVertex(home);
+    map.AddVertex(work);
+    map.AddVertex(store);
+    
+    // Add weighted edges
+    map.AddEdge(home, store, 3.5);   // Distance/cost
+    map.AddEdge(store, work, 7.2);
+    map.AddEdge(home, work, 12.0);   // Direct route
+    
+    // Find optimal path
+    auto path = Dijkstra::Search(map, home, work);
+    
+    // Path will be: Home -> Store -> Work (total cost: 10.7)
+    // Better than direct route (cost: 12.0)
+    
+    return 0;
 }
-~~~
+```
 
-## Graph Search
+## Thread Safety
 
-You can use A* and Dijkstra algorithms to perform search in the graph.
+The library supports concurrent read-only searches through SearchContext:
 
-~~~cpp
-// In order to use A* search, you need to specify how to calculate heuristic
-auto path_a = AStar::Search(&graph, 0, 13,
-        CalcHeuristicFunc_t<SimpleState *>(CalcHeuristic));
-for (auto &e : path_a)
-  std::cout << "id: " << e->id << std::endl;
+```cpp
+// Thread-safe concurrent searches
+void worker_thread(const Graph<Location>& map) {
+    SearchContext<Location> context;  // Thread-local search state
+    auto path = Dijkstra::Search(map, context, start, goal);
+    // Process path...
+}
+```
 
-// Dijkstra search
-auto path_d = Dijkstra::Search(&graph, 0, 13);
-for (auto &e : path_d)
-  std::cout << "id: " << e->id << std::endl;
-~~~
+Graph modifications require external synchronization.
 
-In cases when it's unnecessary to build the entire graph for a search ,you can use the incremental version of A* and Dijkstra. See **"demo/inc_search_demo.cpp"** for a working example.
+## Advanced Features
 
-## Memory Management
+### Custom Cost Types
 
-When a Graph object goes out of scope, its destructor function will recycle memory allocated for its vertices and edges. **The graph doesn't recycle memory allocated for the bundled "State" data structure if only a pointer to the State is associated with the vertex in the graph**. In the square grid example, the graph doesn't assume the square grid also becomes useless when the graph itself is destructed. Thus you still have a complete square grid data structure after the graph object goes out of scope. The **square grid** should be responsible for recycling the memory allocated for its square cells when it goes out of scope. Thus in the above simple example, we will need to do the following operation to free the memory at the end.
+```cpp
+struct MultiCriteriaCost {
+    double time;
+    double distance;
+    double toll;
+    
+    bool operator<(const MultiCriteriaCost& other) const {
+        // Lexicographic comparison: time > distance > toll
+        if (time != other.time) return time < other.time;
+        if (distance != other.distance) return distance < other.distance;
+        return toll < other.toll;
+    }
+    
+    MultiCriteriaCost operator+(const MultiCriteriaCost& other) const {
+        return {time + other.time, distance + other.distance, toll + other.toll};
+    }
+};
 
-~~~cpp
-// delete objects of StateExample
-for(auto& e : nodes)
-	delete e;
-~~~
+// Specialize CostTraits for custom type
+namespace xmotion {
+    template<>
+    struct CostTraits<MultiCriteriaCost> {
+        static MultiCriteriaCost infinity() {
+            return {std::numeric_limits<double>::max(), 
+                   std::numeric_limits<double>::max(),
+                   std::numeric_limits<double>::max()};
+        }
+    };
+}
 
-It's usually preferred to only associate a pointer to a vertex if it's expensive to copy all data over to the graph or if the attributes of your State may change dynamically and you don't want to synchronize data in the graph manually. In such case, user has to make sure the State data structures don't go out of scope before the destruction of the graph. Otherwise the graph vertices are associated with "nothing" and you will get memory errors.
+Graph<Location, MultiCriteriaCost> multi_criteria_map;
+```
 
-In other cases, you can copy data to graph vertices and you will get a second copy of your original data in the graph once the graph is created. The data copied to the graph will be managed by the graph. You only need to recycle the original data if necessary.
+### Performance Optimization
 
-An detailed example of the graph and path search can be found in "demo/simple_graph_demo.cpp". You may also find the unit tests in "tests/unit_test" useful for other possible operations on the graph.
+```cpp
+// Pre-allocate for large graphs
+graph.reserve(100000);  // Reserve space for 100k vertices
+
+// Batch operations
+std::vector<Location> locations = LoadLocations();
+graph.AddVertices(locations);
+
+// Reuse search context
+SearchContext<Location> context;
+context.PreAllocate(100000);  // Pre-allocate search state
+for (const auto& query : queries) {
+    context.Reset();  // Clear previous search
+    auto path = Dijkstra::Search(graph, context, query.start, query.goal);
+}
+```
+
+## Building Documentation
+
+### Doxygen Documentation
+
+Generate detailed API documentation:
+
+```bash
+cd docs
+doxygen doxygen/Doxyfile
+# Open docs/doxygen/html/index.html in browser
+```
+
+### Online Documentation
+
+- GitHub Repository: [https://github.com/rxdu/libgraph](https://github.com/rxdu/libgraph)
+- API Reference: [https://rdu.im/libgraph/](https://rdu.im/libgraph/)
+
+## Getting Help
+
+- **[Issue Tracker](https://github.com/rxdu/libgraph/issues)** - Report bugs or request features
+- **[Discussions](https://github.com/rxdu/libgraph/discussions)** - Ask questions and share experiences
+- **[Examples](../sample/)** - Working examples demonstrating various features
+
+## License
+
+This library is distributed under the MIT License. See [LICENSE](../LICENSE) for details.
