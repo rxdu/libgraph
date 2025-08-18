@@ -27,20 +27,34 @@ namespace xmotion {
  * @tparam State The state type used in the graph
  * @tparam Transition The transition/cost type used in edges
  * @tparam StateIndexer The indexer functor for state types
+ * @tparam TransitionComparator Comparator for transition/cost types (defaults to std::less<Transition>)
  */
-template<typename Derived, typename State, typename Transition, typename StateIndexer>
+template<typename Derived, typename State, typename Transition, typename StateIndexer,
+         typename TransitionComparator = std::less<Transition>>
 class SearchStrategy {
 public:
     using GraphType = Graph<State, Transition, StateIndexer>;
     using vertex_iterator = typename GraphType::const_vertex_iterator;
     using SearchInfo = typename SearchContext<State, Transition, StateIndexer>::SearchVertexInfo;
+    using CostComparator = TransitionComparator;
+
+protected:
+    TransitionComparator cost_comparator_;
+
+public:
+    // Constructor to initialize the comparator
+    SearchStrategy() : cost_comparator_() {}
+    explicit SearchStrategy(const TransitionComparator& comp) : cost_comparator_(comp) {}
+    
+    // Access to the cost comparator
+    const TransitionComparator& GetComparator() const noexcept { return cost_comparator_; }
     
     /**
      * @brief Calculate priority for vertex in open list
      * @param info Search information for the vertex
      * @return Priority value (lower values have higher priority in min-heap)
      */
-    inline double GetPriority(const SearchInfo& info) const noexcept {
+    inline Transition GetPriority(const SearchInfo& info) const noexcept {
         return static_cast<const Derived*>(this)->GetPriorityImpl(info);
     }
     
@@ -85,7 +99,7 @@ public:
      */
     inline bool RelaxVertex(SearchInfo& current_info, SearchInfo& successor_info,
                            vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                           double edge_cost) const {
+                           const Transition& edge_cost) const {
         return static_cast<const Derived*>(this)->RelaxVertexImpl(
             current_info, successor_info, successor_vertex, goal_vertex, edge_cost);
     }

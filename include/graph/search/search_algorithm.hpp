@@ -59,7 +59,11 @@ public:
             const auto& info_x = context.GetSearchInfo(x);
             const auto& info_y = context.GetSearchInfo(y);
             // Note: priority_queue is max-heap, so we reverse comparison for min-heap
-            return strategy.GetPriority(info_x) > strategy.GetPriority(info_y);
+            // Use the strategy's cost comparator: if comp(a,b) means a < b,
+            // then comp(b,a) means b < a, which gives us max-heap behavior for min-heap
+            auto priority_x = strategy.GetPriority(info_x);
+            auto priority_y = strategy.GetPriority(info_y);
+            return strategy.GetComparator()(priority_y, priority_x);
         }
     };
     

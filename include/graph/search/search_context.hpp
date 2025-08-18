@@ -15,10 +15,46 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include "graph/exceptions.hpp"
 #include "graph/attributes.hpp"
 
 namespace xmotion {
+
+/**
+ * @brief Traits for providing default cost values for different types
+ */
+template<typename T>
+struct CostTraits {
+    // Check if T has a static max() method
+    template<typename U>
+    static auto has_max_method(int) -> decltype(U::max(), std::true_type{});
+    template<typename U>
+    static std::false_type has_max_method(...);
+    
+    using has_max = decltype(has_max_method<T>(0));
+    
+    // Use T::max() if available
+    template<typename U = T>
+    static typename std::enable_if<decltype(has_max_method<U>(0))::value, U>::type
+    infinity() {
+        return U::max();
+    }
+    
+    // For arithmetic types without max() method, use numeric_limits::max()
+    template<typename U = T>
+    static typename std::enable_if<!decltype(has_max_method<U>(0))::value && std::is_arithmetic<U>::value, U>::type
+    infinity() {
+        return std::numeric_limits<U>::max();
+    }
+    
+    // For non-arithmetic types without max() method, use default constructor
+    template<typename U = T>
+    static typename std::enable_if<!decltype(has_max_method<U>(0))::value && !std::is_arithmetic<U>::value, U>::type
+    infinity() {
+        return U{};
+    }
+};
 
 /**
  * @brief Type alias for search result paths
@@ -119,7 +155,7 @@ public:
     // Cost values (flexible types via attributes)
     template<typename T = double>
     T GetGCost() const {
-      return GetAttributeOr<T>("g_cost", std::numeric_limits<T>::max());
+      return GetAttributeOr<T>("g_cost", CostTraits<T>::infinity());
     }
     
     template<typename T>
@@ -129,7 +165,7 @@ public:
     
     template<typename T = double>
     T GetHCost() const {
-      return GetAttributeOr<T>("h_cost", std::numeric_limits<T>::max());
+      return GetAttributeOr<T>("h_cost", CostTraits<T>::infinity());
     }
     
     template<typename T>
@@ -139,7 +175,7 @@ public:
     
     template<typename T = double>
     T GetFCost() const {
-      return GetAttributeOr<T>("f_cost", std::numeric_limits<T>::max());
+      return GetAttributeOr<T>("f_cost", CostTraits<T>::infinity());
     }
     
     template<typename T>

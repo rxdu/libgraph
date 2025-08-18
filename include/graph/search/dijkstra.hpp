@@ -24,42 +24,48 @@ namespace xmotion {
  * (actual distance from start). This guarantees finding the optimal path
  * in graphs with non-negative edge weights.
  */
-template<typename State, typename Transition, typename StateIndexer>
-class DijkstraStrategy : public SearchStrategy<DijkstraStrategy<State, Transition, StateIndexer>,
-                                              State, Transition, StateIndexer> {
+template<typename State, typename Transition, typename StateIndexer,
+         typename TransitionComparator = std::less<Transition>>
+class DijkstraStrategy : public SearchStrategy<DijkstraStrategy<State, Transition, StateIndexer, TransitionComparator>,
+                                              State, Transition, StateIndexer, TransitionComparator> {
 public:
-    using Base = SearchStrategy<DijkstraStrategy<State, Transition, StateIndexer>,
-                               State, Transition, StateIndexer>;
+    using Base = SearchStrategy<DijkstraStrategy<State, Transition, StateIndexer, TransitionComparator>,
+                               State, Transition, StateIndexer, TransitionComparator>;
     using GraphType = typename Base::GraphType;
     using vertex_iterator = typename Base::vertex_iterator;
     using SearchInfo = typename Base::SearchInfo;
     
     DijkstraStrategy() = default;
+    explicit DijkstraStrategy(const TransitionComparator& comp) : Base(comp) {}
     
-    double GetPriorityImpl(const SearchInfo& info) const noexcept {
-        return info.g_cost;
+    Transition GetPriorityImpl(const SearchInfo& info) const noexcept {
+        // Return the g_cost directly - priority queue will use custom comparator
+        return info.template GetGCost<Transition>();
     }
     
     void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
                              vertex_iterator goal_vertex) const {
-        info.g_cost = 0.0;
-        info.h_cost = 0.0;  // Dijkstra doesn't use heuristic
-        info.f_cost = 0.0;  // Same as g_cost for Dijkstra
-        info.is_checked = false;
-        info.is_in_openlist = false;
-        info.parent_id = -1;
+        // Initialize with zero cost (works for both double and custom cost types)
+        info.SetGCost(Transition{});
+        info.SetHCost(Transition{});  // Dijkstra doesn't use heuristic
+        info.SetFCost(Transition{});  // Same as g_cost for Dijkstra
+        info.SetChecked(false);
+        info.SetInOpenList(false);
+        info.SetParent(-1);
     }
     
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        double edge_cost) const {
+                        const Transition& edge_cost) const {
         
-        double new_cost = current_info.g_cost + edge_cost;
+        Transition current_g_cost = current_info.template GetGCost<Transition>();
+        Transition new_cost = current_g_cost + edge_cost;
+        Transition successor_g_cost = successor_info.template GetGCost<Transition>();
         
-        if (new_cost < successor_info.g_cost) {
-            successor_info.g_cost = new_cost;
-            successor_info.h_cost = 0.0;  // No heuristic in Dijkstra
-            successor_info.f_cost = new_cost;  // f = g for Dijkstra
+        if (this->cost_comparator_(new_cost, successor_g_cost)) {
+            successor_info.SetGCost(new_cost);
+            successor_info.SetHCost(Transition{});  // No heuristic in Dijkstra
+            successor_info.SetFCost(new_cost);  // f = g for Dijkstra
             return true;
         }
         
@@ -74,9 +80,11 @@ public:
 /**
  * @brief Helper function to create Dijkstra strategy with automatic type deduction
  */
-template<typename State, typename Transition, typename StateIndexer>
-DijkstraStrategy<State, Transition, StateIndexer> MakeDijkstraStrategy() {
-    return DijkstraStrategy<State, Transition, StateIndexer>();
+template<typename State, typename Transition, typename StateIndexer,
+         typename TransitionComparator = std::less<Transition>>
+DijkstraStrategy<State, Transition, StateIndexer, TransitionComparator> 
+MakeDijkstraStrategy(const TransitionComparator& comp = TransitionComparator{}) {
+    return DijkstraStrategy<State, Transition, StateIndexer, TransitionComparator>(comp);
 }
 
 /**
