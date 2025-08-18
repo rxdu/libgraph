@@ -278,64 +278,11 @@ void DemoLexicographicCost() {
         std::cout << "No path found. This might indicate an issue with cost initialization.\n";
     }
 }
-
-void DemoTupleCost() {
-    std::cout << "\n\n=== Network Routing with Tuple-based Cost ===\n\n";
-    std::cout << "Cost priority: (1) priority level, (2) distance, (3) latency\n\n";
-    
-    // Create a network graph with tuple costs
-    Graph<std::string, TupleCost, StringIndexer> network;
-    
-    // Add nodes
-    network.AddVertex("Router_A");
-    network.AddVertex("Router_B");
-    network.AddVertex("Router_C");
-    network.AddVertex("Router_D");
-    network.AddVertex("Server");
-    
-    // Add connections: (priority_level, distance_km, latency_ms)
-    // Lower priority number = higher priority path
-    
-    // Premium path: A -> Server (high priority, long distance, low latency)
-    network.AddEdge("Router_A", "Server", TupleCost(1, 100, 5));
-    
-    // Standard path: A -> B -> Server (medium priority, medium distance, medium latency)
-    network.AddEdge("Router_A", "Router_B", TupleCost(2, 30, 10));
-    network.AddEdge("Router_B", "Server", TupleCost(2, 40, 12));
-    
-    // Budget path: A -> C -> D -> Server (low priority, short distance, high latency)
-    network.AddEdge("Router_A", "Router_C", TupleCost(3, 20, 15));
-    network.AddEdge("Router_C", "Router_D", TupleCost(3, 15, 20));
-    network.AddEdge("Router_D", "Server", TupleCost(3, 10, 25));
-    
-    std::cout << "Network paths:\n";
-    std::cout << "- Premium: A -> Server (priority=1, distance=100km, latency=5ms)\n";
-    std::cout << "- Standard: A -> B -> Server (priority=2, distance=70km, latency=22ms)\n";
-    std::cout << "- Budget: A -> C -> D -> Server (priority=3, distance=45km, latency=60ms)\n\n";
-    
-    // Find optimal path
-    auto result = Dijkstra::Search(&network, std::string("Router_A"), std::string("Server"));
-    
-    if (!result.empty()) {
-        auto path = result;
-        std::cout << "Optimal path (minimizing priority level first):\n";
-        for (size_t i = 0; i < path.size(); ++i) {
-            std::cout << path[i];
-            if (i < path.size() - 1) std::cout << " -> ";
-        }
-        std::cout << "\n";
-        std::cout << "This selects the premium path due to its highest priority level.\n";
-    } else {
-        std::cout << "No path found. This might indicate an issue with cost initialization.\n";
-    }
-}
-
 } // namespace xmotion
 
 int main() {
     xmotion::DemoLexicographicCost();
-    xmotion::DemoTupleCost();
-    
+
     std::cout << "\n=== Key Insights ===\n";
     std::cout << "1. Lexicographic costs enable multi-criteria optimization\n";
     std::cout << "2. Priority order matters: primary criterion dominates decisions\n";

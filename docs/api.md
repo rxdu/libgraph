@@ -725,4 +725,4 @@ void worker_thread(int thread_id) {
 
 ---
 
-This API reference covers all major classes and methods in libgraph. For working examples and tutorials, see the [Getting Started Guide](getting-started.md) and [Advanced Features Guide](advanced-features.md).
+This API reference covers all major classes and methods in libgraph. For working examples and tutorials, see the [Getting Started Guide](getting_started.md) and [Advanced Features Guide](advanced_features.md).

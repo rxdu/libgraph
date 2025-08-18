@@ -64,8 +64,8 @@ auto path = Dijkstra::Search(map, {0, "Home"}, {1, "Work"});
 
 ### **For Advanced Users** 
 - **[Architecture Overview](docs/architecture.md)** - System design and template patterns
-- **[Advanced Features](docs/advanced-features.md)** - Custom costs, validation, thread safety
-- **[Search Algorithms Guide](docs/search-algorithms.md)** - Deep dive into A*, Dijkstra, BFS, DFS
+- **[Advanced Features](docs/advanced_features.md)** - Custom costs, validation, thread safety
+- **[Search Algorithms Guide](docs/search_algorithms.md)** - Deep dive into A*, Dijkstra, BFS, DFS
 
 ### **For Contributors**
 - **[Performance Testing](docs/performance_testing.md)** - Benchmarking and optimization

@@ -68,7 +68,7 @@ Each tutorial follows a consistent structure:
 
 ## Additional Resources
 
-- **[Getting Started Guide](../getting-started.md)** - Quick introduction and installation
+- **[Getting Started Guide](../getting_started.md)** - Quick introduction and installation
 - **[Complete API Reference](../api.md)** - Detailed class and method documentation  
 - **[Architecture Overview](../architecture.md)** - System design and patterns
 - **[Performance Testing](../performance_testing.md)** - Benchmarking and optimization

@@ -9,7 +9,7 @@ libgraph is a modern, header-only C++11 library for graph construction and pathf
 ### Core Documentation
 
 - **[API Reference](./api.md)** - Complete API documentation for all classes and methods
-- **[Getting Started Guide](./getting-started.md)** - Quick introduction and your first graph in 20 minutes
+- **[Getting Started Guide](./getting_started.md)** - Quick introduction and your first graph in 20 minutes
 - **[Tutorial Series](./tutorials/)** - Progressive learning path from basics to advanced features
 
 ### Design Documentation

@@ -11,5 +11,8 @@ target_link_libraries(incremental_search_demo graph)
 add_executable(lexicographic_cost_demo lexicographic_cost_demo.cpp)
 target_link_libraries(lexicographic_cost_demo graph)
 
+add_executable(tuple_cost_demo tuple_cost_demo.cpp)
+target_link_libraries(tuple_cost_demo graph)
+
 add_executable(thread_safe_search_demo thread_safe_search_demo.cpp)
 target_link_libraries(thread_safe_search_demo graph)
