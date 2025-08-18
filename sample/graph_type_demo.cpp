@@ -15,30 +15,30 @@
 #include <ctime>
 
 // user
+#include "example_state.hpp"
 #include "graph/graph.hpp"
-#include "state_example.hpp"
 
 using namespace xmotion;
 
 void ValueTypeGraphDemo();
 void PointerTypeGraphDemo();
 
-double CalcHeuristicVal(StateExample node1, StateExample node2) { return 0.0; }
+double CalcHeuristicVal(ExampleState node1, ExampleState node2) { return 0.0; }
 
-double CalcHeuristicPtr(StateExample *node1, StateExample *node2) {
+double CalcHeuristicPtr(ExampleState *node1, ExampleState *node2) {
   return 0.0;
 }
 
 void SharedPtrTypeGraphDemo() {
-  std::vector<std::shared_ptr<StateExample>> nodes;
+  std::vector<std::shared_ptr<ExampleState>> nodes;
 
   // create nodes
   for (int i = 0; i < 9; i++) {
-    nodes.push_back(std::make_shared<StateExample>(i));
+    nodes.push_back(std::make_shared<ExampleState>(i));
   }
 
   // create a graph
-  Graph<std::shared_ptr<StateExample>> graph_sharedptr;
+  Graph<std::shared_ptr<ExampleState>> graph_sharedptr;
 
   graph_sharedptr.AddEdge(nodes[0], nodes[1], 1.0);
   graph_sharedptr.AddEdge(nodes[0], nodes[3], 1.5);
@@ -67,15 +67,15 @@ void SharedPtrTypeGraphDemo() {
 }
 
 void ValueTypeGraphDemo() {
-  std::vector<StateExample> nodes;
+  std::vector<ExampleState> nodes;
 
   // create nodes
   for (int i = 0; i < 9; i++) {
-    nodes.push_back(StateExample(i));
+    nodes.push_back(ExampleState(i));
   }
 
   // create a graph
-  Graph<StateExample> graph_val;
+  Graph<ExampleState> graph_val;
 
   graph_val.AddEdge(nodes[0], nodes[1], 1.0);
   graph_val.AddEdge(nodes[0], nodes[3], 1.5);
@@ -104,15 +104,15 @@ void ValueTypeGraphDemo() {
 }
 
 void PointerTypeGraphDemo() {
-  std::vector<StateExample *> nodes;
+  std::vector<ExampleState *> nodes;
 
   // create nodes
   for (int i = 0; i < 9; i++) {
-    nodes.push_back(new StateExample(i));
+    nodes.push_back(new ExampleState(i));
   }
 
   // create a graph
-  Graph<StateExample *> graph_ptr;
+  Graph<ExampleState *> graph_ptr;
 
   graph_ptr.AddEdge(nodes[0], nodes[1], 1.0);
   graph_ptr.AddEdge(nodes[0], nodes[3], 1.5);
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
 
   std::cout << "\n------------- shared pointer type graph -------------\n"
             << std::endl;
-  //   SharedPtrTypeGraphDemo();
+  SharedPtrTypeGraphDemo();
 
   return 0;
 }

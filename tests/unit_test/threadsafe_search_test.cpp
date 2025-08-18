@@ -76,23 +76,23 @@ TEST_F(ThreadSafeSearchTest, SearchContextBasicOperations) {
   EXPECT_EQ(context.Size(), 0);
   
   auto& info = context.GetSearchInfo(123);
-  EXPECT_EQ(info.g_cost, std::numeric_limits<double>::max());
+  EXPECT_EQ(info.GetGCost<double>(), std::numeric_limits<double>::max());
   EXPECT_FALSE(info.is_checked);
   
   EXPECT_FALSE(context.Empty());
   EXPECT_EQ(context.Size(), 1);
   EXPECT_TRUE(context.HasSearchInfo(123));
   
-  info.g_cost = 5.0;
+  info.SetGCost(5.0);
   info.is_checked = true;
   
   const auto& const_info = context.GetSearchInfo(123);
-  EXPECT_EQ(const_info.g_cost, 5.0);
+  EXPECT_EQ(const_info.GetGCost<double>(), 5.0);
   EXPECT_TRUE(const_info.is_checked);
   
   context.Reset();
   EXPECT_EQ(context.Size(), 1);
-  EXPECT_EQ(context.GetSearchInfo(123).g_cost, std::numeric_limits<double>::max());
+  EXPECT_EQ(context.GetSearchInfo(123).GetGCost<double>(), std::numeric_limits<double>::max());
   EXPECT_FALSE(context.GetSearchInfo(123).is_checked);
   
   context.Clear();
@@ -116,8 +116,8 @@ TEST_F(ThreadSafeSearchTest, DijkstraThreadSafeBasicPath) {
   EXPECT_FALSE(context.Empty());
   EXPECT_TRUE(context.HasSearchInfo(0));
   EXPECT_TRUE(context.HasSearchInfo(4));
-  EXPECT_EQ(context.GetSearchInfo(0).g_cost, 0.0);
-  EXPECT_EQ(context.GetSearchInfo(4).g_cost, 4.0);
+  EXPECT_EQ(context.GetSearchInfo(0).GetGCost<double>(), 0.0);
+  EXPECT_EQ(context.GetSearchInfo(4).GetGCost<double>(), 4.0);
 }
 
 TEST_F(ThreadSafeSearchTest, AStarThreadSafeBasicPath) {

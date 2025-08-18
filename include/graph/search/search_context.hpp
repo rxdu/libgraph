@@ -23,36 +23,24 @@ namespace xmotion {
 
 /**
  * @brief Traits for providing default cost values for different types
+ * 
+ * Default implementation for arithmetic types uses std::numeric_limits::max().
+ * For custom cost types, specialize this template explicitly.
+ * 
+ * Example specialization:
+ * template<>
+ * struct CostTraits<MyCustomCost> {
+ *     static MyCustomCost infinity() { return MyCustomCost::max(); }
+ * };
  */
 template<typename T>
 struct CostTraits {
-    // Check if T has a static max() method
-    template<typename U>
-    static auto has_max_method(int) -> decltype(U::max(), std::true_type{});
-    template<typename U>
-    static std::false_type has_max_method(...);
-    
-    using has_max = decltype(has_max_method<T>(0));
-    
-    // Use T::max() if available
-    template<typename U = T>
-    static typename std::enable_if<decltype(has_max_method<U>(0))::value, U>::type
-    infinity() {
-        return U::max();
-    }
-    
-    // For arithmetic types without max() method, use numeric_limits::max()
-    template<typename U = T>
-    static typename std::enable_if<!decltype(has_max_method<U>(0))::value && std::is_arithmetic<U>::value, U>::type
-    infinity() {
-        return std::numeric_limits<U>::max();
-    }
-    
-    // For non-arithmetic types without max() method, use default constructor
-    template<typename U = T>
-    static typename std::enable_if<!decltype(has_max_method<U>(0))::value && !std::is_arithmetic<U>::value, U>::type
-    infinity() {
-        return U{};
+    static T infinity() {
+        // For arithmetic types, use numeric_limits
+        static_assert(std::is_arithmetic<T>::value, 
+            "CostTraits<T>::infinity() must be specialized for non-arithmetic cost types. "
+            "Either specialize CostTraits<YourType> or add a static max() method to your type.");
+        return std::numeric_limits<T>::max();
     }
 };
 
@@ -207,7 +195,7 @@ public:
     struct CostProperty {
       SearchVertexInfo* info;
       const char* key;
-      operator T() const { return info->GetAttributeOr<T>(key, std::numeric_limits<T>::max()); }
+      operator T() const { return info->GetAttributeOr<T>(key, CostTraits<T>::infinity()); }
       CostProperty& operator=(const T& value) { info->SetAttribute(key, value); return *this; }
     };
     
@@ -221,10 +209,12 @@ public:
     // Legacy field accessors that behave like the old direct field access
     BoolProperty is_checked{this, "is_checked"};
     BoolProperty is_in_openlist{this, "is_in_openlist"};
-    CostProperty<double> f_cost{this, "f_cost"};
+    ParentProperty parent_id{this, "parent_id"};
+    
+    // Cost properties for backward compatibility (default to double for legacy code)
     CostProperty<double> g_cost{this, "g_cost"};
     CostProperty<double> h_cost{this, "h_cost"};
-    ParentProperty parent_id{this, "parent_id"};
+    CostProperty<double> f_cost{this, "f_cost"};
 
     // Flexible attribute methods
     template<typename T>

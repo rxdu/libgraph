@@ -120,8 +120,7 @@ int main(int argc, char **argv) {
   auto find_neighbours = GetSquareCellNeighbour(5, 5, 1.0, obstacle_ids);
 
   Graph<SquareCell, double> sgraph1;
-  // Note: IncSearch is deprecated in new framework
-  // Using regular search - need to manually build graph first
+  // Build graph manually (incremental search can be simulated by building graph step by step)
   sgraph1.AddVertex(cell_s);
   sgraph1.AddVertex(cell_g);
   // Add edges based on neighbors (simplified for demo)
@@ -133,7 +132,7 @@ int main(int argc, char **argv) {
   auto path = AStar::Search(&sgraph1, cell_s, cell_g, CalcHeuristic);
 
   Graph<SquareCell, double> sgraph2;
-  // Note: IncSearch is deprecated in new framework
+  // Build second graph for Dijkstra comparison
   sgraph2.AddVertex(cell_s);
   sgraph2.AddVertex(cell_g);
   // Add edges based on neighbors (simplified for demo)

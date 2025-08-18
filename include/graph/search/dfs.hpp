@@ -26,12 +26,13 @@ namespace xmotion {
  * The strategy uses negative timestamps as priorities to make the priority queue
  * behave like a stack (most recently added vertices get processed first).
  */
-template<typename State, typename Transition, typename StateIndexer>
-class DfsStrategy : public SearchStrategy<DfsStrategy<State, Transition, StateIndexer>,
-                                         State, Transition, StateIndexer> {
+template<typename State, typename Transition, typename StateIndexer,
+         typename TransitionComparator = std::less<Transition>>
+class DfsStrategy : public SearchStrategy<DfsStrategy<State, Transition, StateIndexer, TransitionComparator>,
+                                         State, Transition, StateIndexer, TransitionComparator> {
 public:
-    using Base = SearchStrategy<DfsStrategy<State, Transition, StateIndexer>,
-                               State, Transition, StateIndexer>;
+    using Base = SearchStrategy<DfsStrategy<State, Transition, StateIndexer, TransitionComparator>,
+                               State, Transition, StateIndexer, TransitionComparator>;
     using GraphType = typename Base::GraphType;
     using vertex_iterator = typename Base::vertex_iterator;
     using SearchInfo = typename Base::SearchInfo;
@@ -41,6 +42,7 @@ private:
     
 public:
     DfsStrategy() = default;
+    explicit DfsStrategy(const TransitionComparator& comp) : Base(comp) {}
     
     /**
      * @brief Get priority for DFS (implements LIFO using negative timestamps)
@@ -48,10 +50,10 @@ public:
      * Uses negative timestamps to ensure that vertices added more recently
      * get higher priority in the min-heap, creating LIFO behavior.
      */
-    double GetPriorityImpl(const SearchInfo& info) const noexcept {
-        // Use negative g_cost (which stores timestamp) for LIFO behavior
-        // More recent timestamps (higher values) become lower priorities (more negative)
-        return -info.g_cost;
+    Transition GetPriorityImpl(const SearchInfo& info) const noexcept {
+        // For DFS with custom costs, we need to return timestamp-based priority
+        // This assumes arithmetic-like behavior for the Transition type
+        return info.template GetGCost<Transition>();
     }
     
     /**
@@ -61,13 +63,21 @@ public:
      */
     void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
                              vertex_iterator goal_vertex) const {
-        // Use timestamp as g_cost to achieve LIFO behavior
-        info.g_cost = static_cast<double>(++timestamp_counter_);
-        info.h_cost = 0.0;  // DFS doesn't use heuristic
-        info.f_cost = info.g_cost;  // f = g for DFS
-        info.is_checked = false;
-        info.is_in_openlist = false;
-        info.parent_id = -1;
+        // For DFS, we use timestamp-based ordering. For custom costs, convert timestamp to Transition type
+        Transition timestamp_cost;
+        if (std::is_arithmetic<Transition>::value) {
+            timestamp_cost = static_cast<Transition>(++timestamp_counter_);
+        } else {
+            // For non-arithmetic types, use default constructor and rely on insertion order
+            timestamp_cost = Transition{};
+        }
+        
+        info.SetGCost(timestamp_cost);
+        info.SetHCost(Transition{});  // DFS doesn't use heuristic
+        info.SetFCost(timestamp_cost);  // f = g for DFS
+        info.SetChecked(false);
+        info.SetInOpenList(false);
+        info.SetParent(-1);
     }
     
     /**
@@ -78,13 +88,26 @@ public:
      */
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        double edge_cost) const {
+                        const Transition& edge_cost) const {
         // In DFS, we only process each vertex once (first visit)
-        if (successor_info.g_cost == std::numeric_limits<double>::max()) {
+        Transition successor_g_cost = successor_info.template GetGCost<Transition>();
+        Transition max_cost = CostTraits<Transition>::infinity();
+        
+        // Check if vertex hasn't been visited yet
+        if (successor_g_cost == max_cost || this->cost_comparator_(max_cost, successor_g_cost)) {
             // Assign new timestamp for LIFO ordering
-            successor_info.g_cost = static_cast<double>(++timestamp_counter_);
-            successor_info.h_cost = 0.0;  // No heuristic in DFS
-            successor_info.f_cost = successor_info.g_cost;  // f = g for DFS
+            Transition timestamp_cost;
+            if (std::is_arithmetic<Transition>::value) {
+                timestamp_cost = static_cast<Transition>(++timestamp_counter_);
+            } else {
+                // For non-arithmetic types, we can't use timestamps effectively
+                // Fall back to first-visit behavior
+                timestamp_cost = Transition{};
+            }
+            
+            successor_info.SetGCost(timestamp_cost);
+            successor_info.SetHCost(Transition{});  // No heuristic in DFS
+            successor_info.SetFCost(timestamp_cost);  // f = g for DFS
             return true;
         }
         return false; // Already visited
@@ -98,9 +121,11 @@ public:
 /**
  * @brief Helper function to create DFS strategy with automatic type deduction
  */
-template<typename State, typename Transition, typename StateIndexer>
-DfsStrategy<State, Transition, StateIndexer> MakeDfsStrategy() {
-    return DfsStrategy<State, Transition, StateIndexer>();
+template<typename State, typename Transition, typename StateIndexer,
+         typename TransitionComparator = std::less<Transition>>
+DfsStrategy<State, Transition, StateIndexer, TransitionComparator> 
+MakeDfsStrategy(const TransitionComparator& comp = TransitionComparator{}) {
+    return DfsStrategy<State, Transition, StateIndexer, TransitionComparator>(comp);
 }
 
 /**

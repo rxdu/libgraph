@@ -5,8 +5,11 @@ target_link_libraries(simple_graph_demo graph)
 add_executable(graph_type_demo graph_type_demo.cpp)
 target_link_libraries(graph_type_demo graph)
 
-add_executable(inc_search_demo inc_search_demo.cpp)
-target_link_libraries(inc_search_demo graph)
+add_executable(incremental_search_demo incremental_search_demo.cpp)
+target_link_libraries(incremental_search_demo graph)
 
 add_executable(lexicographic_cost_demo lexicographic_cost_demo.cpp)
 target_link_libraries(lexicographic_cost_demo graph)
+
+add_executable(thread_safe_search_demo thread_safe_search_demo.cpp)
+target_link_libraries(thread_safe_search_demo graph)

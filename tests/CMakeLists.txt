@@ -37,7 +37,9 @@ add_executable(utests
     # Parameterized tests for different state types
     unit_test/parameterized_state_test.cpp
     # Simple attribute system tests
-    unit_test/simple_attributes_test.cpp)
+    unit_test/simple_attributes_test.cpp
+    # Generic cost framework tests
+    unit_test/generic_cost_framework_test.cpp)
 target_link_libraries(utests PRIVATE gtest gmock gtest_main graph)
 # get_target_property(PRIVATE_HEADERS graph INCLUDE_DIRECTORIES)
 target_include_directories(utests PRIVATE ${PRIVATE_HEADERS})

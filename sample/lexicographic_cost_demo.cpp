@@ -172,6 +172,29 @@ struct TupleCost {
     }
 };
 
+} // namespace xmotion
+
+// Specialize CostTraits for our custom cost types
+namespace xmotion {
+
+template<>
+struct CostTraits<LexicographicCost> {
+    static LexicographicCost infinity() {
+        return LexicographicCost::max();
+    }
+};
+
+template<>
+struct CostTraits<TupleCost> {
+    static TupleCost infinity() {
+        return TupleCost::max();
+    }
+};
+
+} // namespace xmotion
+
+namespace xmotion {
+
 // Custom indexer for std::string 
 struct StringIndexer {
     int64_t operator()(const std::string& str) const {

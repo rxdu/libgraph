@@ -1,8 +1,15 @@
 /*
- * basic_example.cpp
+ * simple_graph_demo.cpp
  *
  * Created on: Nov 22, 2017 12:03
- * Description:
+ * Description: Basic example showing how to create a graph and perform searches
+ * 
+ * This example demonstrates:
+ * - Creating a graph with pointer-type states
+ * - Adding vertices and edges to build a 4x4 grid-like structure
+ * - Performing A* search with a custom heuristic function
+ * - Performing Dijkstra search (no heuristic needed)
+ * - Proper memory management for pointer-based states
  *
  * Copyright (c) 2017 Ruixiang Du (rdu)
  */
