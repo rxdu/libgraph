@@ -187,10 +187,6 @@ public:
     }
 };
 
-// Compatibility typedefs for existing code
-using AStarThreadSafe = AStar;
-using AStarV2 = AStar;  // For code that already uses V2
-
 } // namespace xmotion
 
 #endif /* ASTAR_HPP */

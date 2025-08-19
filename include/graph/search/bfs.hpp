@@ -165,6 +165,9 @@ public:
     }
 };
 
+// Compatibility typedefs for existing code
+using BreadthFirstSearch = BFS;
+
 } // namespace xmotion
 
 #endif /* BFS_HPP */

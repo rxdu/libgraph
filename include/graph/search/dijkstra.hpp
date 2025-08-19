@@ -188,10 +188,6 @@ public:
     }
 };
 
-// Compatibility typedefs for existing code
-using DijkstraThreadSafe = Dijkstra;
-using DijkstraV2 = Dijkstra;  // For code that already uses V2
-
 } // namespace xmotion
 
 #endif /* DIJKSTRA_HPP */
