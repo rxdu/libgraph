@@ -1,7 +1,7 @@
 /*
  * error_condition_test.cpp
  *
- * Created on: [Current Date]
+ * Created on: Aug 2025
  * Description: Tests for error conditions and edge cases
  *
  * Copyright (c) 2021 Ruixiang Du (rdu)
