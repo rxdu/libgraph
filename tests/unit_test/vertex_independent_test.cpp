@@ -1,7 +1,7 @@
 /*
  * vertex_independent_test.cpp
  *
- * Created on: [Current Date]
+ * Created on: Aug 2025
  * Description: Tests for independent Vertex class after refactoring
  *
  * Copyright (c) 2021 Ruixiang Du (rdu)
