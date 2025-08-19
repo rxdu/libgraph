@@ -44,6 +44,28 @@ Vertex<State, Transition, StateIndexer>::FindEdge(T dst_state) {
 }
 
 template <typename State, typename Transition, typename StateIndexer>
+typename Vertex<State, Transition, StateIndexer>::const_edge_iterator 
+Vertex<State, Transition, StateIndexer>::FindEdge(int64_t vertex_id) const {
+  auto it = edge_begin();
+  for (it = edge_begin(); it != edge_end(); ++it) {
+    if (it->dst->GetVertexID() == vertex_id) return it;
+  }
+  return it;
+}
+
+template <typename State, typename Transition, typename StateIndexer>
+template <class T, typename std::enable_if<!std::is_integral<T>::value>::type*>
+typename Vertex<State, Transition, StateIndexer>::const_edge_iterator 
+Vertex<State, Transition, StateIndexer>::FindEdge(T dst_state) const {
+  auto it = edge_begin();
+  for (it = edge_begin(); it != edge_end(); ++it) {
+    if (this->GetStateIndex(it->dst->state) == this->GetStateIndex(dst_state))
+      return it;
+  }
+  return it;
+}
+
+template <typename State, typename Transition, typename StateIndexer>
 template <typename T>
 bool Vertex<State, Transition, StateIndexer>::CheckNeighbour(T dst) {
   auto res = FindEdge(dst);

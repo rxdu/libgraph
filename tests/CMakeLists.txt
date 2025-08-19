@@ -25,6 +25,7 @@ add_executable(utests
     unit_test/graph_search_inc_test.cpp
     unit_test/tree_bigfive_test.cpp
     unit_test/tree_mod_test.cpp
+    unit_test/tree_new_features_test.cpp
     # New critical safety tests
     unit_test/edge_independent_test.cpp
     unit_test/vertex_independent_test.cpp

@@ -110,10 +110,15 @@ struct Vertex {
 
   /// Find the edge connecting to a vertex with given state or id
   edge_iterator FindEdge(int64_t vertex_id);
+  const_edge_iterator FindEdge(int64_t vertex_id) const;
   
   template <class T = State,
             typename std::enable_if<!std::is_integral<T>::value>::type* = nullptr>
   edge_iterator FindEdge(T state);
+  
+  template <class T = State,
+            typename std::enable_if<!std::is_integral<T>::value>::type* = nullptr>
+  const_edge_iterator FindEdge(T state) const;
 
   /// Return all neighbors of this vertex
   std::vector<vertex_iterator> GetNeighbours();

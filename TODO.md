@@ -75,6 +75,16 @@
 - [ ] **Topological sort** - Dependency ordering with DFS post-order traversal
 - [ ] **Strongly connected components** - Kosaraju's algorithm implementation
 
+**Tree Class Improvements** (HIGH PRIORITY - Critical Issues)
+- [ ] **Fix thread-safety issue** - Remove deprecated `is_checked` usage in RemoveSubtree
+- [ ] **Add exception safety** - Document exception guarantees and use custom exception types
+- [ ] **Port Graph features** - Add noexcept specs, safe vertex access, HasEdge/GetEdgeWeight/GetEdgeCount
+- [ ] **Tree validation** - IsValidTree(), IsConnected(), no cycles/single parent checks
+- [ ] **Tree traversals** - Preorder, Postorder, Inorder, LevelOrder traversal methods
+- [ ] **Tree structure queries** - GetHeight(), GetLeafNodes(), GetChildren(), GetSubtreeSize()
+- [ ] **Tree algorithms** - GetPath(), GetLowestCommonAncestor(), IsAncestor()
+- [ ] **Performance optimization** - Cache height, parent pointers, optimize RemoveSubtree
+
 ---
 
 ## Secondary Priorities
