@@ -111,6 +111,9 @@ class DynamicPriorityQueue {
 
   /// Get number of elements in the queue
   std::size_t GetQueueElementNumber() const noexcept { return element_num_; }
+  
+  /// Get queue size (STL-compatible name)
+  std::size_t size() const noexcept { return element_num_; }
 
   /// Check whether an element is in the queue
   bool Contains(const T& element) const {

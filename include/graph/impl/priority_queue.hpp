@@ -42,6 +42,9 @@ class PriorityQueue {
   inline bool Empty() const noexcept { return elements.empty(); }
 
   inline size_t GetQueueElementNumber() const noexcept { return elements.size(); }
+  
+  /// Get queue size (STL-compatible name)
+  inline size_t size() const noexcept { return elements.size(); }
 };
 }  // namespace xmotion
 

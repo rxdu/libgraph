@@ -536,15 +536,33 @@ TYPED_TEST(ParameterizedStateTest, StateTypeSpecificBehavior) {
   std::string type_name = TestFixture::Traits::GetTypeName();
   EXPECT_FALSE(type_name.empty()) << "Type name should not be empty";
   
-  // This test documents the behavior for each type
-  if (type_name == "ValueType") {
-    // For value types, states are copied
-    EXPECT_EQ(this->GetStateId(vertex_it->state), 0);
-  } else if (type_name == "PointerType") {
-    // For pointer types, pointer values are stored
-    EXPECT_EQ(this->GetStateId(vertex_it->state), 0);
-  } else if (type_name == "SharedPtrType") {
-    // For shared_ptr types, shared ownership
-    EXPECT_EQ(this->GetStateId(vertex_it->state), 0);
+  // This test documents and verifies the behavior for each type
+  // All types should store the state correctly and allow access through our helper
+  EXPECT_EQ(this->GetStateId(vertex_it->state), 0) << "State ID should be 0 for " << type_name;
+  
+  // Test type-specific storage characteristics using compile-time type checking
+  if constexpr (std::is_same_v<StateType, ParameterizedTestState>) {
+    // For value types, verify we can access the state members directly
+    EXPECT_EQ(vertex_it->state.id_, 0) << "Value type should allow direct member access";
+    // Value types should be copied, so different addresses
+    EXPECT_NE(&vertex_it->state, &this->states[0]) << "Value type should be copied, not referenced";
+    
+  } else if constexpr (std::is_same_v<StateType, ParameterizedTestState*>) {
+    // For pointer types, the stored pointer should be the same as original
+    EXPECT_EQ(vertex_it->state, this->states[0]) << "Pointer type should store same pointer value";
+    // Both pointers should access the same underlying object
+    EXPECT_EQ(this->GetStateId(vertex_it->state), this->GetStateId(this->states[0])) 
+      << "Both pointers should access same object";
+      
+  } else if constexpr (std::is_same_v<StateType, std::shared_ptr<ParameterizedTestState>>) {
+    // For shared_ptr types, verify shared ownership
+    EXPECT_EQ(vertex_it->state, this->states[0]) << "SharedPtr should be equivalent";
+    // Both should access the same underlying object  
+    EXPECT_EQ(this->GetStateId(vertex_it->state), this->GetStateId(this->states[0]))
+      << "Both shared_ptrs should access same object";
   }
+  
+  // Verify the graph correctly identifies this vertex
+  auto found_vertex = graph.FindVertex(this->states[0]);
+  EXPECT_EQ(found_vertex, vertex_it) << "FindVertex should return the same iterator for " << type_name;
 }

@@ -372,10 +372,14 @@ public:
 
 
   /// Get total number of vertices in the graph
-  int64_t GetTotalVertexNumber() const noexcept { return vertex_map_.size(); }
+  /// @deprecated Use GetVertexCount() instead - returns standard size_t type
+  [[deprecated("Use GetVertexCount() instead - returns standard size_t")]]
+  int64_t GetTotalVertexNumber() const noexcept { return static_cast<int64_t>(vertex_map_.size()); }
 
-  /// Get total number of edges in the graph
-  int64_t GetTotalEdgeNumber() const { return GetAllEdges().size(); }
+  /// Get total number of edges in the graph  
+  /// @deprecated Use GetEdgeCount() instead - returns standard size_t type
+  [[deprecated("Use GetEdgeCount() instead - returns standard size_t")]]
+  int64_t GetTotalEdgeNumber() const { return static_cast<int64_t>(GetAllEdges().size()); }
 
   /* Utility functions */
   /// This function is used to reset states of all vertice for a new search
@@ -670,10 +674,10 @@ public:
   
   /** @name Standardized Counting Methods */
   ///@{
-  /** Get vertex count using size_t (standardized alternative to GetTotalVertexNumber)
+  /** Get vertex count using size_t (standardized method)
    *  @return Number of vertices as size_t
    */
-  size_t GetVertexCount() const noexcept { return static_cast<size_t>(GetTotalVertexNumber()); }
+  size_t GetVertexCount() const noexcept { return vertex_map_.size(); }
   
   /** Get edge count using size_t (alias for existing GetEdgeCount for consistency)
    *  @return Number of edges as size_t
