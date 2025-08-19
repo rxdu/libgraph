@@ -7,7 +7,8 @@
  * Copyright (c) 2021 Ruixiang Du (rdu)
  */
 
-#include "graph/details/dynamic_priority_queue.hpp"
+#include <iostream>
+#include "graph/impl/dynamic_priority_queue.hpp"
 
 using namespace xmotion;
 

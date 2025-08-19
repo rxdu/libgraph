@@ -13,6 +13,9 @@ mark_as_advanced(
 add_executable(utests 
     unit_test/state_indexer_test.cpp
     unit_test/priority_queue_test.cpp
+    unit_test/priority_queue_map_test.cpp
+    unit_test/enhanced_error_handling_test.cpp
+    unit_test/stl_iterator_compatibility_test.cpp
     unit_test/pq_with_graph_test.cpp
     unit_test/graph_bigfive_test.cpp
     unit_test/graph_type_test.cpp
@@ -21,7 +24,23 @@ add_executable(utests
     unit_test/graph_search_test.cpp
     unit_test/graph_search_inc_test.cpp
     unit_test/tree_bigfive_test.cpp
-    unit_test/tree_mod_test.cpp)
+    unit_test/tree_mod_test.cpp
+    unit_test/tree_new_features_test.cpp
+    # New critical safety tests
+    unit_test/edge_independent_test.cpp
+    unit_test/vertex_independent_test.cpp
+    unit_test/error_condition_test.cpp
+    # Memory and thread safety tests
+    unit_test/memory_management_test.cpp
+    unit_test/thread_safety_test.cpp
+    # Thread-safe search algorithm tests
+    unit_test/threadsafe_search_test.cpp
+    # Parameterized tests for different state types
+    unit_test/parameterized_state_test.cpp
+    # Simple attribute system tests
+    unit_test/simple_attributes_test.cpp
+    # Generic cost framework tests
+    unit_test/generic_cost_framework_test.cpp)
 target_link_libraries(utests PRIVATE gtest gmock gtest_main graph)
 # get_target_property(PRIVATE_HEADERS graph INCLUDE_DIRECTORIES)
 target_include_directories(utests PRIVATE ${PRIVATE_HEADERS})
@@ -30,4 +49,4 @@ gtest_discover_tests(utests)
 add_test(NAME gtest_all COMMAND utests)
 
 # additional tests 
-# add_subdirectory(devel_test)
+add_subdirectory(devel_test)

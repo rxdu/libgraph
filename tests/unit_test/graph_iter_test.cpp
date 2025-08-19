@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <vector>
 #include <set>
+#include <algorithm>
 
 #include "gtest/gtest.h"
 
@@ -104,4 +105,60 @@ TEST_F(GraphIteratorTest, VertexEdgeIterator) {
 
   ASSERT_TRUE(cbegin_vtx->vertex_id == graph.vertex_begin()->vertex_id)
       << "Failed to access const vertex iterator)";
+}
+
+TEST_F(GraphIteratorTest, RangeBasedForLoop) {
+  std::set<int64_t> vertex_ids_range;
+  std::set<double> edge_costs_range;
+  
+  // Test range-based for loop with mutable graph
+  for (auto& vertex : graph.vertices()) {
+    vertex_ids_range.insert(vertex.vertex_id);
+    for (auto& edge : vertex.edges_to) {
+      edge_costs_range.insert(edge.cost);
+    }
+  }
+  
+  ASSERT_TRUE(vertex_ids_range == vertex_id_set)
+      << "Failed to access all vertices using range-based for loop";
+  ASSERT_TRUE(edge_costs_range == edge_cost_set)
+      << "Failed to access all edges using range-based for loop";
+  
+  // Test with const graph
+  const auto& const_graph = graph;
+  std::set<int64_t> const_vertex_ids;
+  
+  for (const auto& vertex : const_graph.vertices()) {
+    const_vertex_ids.insert(vertex.vertex_id);
+  }
+  
+  ASSERT_TRUE(const_vertex_ids == vertex_id_set)
+      << "Failed to access all vertices in const graph using range-based for loop";
+  
+  // Test that range-based for loop works with empty graph
+  Graph<TestState*> empty_graph;
+  int count = 0;
+  for (auto& vertex : empty_graph.vertices()) {
+    (void)vertex;  // Suppress unused warning
+    count++;
+  }
+  ASSERT_EQ(count, 0) << "Empty graph should have no vertices in range-based for loop";
+}
+
+TEST_F(GraphIteratorTest, RangeBasedForLoopModification) {
+  // Test that we can access and verify vertex properties through range
+  std::vector<int64_t> sorted_ids;
+  
+  for (auto& vertex : graph.vertices()) {
+    sorted_ids.push_back(vertex.vertex_id);
+  }
+  
+  // The graph should have 9 vertices (0-8)
+  ASSERT_EQ(sorted_ids.size(), 9) << "Should have 9 vertices in range";
+  
+  // Verify all IDs are present (order may vary due to unordered_map)
+  std::sort(sorted_ids.begin(), sorted_ids.end());
+  for (int i = 0; i < 9; i++) {
+    ASSERT_EQ(sorted_ids[i], i) << "Vertex ID " << i << " should be present";
+  }
 }

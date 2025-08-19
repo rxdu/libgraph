@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "graph/details/dynamic_priority_queue.hpp"
+#include "graph/impl/dynamic_priority_queue.hpp"
 #include "graph/graph.hpp"
 
 using namespace xmotion;

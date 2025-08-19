@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <iostream>
 
-#include "graph/details/dynamic_priority_queue.hpp"
+#include "graph/impl/dynamic_priority_queue.hpp"
 
 using namespace xmotion;
 
