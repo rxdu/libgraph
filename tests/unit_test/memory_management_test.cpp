@@ -255,7 +255,9 @@ public:
   
   ThrowingState(int64_t id) : id_(id) {
     construction_count++;
-    if (throw_after_count > 0 && construction_count >= throw_after_count) {
+    // Throw if we've reached the specified count or if specific ID is configured to throw
+    if ((throw_after_count > 0 && construction_count >= throw_after_count) ||
+        (throw_after_count == -1 && id == 3)) {  // Special case: always throw for ID 3 when enabled
       throw std::runtime_error("Construction exception");
     }
   }
@@ -279,9 +281,10 @@ TEST_F(MemoryManagementTest, ExceptionDuringVertexAdditionDoesNotLeak) {
   graph.AddVertex(ThrowingState(1));
   graph.AddVertex(ThrowingState(2));
   
-  // Set to throw on the next construction (after all the copies during vertex creation)
-  ThrowingState::throw_after_count = ThrowingState::construction_count + 1;
+  // Configure to throw for ID 3
+  ThrowingState::throw_after_count = -1;
   
+  // Attempt to add a vertex that will throw during construction
   // This should throw
   EXPECT_THROW(graph.AddVertex(ThrowingState(3)), std::runtime_error);
   

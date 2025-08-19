@@ -36,6 +36,8 @@
 - **Exception handling consistency** - Custom exception hierarchy usage throughout
 - **Const-correctness enhancements** - Added missing `noexcept` specifications
 - **Documentation updates** - Aligned exception documentation with actual implementation
+- **Template parameter optimization** - Removed redundant template parameters in DFS::Search calls
+- **Test robustness improvements** - Enhanced exception safety tests to be implementation-independent
 
 ---
 
