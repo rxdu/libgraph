@@ -241,7 +241,7 @@ Graph<State, Transition, StateIndexer>::ObtainVertexFromVertexMap(State state) {
   if (it == vertex_map_.end()) {
     // Exception-safe vertex creation using unique_ptr with move semantics
     std::unique_ptr<Vertex> new_vertex(new Vertex(std::move(state), state_id));
-    new_vertex->search_parent = vertex_end();
+    // Note: search_parent initialization removed - field is deprecated
     auto result = vertex_map_.insert(std::make_pair(state_id, std::move(new_vertex)));
     return vertex_iterator(result.first);
   }

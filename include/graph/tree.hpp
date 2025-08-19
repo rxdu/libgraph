@@ -64,8 +64,8 @@ namespace xmotion {
  * - AddRoot(): Strong guarantee - root added or tree unchanged
  * - AddEdge(): Strong guarantee - maintains tree structure invariants
  * - RemoveSubtree(): Strong guarantee - subtree fully removed or unchanged
- * - GetParentVertex(): Throws std::invalid_argument if vertex not found,
- *                       std::logic_error if tree invariant violated
+ * - GetParentVertex(): Throws ElementNotFoundError if vertex not found,
+ *                       StructureViolationError if tree invariant violated
  * 
  * **Tree Query Operations (No-throw Guarantee)**
  * - GetRootVertex(): No-throw - returns end() if no root

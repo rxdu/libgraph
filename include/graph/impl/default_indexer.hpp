@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef STATE_INDEXER_HPP
-#define STATE_INDEXER_HPP
+#ifndef DEFAULT_INDEXER_HPP
+#define DEFAULT_INDEXER_HPP
 
 #include <type_traits>
 #include <memory>

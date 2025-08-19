@@ -70,7 +70,7 @@ namespace xmotion {
  * **Vertex Operations (Strong Guarantee)**
  * - AddVertex(): Strong guarantee - vertex fully added or graph unchanged
  * - RemoveVertex(): Strong guarantee - vertex fully removed or graph unchanged  
- * - FindVertex(): No-throw for valid inputs, throws std::out_of_range for invalid IDs
+ * - FindVertex(): No-throw for valid inputs, throws ElementNotFoundError for invalid IDs
  * 
  * **Edge Operations (Strong Guarantee)**
  * - AddEdge(): Strong guarantee - edge fully added or graph unchanged
@@ -100,8 +100,8 @@ namespace xmotion {
  * @section error_conditions Error Conditions and Exceptions
  * 
  * **std::bad_alloc**: Memory allocation failures (from std::unordered_map or std::unique_ptr)
- * **std::invalid_argument**: Invalid input parameters (e.g., in tree operations)
- * **std::logic_error**: Violation of class invariants (e.g., tree structure violations)
+ * **InvalidArgumentError**: Invalid input parameters (e.g., in tree operations)
+ * **StructureViolationError**: Violation of class invariants (e.g., tree structure violations)
  * **State copy constructor exceptions**: Propagated with strong guarantee via RAII
  * 
  * @section thread_safety_exceptions Thread Safety and Exceptions
