@@ -63,7 +63,7 @@ TEST_F(AdvancedGraphOperationsTest, ComplexVertexRemovalScenarios) {
   size_t initial_edge_count = graph_->GetEdgeCount();
   
   // Remove hub vertex (should remove many edges)
-  bool removed = graph_->RemoveVertex(AdvancedTestState(3));
+  bool removed = graph_->RemoveVertexWithResult(AdvancedTestState(3));
   
   EXPECT_TRUE(removed);
   EXPECT_EQ(graph_->GetVertexCount(), initial_vertex_count - 1);
@@ -97,22 +97,22 @@ TEST_F(AdvancedGraphOperationsTest, EdgeRemovalEdgeCases) {
   size_t initial_edge_count = graph_->GetEdgeCount();
   
   // Remove specific edge
-  bool removed1 = graph_->RemoveEdge(AdvancedTestState(1), AdvancedTestState(2), 1.0);
+  bool removed1 = graph_->RemoveEdge(AdvancedTestState(1), AdvancedTestState(2));
   EXPECT_TRUE(removed1);
   EXPECT_EQ(graph_->GetEdgeCount(), initial_edge_count - 1);
   
   // Try to remove non-existent edge
-  bool removed2 = graph_->RemoveEdge(AdvancedTestState(1), AdvancedTestState(3), 1.0);
+  bool removed2 = graph_->RemoveEdge(AdvancedTestState(1), AdvancedTestState(3));
   EXPECT_FALSE(removed2);
   EXPECT_EQ(graph_->GetEdgeCount(), initial_edge_count - 1);
   
   // Remove self-loop
-  bool removed3 = graph_->RemoveEdge(AdvancedTestState(1), AdvancedTestState(1), 5.0);
+  bool removed3 = graph_->RemoveEdge(AdvancedTestState(1), AdvancedTestState(1));
   EXPECT_TRUE(removed3);
   EXPECT_EQ(graph_->GetEdgeCount(), initial_edge_count - 2);
 }
 
-// Test ClearVertexEdges functionality
+// Test manual edge removal (ClearVertexEdges doesn't exist in API)
 TEST_F(AdvancedGraphOperationsTest, ClearVertexEdgesComprehensive) {
   for (int i = 1; i <= 5; ++i) {
     graph_->AddVertex(AdvancedTestState(i));
@@ -129,8 +129,12 @@ TEST_F(AdvancedGraphOperationsTest, ClearVertexEdgesComprehensive) {
   
   size_t initial_edge_count = graph_->GetEdgeCount();
   
-  // Clear all edges for vertex 1
-  graph_->ClearVertexEdges(AdvancedTestState(1));
+  // Manually remove all edges involving vertex 1
+  for (int i = 2; i <= 5; ++i) {
+    graph_->RemoveEdge(AdvancedTestState(1), AdvancedTestState(i));
+    graph_->RemoveEdge(AdvancedTestState(i), AdvancedTestState(1));
+  }
+  graph_->RemoveEdge(AdvancedTestState(1), AdvancedTestState(1)); // self-loop
   
   // Vertex should still exist
   EXPECT_NE(graph_->FindVertex(AdvancedTestState(1)), graph_->vertex_end());
@@ -178,14 +182,15 @@ TEST_F(AdvancedGraphOperationsTest, GetAllEdgesComplex) {
   
   EXPECT_EQ(all_edges.size(), 6);
   
-  // Verify edge properties
+  // Verify edge properties by iterating through edge iterators
   std::unordered_set<int> src_ids, dst_ids;
   std::vector<double> weights;
   
-  for (const auto& edge_info : all_edges) {
-    src_ids.insert(edge_info.src_vertex->state.id);
-    dst_ids.insert(edge_info.dst_vertex->state.id);
-    weights.push_back(edge_info.edge.cost);
+  for (const auto& edge_it : all_edges) {
+    // edge_it is an edge_iterator, we need to dereference it to get the Edge
+    src_ids.insert(edge_it->src->state.id);
+    dst_ids.insert(edge_it->dst->state.id);
+    weights.push_back(edge_it->cost);
   }
   
   // Should have edges from all vertices
@@ -311,12 +316,12 @@ TEST_F(AdvancedGraphOperationsTest, NeighborOperations) {
   auto vertex1_it = graph_->FindVertex(AdvancedTestState(1));
   EXPECT_NE(vertex1_it, graph_->vertex_end());
   
-  // Test CheckNeighbour
-  EXPECT_TRUE(vertex1_it->CheckNeighbour(AdvancedTestState(2)));
-  EXPECT_TRUE(vertex1_it->CheckNeighbour(AdvancedTestState(3)));
-  EXPECT_TRUE(vertex1_it->CheckNeighbour(AdvancedTestState(4)));
-  EXPECT_FALSE(vertex1_it->CheckNeighbour(AdvancedTestState(5)));
-  EXPECT_FALSE(vertex1_it->CheckNeighbour(AdvancedTestState(6)));
+  // Test CheckNeighbour using vertex IDs to avoid ambiguity
+  EXPECT_TRUE(vertex1_it->CheckNeighbour(2));
+  EXPECT_TRUE(vertex1_it->CheckNeighbour(3));
+  EXPECT_TRUE(vertex1_it->CheckNeighbour(4));
+  EXPECT_FALSE(vertex1_it->CheckNeighbour(5));
+  EXPECT_FALSE(vertex1_it->CheckNeighbour(6));
   
   // Test GetNeighbours
   auto neighbors = vertex1_it->GetNeighbours();
@@ -345,20 +350,20 @@ TEST_F(AdvancedGraphOperationsTest, DegreeCalculations) {
   graph_->AddEdge(AdvancedTestState(2), AdvancedTestState(1), 1.0);
   graph_->AddEdge(AdvancedTestState(3), AdvancedTestState(1), 1.0);
   
-  // Vertex 1: out-degree=2, in-degree=2
-  EXPECT_EQ(graph_->GetVertexDegree(AdvancedTestState(1)), 2); // Out-degree
+  // Vertex 1: out-degree=2, in-degree=2, total degree=4
+  EXPECT_EQ(graph_->GetVertexDegree(1), 4); // Total degree (out + in)
   
-  // Vertex 2: out-degree=1, in-degree=1  
-  EXPECT_EQ(graph_->GetVertexDegree(AdvancedTestState(2)), 1);
+  // Vertex 2: out-degree=1, in-degree=1, total degree=2  
+  EXPECT_EQ(graph_->GetVertexDegree(2), 2);
   
-  // Vertex 3: out-degree=1, in-degree=1
-  EXPECT_EQ(graph_->GetVertexDegree(AdvancedTestState(3)), 1);
+  // Vertex 3: out-degree=1, in-degree=1, total degree=2
+  EXPECT_EQ(graph_->GetVertexDegree(3), 2);
   
   // Vertex 4: isolated, degree=0
-  EXPECT_EQ(graph_->GetVertexDegree(AdvancedTestState(4)), 0);
+  EXPECT_EQ(graph_->GetVertexDegree(4), 0);
   
   // Non-existent vertex
-  EXPECT_EQ(graph_->GetVertexDegree(AdvancedTestState(10)), 0);
+  EXPECT_EQ(graph_->GetVertexDegree(10), 0);
 }
 
 // Test massive graph operations for performance edge cases
@@ -387,7 +392,7 @@ TEST_F(AdvancedGraphOperationsTest, MassiveGraphOperations) {
   
   // Test removing vertices from middle
   for (int i = 50; i <= 60; ++i) {
-    bool removed = graph_->RemoveVertex(AdvancedTestState(i));
+    bool removed = graph_->RemoveVertexWithResult(AdvancedTestState(i));
     EXPECT_TRUE(removed);
   }
   
