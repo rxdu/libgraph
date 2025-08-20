@@ -3,6 +3,7 @@ performance_results
 # Temp files
 */Debug
 build/
+build_**
 */build/
 *~
 */~
