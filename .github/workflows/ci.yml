@@ -47,26 +47,46 @@ jobs:
     - name: Collect coverage data (version-aware)
       run: |
         # Check lcov version and use appropriate flags
-        LCOV_VERSION=$(lcov --version 2>&1 | grep -oP 'lcov version \K[0-9]+\.[0-9]+' || echo "0.0")
+        LCOV_VERSION=$(lcov --version 2>&1 | head -n1 | grep -oP 'version \K[0-9]+\.[0-9]+' || echo "1.0")
         echo "Detected lcov version: $LCOV_VERSION"
         
-        # lcov 2.0+ supports geninfo_unexecuted_blocks, older versions (1.x) do not
-        if [ "$(printf '%s\n' "2.0" "$LCOV_VERSION" | sort -V | head -n1)" = "2.0" ]; then
-          echo "Using lcov 2.0+ flags with geninfo_unexecuted_blocks"
+        # Parse major and minor version
+        MAJOR_VERSION=$(echo $LCOV_VERSION | cut -d. -f1)
+        MINOR_VERSION=$(echo $LCOV_VERSION | cut -d. -f2)
+        echo "Major version: $MAJOR_VERSION, Minor version: $MINOR_VERSION"
+        
+        # Determine which flags to use based on version
+        if [ "$MAJOR_VERSION" -ge 2 ]; then
+          echo "Using lcov 2.0+ configuration"
+          # lcov 2.0+ supports geninfo_unexecuted_blocks and enhanced ignore-errors
           /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info \
               --rc geninfo_unexecuted_blocks=1 --ignore-errors mismatch,negative,unused
-        else
-          echo "Using lcov 1.x flags (geninfo_unexecuted_blocks not supported)"
+        elif [ "$MAJOR_VERSION" -eq 1 ] && [ "$MINOR_VERSION" -ge 14 ]; then
+          echo "Using lcov 1.14+ configuration"
+          # lcov 1.14+ supports --ignore-errors but only with 'unused' flag
           /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info \
-              --ignore-errors mismatch,negative,unused
+              --ignore-errors unused
+        else
+          echo "Using lcov 1.13 or older configuration"
+          # Older versions don't support --ignore-errors at all
+          /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info || true
         fi
         
-        # Filter coverage data (same for all versions)
-        /usr/bin/lcov --ignore-errors unused -remove ./build/coverage.info \
-            "/usr/*" \
-            "*/tests/*" \
-            "*/src/demo/*" \
-            --output-file ./build/coverage.info
+        # Filter coverage data
+        echo "Filtering coverage data..."
+        if [ "$MAJOR_VERSION" -ge 1 ] && [ "$MINOR_VERSION" -ge 14 ]; then
+          /usr/bin/lcov --ignore-errors unused -remove ./build/coverage.info \
+              "/usr/*" \
+              "*/tests/*" \
+              "*/src/demo/*" \
+              --output-file ./build/coverage.info
+        else
+          /usr/bin/lcov -remove ./build/coverage.info \
+              "/usr/*" \
+              "*/tests/*" \
+              "*/src/demo/*" \
+              --output-file ./build/coverage.info || true
+        fi
     - name: Show coverage summary
       run: /usr/bin/lcov --list ./build/coverage.info
     - uses: codecov/codecov-action@v4
