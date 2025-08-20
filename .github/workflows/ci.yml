@@ -61,34 +61,38 @@ jobs:
           # lcov 2.0+ supports geninfo_unexecuted_blocks and enhanced ignore-errors
           /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info \
               --rc geninfo_unexecuted_blocks=1 --ignore-errors mismatch,negative,unused
-        elif [ "$MAJOR_VERSION" -eq 1 ] && [ "$MINOR_VERSION" -ge 14 ]; then
-          echo "Using lcov 1.14+ configuration"
-          # lcov 1.14+ supports --ignore-errors but only with 'unused' flag
-          /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info \
-              --ignore-errors unused
         else
-          echo "Using lcov 1.13 or older configuration"
-          # Older versions don't support --ignore-errors at all
-          /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info || true
+          echo "Using lcov 1.x configuration (no ignore-errors support for geninfo)"
+          # lcov 1.x doesn't support --ignore-errors at geninfo level
+          /usr/bin/lcov --directory ./build --capture --output-file ./build/coverage.info
         fi
         
         # Filter coverage data
         echo "Filtering coverage data..."
-        if [ "$MAJOR_VERSION" -ge 1 ] && [ "$MINOR_VERSION" -ge 14 ]; then
+        if [ "$MAJOR_VERSION" -ge 2 ]; then
+          echo "Using lcov 2.0+ filtering"
           /usr/bin/lcov --ignore-errors unused -remove ./build/coverage.info \
               "/usr/*" \
               "*/tests/*" \
               "*/src/demo/*" \
+              "*/sample/*" \
+              "*/googletest/*" \
               --output-file ./build/coverage.info
         else
+          echo "Using lcov 1.x filtering"
           /usr/bin/lcov -remove ./build/coverage.info \
               "/usr/*" \
               "*/tests/*" \
               "*/src/demo/*" \
-              --output-file ./build/coverage.info || true
+              "*/sample/*" \
+              "*/googletest/*" \
+              --output-file ./build/coverage.info
         fi
     - name: Show coverage summary
-      run: /usr/bin/lcov --list ./build/coverage.info
+      run: |
+        # Use summary instead of list for more reliable output across versions
+        echo "Coverage Summary:"
+        /usr/bin/lcov --summary ./build/coverage.info
     - uses: codecov/codecov-action@v4
       if: github.ref == 'refs/heads/main'
       with:
