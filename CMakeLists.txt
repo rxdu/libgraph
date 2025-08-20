@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(graph VERSION 3.0.0)
+project(graph VERSION 3.0.1)
 
 ## Project Options
 option(BUILD_TESTING "Build tests" OFF)

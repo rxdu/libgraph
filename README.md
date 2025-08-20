@@ -124,7 +124,7 @@ target_link_libraries(your_app PRIVATE xmotion::graph)
 ```bash
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 && cpack
-sudo dpkg -i graph_3.0.0_amd64.deb  # Adjust version as needed
+sudo dpkg -i graph_3.0.1_amd64.deb  # Adjust version as needed
 ```
 
 ### Build Examples and Tests
