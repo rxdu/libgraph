@@ -93,7 +93,7 @@ jobs:
         # Use summary instead of list for more reliable output across versions
         echo "Coverage Summary:"
         /usr/bin/lcov --summary ./build/coverage.info
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@v5
       if: github.ref == 'refs/heads/main'
       with:
         fail_ci_if_error: true 

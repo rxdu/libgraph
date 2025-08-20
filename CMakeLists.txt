@@ -116,7 +116,7 @@ install(TARGETS graph
     RUNTIME DESTINATION bin
     INCLUDES DESTINATION include)
 
-install(DIRECTORY src/include/graph
+install(DIRECTORY include/graph
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # export target configuration 
