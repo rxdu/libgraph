@@ -10,6 +10,8 @@
 #ifndef VERTEX_IMPL_HPP
 #define VERTEX_IMPL_HPP
 
+#include <iostream>
+
 namespace xmotion {
 
 template <typename State, typename Transition, typename StateIndexer>

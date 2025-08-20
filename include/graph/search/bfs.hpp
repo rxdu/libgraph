@@ -12,6 +12,8 @@
 #define BFS_HPP
 
 #include <limits>
+#include <queue>
+#include <unordered_set>
 #include "graph/search/search_algorithm.hpp"
 #include "graph/search/search_strategy.hpp"
 
@@ -182,11 +184,32 @@ public:
         auto start_it = graph->FindVertex(start);
         if (start_it == graph->vertex_end()) return false;
         
-        auto strategy = MakeBfsStrategy<State, Transition, StateIndexer>();
-        auto dummy_goal = graph->vertex_end();  // No specific goal - traverse all
+        // Manual BFS traversal
+        using VertexIteratorType = decltype(start_it);
+        std::queue<VertexIteratorType> q;
+        std::unordered_set<int64_t> visited;
         
-        SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
-            ::Search(graph, context, start_it, dummy_goal, strategy);
+        q.push(start_it);
+        visited.insert(start_it->vertex_id);
+        
+        while (!q.empty()) {
+            auto current = q.front();
+            q.pop();
+            
+            // Mark as visited in context
+            auto& current_info = context.GetSearchInfo(current);
+            current_info.SetChecked(true);
+            
+            for (const auto& edge : current->edges_to) {
+                auto neighbor = edge.dst;
+                int64_t neighbor_id = neighbor->vertex_id;
+                
+                if (visited.find(neighbor_id) == visited.end()) {
+                    q.push(neighbor);
+                    visited.insert(neighbor_id);
+                }
+            }
+        }
         
         return true;
     }

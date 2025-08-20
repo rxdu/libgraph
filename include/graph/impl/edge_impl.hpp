@@ -10,6 +10,8 @@
 #ifndef EDGE_IMPL_HPP
 #define EDGE_IMPL_HPP
 
+#include <iostream>
+
 namespace xmotion {
 
 template <typename State, typename Transition, typename StateIndexer>
