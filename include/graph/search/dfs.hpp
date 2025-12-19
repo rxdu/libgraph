@@ -5,6 +5,14 @@
  * Description: Depth-First Search algorithm using unified search framework
  *
  * Copyright (c) 2025 Ruixiang Du (rdu)
+ *
+ * THREAD SAFETY:
+ * - DfsStrategy is stateless and can be shared across threads
+ * - Timestamp counter is stored in SearchContext (not in strategy) for thread-safety
+ * - For concurrent searches, each thread must use its own SearchContext
+ * - Graph must be read-only during all concurrent searches
+ * - Use the overloads that accept SearchContext& for thread-safe operation
+ * - Legacy overloads without SearchContext are NOT thread-safe
  */
 
 #ifndef DFS_HPP
@@ -36,10 +44,10 @@ public:
     using GraphType = typename Base::GraphType;
     using vertex_iterator = typename Base::vertex_iterator;
     using SearchInfo = typename Base::SearchInfo;
-    
-private:
-    mutable int64_t timestamp_counter_{0};
-    
+
+    /// Key for storing the DFS timestamp counter in SearchContext
+    static constexpr const char* TIMESTAMP_COUNTER_KEY = "dfs_timestamp_counter";
+
 public:
     DfsStrategy() = default;
     explicit DfsStrategy(const TransitionComparator& comp) : Base(comp) {}
@@ -58,20 +66,24 @@ public:
     
     /**
      * @brief Initialize vertex for DFS
-     * 
+     *
      * Sets the timestamp for this vertex to enable LIFO ordering.
+     * The timestamp counter is stored in the SearchContext for thread-safety.
      */
-    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
-                             vertex_iterator goal_vertex) const {
+    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex,
+                             vertex_iterator goal_vertex,
+                             typename Base::SearchContextType& context) const {
         // For DFS, we use timestamp-based ordering. For custom costs, convert timestamp to Transition type
+        // The counter is stored in the context for thread-safety
         Transition timestamp_cost;
         if (std::is_arithmetic<Transition>::value) {
-            timestamp_cost = static_cast<Transition>(++timestamp_counter_);
+            int64_t timestamp = context.IncrementContextCounter(TIMESTAMP_COUNTER_KEY);
+            timestamp_cost = static_cast<Transition>(timestamp);
         } else {
             // For non-arithmetic types, use default constructor and rely on insertion order
             timestamp_cost = Transition{};
         }
-        
+
         info.SetGCost(timestamp_cost);
         info.SetHCost(Transition{});  // DFS doesn't use heuristic
         info.SetFCost(timestamp_cost);  // f = g for DFS
@@ -82,29 +94,32 @@ public:
     
     /**
      * @brief Relax vertex for DFS
-     * 
+     *
      * In DFS, we typically visit each vertex only once (first encounter).
      * This implements the standard DFS behavior where we don't revisit vertices.
+     * The timestamp counter is stored in the SearchContext for thread-safety.
      */
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        const Transition& edge_cost) const {
+                        const Transition& edge_cost,
+                        typename Base::SearchContextType& context) const {
         // In DFS, we only process each vertex once (first visit)
         Transition successor_g_cost = successor_info.template GetGCost<Transition>();
         Transition max_cost = CostTraits<Transition>::infinity();
-        
+
         // Check if vertex hasn't been visited yet
         if (successor_g_cost == max_cost || this->cost_comparator_(max_cost, successor_g_cost)) {
-            // Assign new timestamp for LIFO ordering
+            // Assign new timestamp for LIFO ordering (stored in context for thread-safety)
             Transition timestamp_cost;
             if (std::is_arithmetic<Transition>::value) {
-                timestamp_cost = static_cast<Transition>(++timestamp_counter_);
+                int64_t timestamp = context.IncrementContextCounter(TIMESTAMP_COUNTER_KEY);
+                timestamp_cost = static_cast<Transition>(timestamp);
             } else {
                 // For non-arithmetic types, we can't use timestamps effectively
                 // Fall back to first-visit behavior
                 timestamp_cost = Transition{};
             }
-            
+
             successor_info.SetGCost(timestamp_cost);
             successor_info.SetHCost(Transition{});  // No heuristic in DFS
             successor_info.SetFCost(timestamp_cost);  // f = g for DFS

@@ -5,6 +5,34 @@
  * Description: Thread-safe search context for externalizing search state
  *
  * Copyright (c) 2021 Ruixiang Du (rdu)
+ *
+ * THREAD SAFETY MODEL:
+ * ====================
+ * SearchContext enables thread-safe concurrent searches on a shared graph.
+ *
+ * Safe patterns:
+ *   - Multiple threads can search the SAME graph concurrently
+ *   - Each thread MUST have its own SearchContext instance
+ *   - Search strategies CAN be shared across threads (they are stateless)
+ *   - The graph MUST be read-only during concurrent searches
+ *
+ * Unsafe patterns:
+ *   - Sharing a SearchContext across threads (data races)
+ *   - Modifying the graph while searches are in progress (undefined behavior)
+ *
+ * Example (correct multi-threaded usage):
+ *   const auto* graph = build_graph();  // Graph is immutable after this
+ *   std::vector<std::thread> threads;
+ *   for (int i = 0; i < NUM_THREADS; ++i) {
+ *       threads.emplace_back([&graph, start, goal]() {
+ *           SearchContext<...> context;  // Each thread has its own context
+ *           auto path = Dijkstra::Search(graph, context, start, goal);
+ *       });
+ *   }
+ *   for (auto& t : threads) t.join();
+ *
+ * For real-time applications, pre-allocate context:
+ *   SearchContext<...> context(expected_graph_size);  // Avoid reallocations
  */
 
 #ifndef SEARCH_CONTEXT_HPP
@@ -260,17 +288,60 @@ public:
 private:
   /// Map from vertex ID to search information - optimized for reuse
   std::unordered_map<VertexId, SearchVertexInfo> search_data_;
-  
-  /// Reserve space to avoid frequent reallocations
+
+  /// Context-level attributes for algorithm-specific state (e.g., DFS timestamp counter)
+  /// This provides thread-safe storage for data that needs to be per-search, not per-vertex
+  std::unique_ptr<AttributeMap> context_attributes_;
+
+  /// Explicitly tracked start vertex for reliable path reconstruction
+  /// Set by search algorithms at initialization, -1 means not set
+  VertexId start_vertex_id_ = -1;
+
+  /// Default reserve size for moderate-sized graphs
   static constexpr size_t DEFAULT_RESERVE_SIZE = 1000;
 
 public:
   /**
-   * @brief Default constructor with memory optimization
+   * @brief Default constructor with default memory optimization
+   *
+   * Pre-allocates space for 1000 vertices. For larger graphs in real-time
+   * applications, use the constructor with explicit reserve_size.
    */
   SearchContext() {
     // Pre-allocate space to avoid frequent reallocations during search
     search_data_.reserve(DEFAULT_RESERVE_SIZE);
+  }
+
+  /**
+   * @brief Constructor with configurable pre-allocation
+   *
+   * For real-time robotics applications, reserve >= expected graph size
+   * to prevent memory reallocations during search operations.
+   *
+   * @param reserve_size Number of vertices to pre-allocate space for
+   */
+  explicit SearchContext(size_t reserve_size) {
+    search_data_.reserve(reserve_size);
+  }
+
+  /**
+   * @brief Reserve space for expected number of vertices
+   *
+   * Call this before search if the graph size is known and larger than
+   * the default reserve size. Prevents reallocations during search.
+   *
+   * @param n Number of vertices to reserve space for
+   */
+  void Reserve(size_t n) {
+    search_data_.reserve(n);
+  }
+
+  /**
+   * @brief Get the current capacity of the search context
+   * @return Number of vertices that can be stored without reallocation
+   */
+  size_t Capacity() const noexcept {
+    return search_data_.bucket_count();
   }
 
   /**
@@ -350,7 +421,7 @@ public:
 
   /**
    * @brief Reset all search information to initial state
-   * 
+   *
    * This keeps the allocated memory but resets values,
    * which can be more efficient for repeated searches.
    * This is the key optimization for 36% improvement shown in benchmarks.
@@ -360,6 +431,12 @@ public:
     for (auto& pair : search_data_) {
       pair.second.Reset();
     }
+    // Clear context-level attributes (e.g., DFS timestamp counter)
+    if (context_attributes_) {
+      context_attributes_->ClearAttributes();
+    }
+    // Reset start vertex tracking
+    start_vertex_id_ = -1;
     // Keep allocated memory in the map for next search
     // This avoids reallocating hash table buckets
   }
@@ -378,6 +455,117 @@ public:
    */
   bool Empty() const {
     return search_data_.empty();
+  }
+
+  // =========================================================================
+  // START VERTEX TRACKING (for reliable path reconstruction)
+  // =========================================================================
+
+  /**
+   * @brief Set the start vertex ID for this search
+   *
+   * Called by search algorithms during initialization to enable reliable
+   * path reconstruction. This avoids the need to iterate through all vertices
+   * to find which one has parent_id == -1.
+   *
+   * @param vertex_id The ID of the start vertex
+   */
+  void SetStartVertexId(VertexId vertex_id) {
+    start_vertex_id_ = vertex_id;
+  }
+
+  /**
+   * @brief Get the start vertex ID
+   * @return The start vertex ID, or -1 if not set
+   */
+  VertexId GetStartVertexId() const noexcept {
+    return start_vertex_id_;
+  }
+
+  /**
+   * @brief Check if start vertex has been set
+   * @return True if start vertex ID is valid (not -1)
+   */
+  bool HasStartVertex() const noexcept {
+    return start_vertex_id_ != -1;
+  }
+
+  // =========================================================================
+  // CONTEXT-LEVEL ATTRIBUTES (for algorithm state like DFS counters)
+  // =========================================================================
+
+  /**
+   * @brief Set a context-level attribute
+   *
+   * Context-level attributes store algorithm state that is per-search rather
+   * than per-vertex. For example, DFS uses this for its timestamp counter.
+   * This ensures thread-safety when multiple searches share a strategy instance.
+   *
+   * @tparam T Type of the attribute value
+   * @param key Attribute name
+   * @param value Attribute value
+   */
+  template<typename T>
+  void SetContextAttribute(const std::string& key, const T& value) {
+    if (!context_attributes_) {
+      context_attributes_.reset(new AttributeMap());
+    }
+    context_attributes_->SetAttribute(key, value);
+  }
+
+  /**
+   * @brief Get a context-level attribute
+   * @tparam T Expected type of the attribute
+   * @param key Attribute name
+   * @return Reference to the attribute value
+   * @throws std::out_of_range if attribute doesn't exist
+   */
+  template<typename T>
+  const T& GetContextAttribute(const std::string& key) const {
+    if (!context_attributes_) {
+      throw std::out_of_range("No context attributes set");
+    }
+    return context_attributes_->GetAttribute<T>(key);
+  }
+
+  /**
+   * @brief Get a context-level attribute with default value
+   * @tparam T Expected type of the attribute
+   * @param key Attribute name
+   * @param default_value Default value if attribute doesn't exist
+   * @return Attribute value or default
+   */
+  template<typename T>
+  T GetContextAttributeOr(const std::string& key, const T& default_value) const {
+    if (!context_attributes_) {
+      return default_value;
+    }
+    return context_attributes_->GetAttributeOr(key, default_value);
+  }
+
+  /**
+   * @brief Check if a context-level attribute exists
+   * @param key Attribute name
+   * @return true if attribute exists
+   */
+  bool HasContextAttribute(const std::string& key) const {
+    return context_attributes_ && context_attributes_->HasAttribute(key);
+  }
+
+  /**
+   * @brief Increment a numeric context attribute and return the new value
+   *
+   * This is a convenience method primarily for DFS timestamp counters.
+   * If the attribute doesn't exist, initializes it to 1.
+   *
+   * @param key Attribute name
+   * @return The incremented value
+   */
+  int64_t IncrementContextCounter(const std::string& key) {
+    int64_t current = GetContextAttributeOr<int64_t>(key, 0);
+    int64_t next = current + 1;
+    SetContextAttribute(key, next);
+    return next;
   }
 
   // =========================================================================
@@ -511,34 +699,47 @@ public:
   template<typename PathState = State>
   std::vector<PathState> ReconstructPath(const GraphType* graph, VertexId goal_id) const {
     std::vector<PathState> path;
-    
+
     if (!HasSearchInfo(goal_id)) {
       throw ElementNotFoundError("Goal vertex", goal_id);
     }
-    
+
     // Check if goal was reached
     const auto& goal_info = GetSearchInfo(goal_id);
     if (goal_info.parent_id == -1) {
-      // Check if goal is also the start (single node path)
-      auto start_candidates = search_data_;
-      bool found_start = false;
-      for (const auto& pair : start_candidates) {
-        if (pair.second.parent_id == -1 && pair.first != goal_id) {
-          found_start = true;
-          break;
+      // Goal has no parent - check if it's the start vertex (single node path)
+      // Use explicit start vertex tracking if available (more reliable)
+      if (HasStartVertex()) {
+        if (goal_id != start_vertex_id_) {
+          return path; // No path found - goal is unreachable
         }
-      }
-      if (found_start) {
-        return path; // No path found
+        // goal_id == start_vertex_id_ means single-vertex path
+      } else {
+        // Fallback: check if there's another vertex with parent_id == -1
+        // This is the legacy behavior for backward compatibility
+        for (const auto& pair : search_data_) {
+          if (pair.second.parent_id == -1 && pair.first != goal_id) {
+            return path; // No path found - there's a different start vertex
+          }
+        }
       }
     }
 
     // Build path backwards from goal to start
     std::vector<VertexId> vertex_path;
     VertexId current_id = goal_id;
-    
+
+    // Use explicit start vertex for termination if available
+    VertexId termination_id = HasStartVertex() ? start_vertex_id_ : -1;
+
     while (current_id != -1) {
       vertex_path.push_back(current_id);
+
+      // Stop if we've reached the start vertex (explicit termination)
+      if (HasStartVertex() && current_id == termination_id) {
+        break;
+      }
+
       if (!HasSearchInfo(current_id)) {
         break; // Safety check
       }

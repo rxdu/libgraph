@@ -35,7 +35,8 @@ class SearchStrategy {
 public:
     using GraphType = Graph<State, Transition, StateIndexer>;
     using vertex_iterator = typename GraphType::const_vertex_iterator;
-    using SearchInfo = typename SearchContext<State, Transition, StateIndexer>::SearchVertexInfo;
+    using SearchContextType = SearchContext<State, Transition, StateIndexer>;
+    using SearchInfo = typename SearchContextType::SearchVertexInfo;
     using CostComparator = TransitionComparator;
 
 protected:
@@ -63,10 +64,12 @@ public:
      * @param info Search information to initialize
      * @param vertex The vertex being initialized
      * @param goal_vertex The goal vertex (for heuristic calculation)
+     * @param context The search context (for accessing context-level attributes)
      */
-    inline void InitializeVertex(SearchInfo& info, vertex_iterator vertex, 
-                                vertex_iterator goal_vertex) const {
-        static_cast<const Derived*>(this)->InitializeVertexImpl(info, vertex, goal_vertex);
+    inline void InitializeVertex(SearchInfo& info, vertex_iterator vertex,
+                                vertex_iterator goal_vertex,
+                                SearchContextType& context) const {
+        static_cast<const Derived*>(this)->InitializeVertexImpl(info, vertex, goal_vertex, context);
     }
     
     /**
@@ -95,13 +98,15 @@ public:
      * @param successor_vertex The successor vertex iterator
      * @param goal_vertex The goal vertex (for heuristic calculation)
      * @param edge_cost Cost of the edge from current to successor
+     * @param context The search context (for accessing context-level attributes)
      * @return True if successor was relaxed (costs improved)
      */
     inline bool RelaxVertex(SearchInfo& current_info, SearchInfo& successor_info,
                            vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                           const Transition& edge_cost) const {
+                           const Transition& edge_cost,
+                           SearchContextType& context) const {
         return static_cast<const Derived*>(this)->RelaxVertexImpl(
-            current_info, successor_info, successor_vertex, goal_vertex, edge_cost);
+            current_info, successor_info, successor_vertex, goal_vertex, edge_cost, context);
     }
 
 protected:

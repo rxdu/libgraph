@@ -6,6 +6,13 @@
  *              Combined strategy implementation and public API
  *
  * Copyright (c) 2025 Ruixiang Du (rdu)
+ *
+ * THREAD SAFETY:
+ * - BfsStrategy is stateless and can be shared across threads
+ * - For concurrent searches, each thread must use its own SearchContext
+ * - Graph must be read-only during all concurrent searches
+ * - Use the overloads that accept SearchContext& for thread-safe operation
+ * - Legacy overloads without SearchContext are NOT thread-safe
  */
 
 #ifndef BFS_HPP
@@ -39,13 +46,14 @@ public:
     
     BfsStrategy() = default;
     explicit BfsStrategy(const TransitionComparator& comp) : Base(comp) {}
-    
+
     Transition GetPriorityImpl(const SearchInfo& info) const noexcept {
         return info.template GetGCost<Transition>(); // FIFO behavior based on depth
     }
-    
-    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
-                             vertex_iterator goal_vertex) const {
+
+    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex,
+                             vertex_iterator goal_vertex,
+                             typename Base::SearchContextType& /*context*/) const {
         info.SetGCost(Transition{});  // Start at depth 0
         info.SetHCost(Transition{});  // BFS doesn't use heuristic
         info.SetFCost(Transition{});  // Same as g_cost for BFS
@@ -53,10 +61,11 @@ public:
         info.SetInOpenList(false);
         info.SetParent(-1);
     }
-    
+
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        const Transition& edge_cost) const {
+                        const Transition& edge_cost,
+                        typename Base::SearchContextType& /*context*/) const {
         // In BFS, we only process each vertex once (first visit)
         Transition successor_g_cost = successor_info.template GetGCost<Transition>();
         Transition max_cost = CostTraits<Transition>::infinity();
@@ -93,14 +102,134 @@ MakeBfsStrategy(const TransitionComparator& comp = TransitionComparator{}) {
 
 /**
  * @brief Breadth-First Search algorithm - unified implementation
- * 
- * This class provides the public API for BFS searches using the strategy framework.
+ *
+ * This class provides the public API for BFS searches.
  * BFS finds the shortest path in terms of number of edges (unweighted shortest path).
+ *
+ * Implementation uses std::queue for true O(1) FIFO operations, avoiding the
+ * O(log n) overhead of priority_queue-based approaches.
  */
 class BFS final {
+private:
+    /**
+     * @brief Internal queue-based BFS implementation
+     *
+     * Uses std::queue for O(1) enqueue/dequeue operations.
+     * This is more efficient than the priority_queue approach and works
+     * correctly with any Transition type (not just arithmetic).
+     */
+    template<typename State, typename Transition, typename StateIndexer>
+    static Path<State> QueueBasedSearch(
+        const Graph<State, Transition, StateIndexer>* graph,
+        SearchContext<State, Transition, StateIndexer>& context,
+        typename Graph<State, Transition, StateIndexer>::const_vertex_iterator start_it,
+        typename Graph<State, Transition, StateIndexer>::const_vertex_iterator goal_it) {
+
+        using vertex_iterator = typename Graph<State, Transition, StateIndexer>::const_vertex_iterator;
+
+        // Reset context for fresh search
+        context.Reset();
+
+        // Track start vertex for reliable path reconstruction
+        context.SetStartVertexId(start_it->vertex_id);
+
+        // Check if start == goal
+        if (start_it == goal_it) {
+            return Path<State>{start_it->state};
+        }
+
+        // BFS queue - O(1) operations
+        std::queue<vertex_iterator> queue;
+
+        // Initialize start vertex
+        auto& start_info = context.GetSearchInfo(start_it);
+        start_info.SetChecked(true);
+        start_info.SetParent(-1);
+        start_info.SetGCost(Transition{});  // Depth 0
+
+        queue.push(start_it);
+
+        // BFS main loop
+        while (!queue.empty()) {
+            vertex_iterator current = queue.front();
+            queue.pop();
+
+            // Explore neighbors
+            for (const auto& edge : current->edges_to) {
+                vertex_iterator neighbor = edge.dst;
+                auto& neighbor_info = context.GetSearchInfo(neighbor);
+
+                // Skip if already visited
+                if (neighbor_info.GetChecked()) {
+                    continue;
+                }
+
+                // Mark as visited and set parent
+                neighbor_info.SetChecked(true);
+                neighbor_info.SetParent(current->vertex_id);
+
+                // Track depth (optional, for debugging/metrics)
+                auto& current_info = context.GetSearchInfo(current);
+                Transition current_depth = current_info.template GetGCost<Transition>();
+                if (std::is_arithmetic<Transition>::value) {
+                    neighbor_info.SetGCost(current_depth + Transition{1});
+                }
+
+                // Check if goal reached
+                if (neighbor == goal_it) {
+                    return ReconstructPath<State, Transition, StateIndexer>(
+                        graph, context, start_it->vertex_id, goal_it->vertex_id);
+                }
+
+                queue.push(neighbor);
+            }
+        }
+
+        // No path found
+        return Path<State>();
+    }
+
+    /**
+     * @brief Reconstruct path from BFS search results
+     */
+    template<typename State, typename Transition, typename StateIndexer>
+    static Path<State> ReconstructPath(
+        const Graph<State, Transition, StateIndexer>* graph,
+        const SearchContext<State, Transition, StateIndexer>& context,
+        int64_t start_id,
+        int64_t goal_id) {
+
+        Path<State> path;
+        std::vector<int64_t> vertex_ids;
+
+        // Trace back from goal to start
+        int64_t current_id = goal_id;
+        while (current_id != -1) {
+            vertex_ids.push_back(current_id);
+            if (current_id == start_id) break;
+
+            if (!context.HasSearchInfo(current_id)) break;
+            const auto& info = context.GetSearchInfo(current_id);
+            current_id = info.GetParent();
+        }
+
+        // Build path in forward order
+        path.reserve(vertex_ids.size());
+        for (auto it = vertex_ids.rbegin(); it != vertex_ids.rend(); ++it) {
+            auto vertex_it = graph->FindVertex(*it);
+            if (vertex_it != graph->vertex_end()) {
+                path.push_back(vertex_it->state);
+            }
+        }
+
+        return path;
+    }
+
 public:
     /**
      * @brief Thread-safe BFS search with external search context
+     *
+     * Uses queue-based BFS for O(V+E) time complexity with O(1) per-operation cost.
      */
     template<typename State, typename Transition, typename StateIndexer,
              typename VertexIdentifier>
@@ -109,19 +238,18 @@ public:
         SearchContext<State, Transition, StateIndexer>& context,
         VertexIdentifier start,
         VertexIdentifier goal) {
-        
+
         if (!graph) return Path<State>();
-        
+
         auto start_it = graph->FindVertex(start);
         auto goal_it = graph->FindVertex(goal);
-        
+
         if (start_it == graph->vertex_end() || goal_it == graph->vertex_end()) {
             return Path<State>();
         }
-        
-        auto strategy = MakeBfsStrategy<State, Transition, StateIndexer>();
-        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
-            ::Search(graph, context, start_it, goal_it, strategy);
+
+        return QueueBasedSearch<State, Transition, StateIndexer>(
+            graph, context, start_it, goal_it);
     }
     
     /**

@@ -5,6 +5,12 @@
  * Description: Unified template-based search algorithm framework
  *
  * Copyright (c) 2025 Ruixiang Du (rdu)
+ *
+ * THREAD SAFETY:
+ * - Graph must be read-only during search (const pointer accepted)
+ * - Each concurrent search requires its own SearchContext
+ * - Strategy objects are stateless and can be shared across threads
+ * - See search_context.hpp for detailed thread safety model
  */
 
 #ifndef SEARCH_ALGORITHM_HPP
@@ -16,6 +22,7 @@
 #include <stdexcept>
 
 #include "graph/graph.hpp"
+#include "graph/impl/dynamic_priority_queue.hpp"
 #include "graph/search/search_context.hpp"
 #include "graph/search/search_strategy.hpp"
 #include "graph/exceptions.hpp"
@@ -43,18 +50,18 @@ public:
     using SearchInfo = typename SearchContextType::SearchVertexInfo;
     
     /**
-     * @brief Priority queue comparator using search strategy
-     * 
+     * @brief Priority queue comparator using search strategy (for std::priority_queue)
+     *
      * Uses the strategy's GetPriority method to compare vertices.
      * Implements min-heap behavior (lower priority values come first).
      */
     struct VertexComparator {
         const SearchStrategy& strategy;
         const SearchContextType& context;
-        
+
         VertexComparator(const SearchStrategy& s, const SearchContextType& c) noexcept
             : strategy(s), context(c) {}
-            
+
         bool operator()(vertex_iterator x, vertex_iterator y) const {
             const auto& info_x = context.GetSearchInfo(x);
             const auto& info_y = context.GetSearchInfo(y);
@@ -64,6 +71,39 @@ public:
             auto priority_x = strategy.GetPriority(info_x);
             auto priority_y = strategy.GetPriority(info_y);
             return strategy.GetComparator()(priority_y, priority_x);
+        }
+    };
+
+    /**
+     * @brief Comparator for DynamicPriorityQueue (min-heap, no reversal needed)
+     *
+     * DynamicPriorityQueue with std::less gives min-heap directly,
+     * so we don't need to reverse the comparison.
+     */
+    struct DPQComparator {
+        const SearchStrategy* strategy;
+        const SearchContextType* context;
+
+        DPQComparator() noexcept : strategy(nullptr), context(nullptr) {}
+        DPQComparator(const SearchStrategy* s, const SearchContextType* c) noexcept
+            : strategy(s), context(c) {}
+
+        bool operator()(vertex_iterator x, vertex_iterator y) const {
+            const auto& info_x = context->GetSearchInfo(x);
+            const auto& info_y = context->GetSearchInfo(y);
+            auto priority_x = strategy->GetPriority(info_x);
+            auto priority_y = strategy->GetPriority(info_y);
+            // Return true if x < y (min-heap: smaller priority = higher priority)
+            return strategy->GetComparator()(priority_x, priority_y);
+        }
+    };
+
+    /**
+     * @brief Indexer for vertex iterators (extracts vertex_id for DynamicPriorityQueue)
+     */
+    struct VertexIteratorIndexer {
+        int64_t operator()(vertex_iterator v) const {
+            return v->vertex_id;
         }
     };
     
@@ -110,15 +150,18 @@ private:
         
         // Clear previous search data but preserve allocated memory
         context.Reset();
-        
+
+        // Track start vertex for reliable path reconstruction
+        context.SetStartVertexId(start->vertex_id);
+
         // Priority queue with strategy-based comparison
-        std::priority_queue<vertex_iterator, std::vector<vertex_iterator>, 
+        std::priority_queue<vertex_iterator, std::vector<vertex_iterator>,
                           VertexComparator> openlist(
             VertexComparator(strategy, context));
-        
+
         // Initialize start vertex
         auto& start_info = context.GetSearchInfo(start);
-        strategy.InitializeVertex(start_info, start, goal);
+        strategy.InitializeVertex(start_info, start, goal, context);
         openlist.push(start);
         start_info.is_in_openlist = true;
         
@@ -148,7 +191,11 @@ private:
     }
     
     /**
-     * @brief Expand neighbors of current vertex
+     * @brief Expand neighbors of current vertex (std::priority_queue version)
+     *
+     * Uses lazy deletion strategy: when a vertex is relaxed with a better
+     * priority while already in the openlist, we push it again. Stale entries
+     * are skipped when popped (checked in main loop via is_checked flag).
      */
     static void ExpandNeighbors(
         const GraphType* graph,
@@ -156,32 +203,69 @@ private:
         vertex_iterator current,
         vertex_iterator goal,
         const SearchStrategy& strategy,
-        std::priority_queue<vertex_iterator, std::vector<vertex_iterator>, 
+        std::priority_queue<vertex_iterator, std::vector<vertex_iterator>,
                           VertexComparator>& openlist) {
-        
+
         auto& current_info = context.GetSearchInfo(current);
-        
+
         for (const auto& edge : current->edges_to) {
             vertex_iterator successor = edge.dst;
             auto& successor_info = context.GetSearchInfo(successor);
-            
+
             // Skip if already processed
             if (successor_info.is_checked) {
                 continue;
             }
-            
+
             // Attempt to relax the vertex
-            if (strategy.RelaxVertex(current_info, successor_info, 
-                                   successor, goal, edge.cost)) {
+            if (strategy.RelaxVertex(current_info, successor_info,
+                                   successor, goal, edge.cost, context)) {
                 successor_info.parent_id = current->vertex_id;
-                
-                // Add to open list if not already present
-                if (!successor_info.is_in_openlist) {
-                    openlist.push(successor);
-                    successor_info.is_in_openlist = true;
-                }
-                // Note: If already in openlist, the priority queue will naturally
-                // handle the updated priority on next pop operation
+
+                // Always push when relaxed - use lazy deletion strategy
+                // If vertex was already in openlist, the old entry becomes stale
+                // and will be skipped when popped (is_checked will be true by then)
+                openlist.push(successor);
+                successor_info.is_in_openlist = true;
+            }
+        }
+    }
+
+    /**
+     * @brief Expand neighbors using DynamicPriorityQueue for efficient updates
+     *
+     * DynamicPriorityQueue supports O(log n) priority updates, avoiding
+     * duplicate entries and memory overhead of the lazy deletion approach.
+     */
+    using DPQType = DynamicPriorityQueue<vertex_iterator, DPQComparator, VertexIteratorIndexer>;
+
+    static void ExpandNeighborsDPQ(
+        const GraphType* graph,
+        SearchContextType& context,
+        vertex_iterator current,
+        vertex_iterator goal,
+        const SearchStrategy& strategy,
+        DPQType& openlist) {
+
+        auto& current_info = context.GetSearchInfo(current);
+
+        for (const auto& edge : current->edges_to) {
+            vertex_iterator successor = edge.dst;
+            auto& successor_info = context.GetSearchInfo(successor);
+
+            // Skip if already processed
+            if (successor_info.is_checked) {
+                continue;
+            }
+
+            // Attempt to relax the vertex
+            if (strategy.RelaxVertex(current_info, successor_info,
+                                   successor, goal, edge.cost, context)) {
+                successor_info.parent_id = current->vertex_id;
+
+                // Push handles insert-or-update automatically
+                openlist.Push(successor);
+                successor_info.is_in_openlist = true;
             }
         }
     }

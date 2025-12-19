@@ -89,17 +89,6 @@ void Vertex<State, Transition, StateIndexer>::PrintVertex() const {
   std::cout << "Vertex: id - " << vertex_id << std::endl;
 }
 
-// Add missing ClearVertexSearchInfo if it's used elsewhere
-template <typename State, typename Transition, typename StateIndexer>
-void Vertex<State, Transition, StateIndexer>::ClearVertexSearchInfo() {
-  is_checked = false;
-  is_in_openlist = false;  // to be removed
-  search_parent = vertex_iterator();
-
-  f_cost = std::numeric_limits<double>::max();
-  g_cost = std::numeric_limits<double>::max();
-  h_cost = std::numeric_limits<double>::max();
-}
 }  // namespace xmotion
 
 #endif /* VERTEX_IMPL_HPP */

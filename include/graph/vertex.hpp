@@ -63,23 +63,6 @@ struct Vertex {
   // Vertices that contain edges connecting to current vertex
   std::list<vertex_iterator> vertices_from;
 
-
-  // Attributes for search algorithms
-  // NOTE: These fields are deprecated for thread safety. Use SearchContext instead.
-  // Will be removed in a future version.
-  [[deprecated("Use SearchContext for thread-safe searches")]] 
-  bool is_checked = false;
-  [[deprecated("Use SearchContext for thread-safe searches")]]
-  bool is_in_openlist = false;
-  [[deprecated("Use SearchContext for thread-safe searches")]]
-  double f_cost = std::numeric_limits<double>::max();
-  [[deprecated("Use SearchContext for thread-safe searches")]]
-  double g_cost = std::numeric_limits<double>::max();
-  [[deprecated("Use SearchContext for thread-safe searches")]]
-  double h_cost = std::numeric_limits<double>::max();
-  [[deprecated("Use SearchContext for thread-safe searches")]]
-  vertex_iterator search_parent;
-
   /** @name Edge access
    *  Edge iterators to access edges in the vertex
    */
@@ -125,11 +108,6 @@ struct Vertex {
 
   /// Print vertex information
   void PrintVertex() const;
-  
-  /// Clear vertex search info for new search
-  /// @deprecated Use SearchContext for thread-safe searches instead
-  [[deprecated("Use SearchContext for thread-safe searches")]]
-  void ClearVertexSearchInfo();
   ///@}
 
   

@@ -192,8 +192,17 @@ bool Graph<State, Transition, StateIndexer>::RemoveEdge(State sstate,
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::AddUndirectedEdge(
     State sstate, State dstate, Transition trans) {
+  // Add first edge
   AddEdge(sstate, dstate, trans);
-  AddEdge(dstate, sstate, trans);
+
+  // Try to add second edge with rollback on failure
+  try {
+    AddEdge(dstate, sstate, trans);
+  } catch (...) {
+    // Rollback: remove the first edge to maintain atomicity
+    RemoveEdge(sstate, dstate);
+    throw;  // Re-throw the original exception
+  }
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -219,12 +228,6 @@ Graph<State, Transition, StateIndexer>::GetAllEdges() const {
       edges.push_back(it);
   }
   return edges;
-}
-
-template <typename State, typename Transition, typename StateIndexer>
-void Graph<State, Transition, StateIndexer>::ResetAllVertices() {
-  for (auto &vertex_pair : vertex_map_)
-    vertex_pair.second->ClearVertexSearchInfo();
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -415,30 +418,27 @@ Graph<State, Transition, StateIndexer>::AddVertexWithResult(State state) {
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::AddEdgeWithResult(State from, State to, Transition trans) {
   try {
-    // Check if both vertices exist or can be created
+    // Check if both vertices exist
     auto from_it = FindVertex(from);
     auto to_it = FindVertex(to);
-    
-    bool from_exists = from_it != vertex_end();
-    bool to_exists = to_it != vertex_end();
-    
+
     // If vertices don't exist, we can't add edge in "WithResult" mode
     // This is more conservative than the regular AddEdge which creates vertices
-    if (!from_exists || !to_exists) {
+    if (from_it == vertex_end() || to_it == vertex_end()) {
       return false;
     }
-    
-    // Check if edge already exists
-    for (const auto& edge : from_it->edges_to) {
-      if (edge.dst == to_it) {
-        // Edge exists, update weight and return true
-        const_cast<Transition&>(edge.cost) = trans;
-        return true;
-      }
+
+    // Check if edge already exists using FindEdge (returns non-const iterator)
+    auto edge_it = from_it->FindEdge(to);
+    if (edge_it != from_it->edge_end()) {
+      // Edge exists, update weight and return true
+      edge_it->cost = trans;
+      return true;
     }
-    
-    // Add new edge
-    AddEdge(from, to, trans);
+
+    // Add new edge - use internal method to avoid redundant vertex creation
+    to_it->vertices_from.push_back(from_it);
+    from_it->edges_to.emplace_back(from_it, to_it, trans);
     return true;
   } catch (...) {
     return false;

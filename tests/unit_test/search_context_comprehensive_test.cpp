@@ -463,3 +463,92 @@ TEST_F(SearchContextComprehensiveTest, IteratorBasedAccess) {
   auto& info1_from_const_it = context_->GetSearchInfo(const_vertex1_it);
   EXPECT_DOUBLE_EQ(info1_from_const_it.GetGCost<double>(), 1.5);
 }
+
+// Test explicit start vertex tracking
+TEST_F(SearchContextComprehensiveTest, StartVertexTracking) {
+  // Initially no start vertex set
+  EXPECT_FALSE(context_->HasStartVertex());
+  EXPECT_EQ(context_->GetStartVertexId(), -1);
+
+  // Set start vertex
+  context_->SetStartVertexId(42);
+  EXPECT_TRUE(context_->HasStartVertex());
+  EXPECT_EQ(context_->GetStartVertexId(), 42);
+
+  // Change start vertex
+  context_->SetStartVertexId(123);
+  EXPECT_TRUE(context_->HasStartVertex());
+  EXPECT_EQ(context_->GetStartVertexId(), 123);
+
+  // Reset should clear start vertex
+  context_->Reset();
+  EXPECT_FALSE(context_->HasStartVertex());
+  EXPECT_EQ(context_->GetStartVertexId(), -1);
+
+  // Set again after reset
+  context_->SetStartVertexId(999);
+  EXPECT_TRUE(context_->HasStartVertex());
+  EXPECT_EQ(context_->GetStartVertexId(), 999);
+}
+
+// Test configurable pre-allocation
+TEST_F(SearchContextComprehensiveTest, ConfigurablePreallocation) {
+  // Test constructor with explicit reserve size
+  SearchContext<ContextTestState, double, DefaultIndexer<ContextTestState>> large_context(10000);
+
+  // Capacity should be at least what we requested
+  EXPECT_GE(large_context.Capacity(), 1);  // unordered_map bucket_count >= 1 initially
+
+  // Test Reserve method
+  SearchContext<ContextTestState, double, DefaultIndexer<ContextTestState>> resizable_context;
+  resizable_context.Reserve(5000);
+
+  // Should be able to add many entries without issues
+  for (int i = 0; i < 1000; ++i) {
+    resizable_context.GetSearchInfo(i).SetGCost(static_cast<double>(i));
+  }
+  EXPECT_EQ(resizable_context.Size(), 1000);
+
+  // Test default constructor still works
+  SearchContext<ContextTestState, double, DefaultIndexer<ContextTestState>> default_context;
+  default_context.GetSearchInfo(42).SetGCost(3.14);
+  EXPECT_DOUBLE_EQ(default_context.GetSearchInfo(42).GetGCost<double>(), 3.14);
+}
+
+// Test path reconstruction with explicit start vertex
+TEST_F(SearchContextComprehensiveTest, PathReconstructionWithStartVertex) {
+  // Build graph: 1 -> 2 -> 3 -> 4
+  for (int i = 1; i <= 4; ++i) {
+    graph_->AddVertex(ContextTestState(i));
+  }
+  graph_->AddEdge(ContextTestState(1), ContextTestState(2), 1.0);
+  graph_->AddEdge(ContextTestState(2), ContextTestState(3), 1.0);
+  graph_->AddEdge(ContextTestState(3), ContextTestState(4), 1.0);
+
+  // Set up search context with parent pointers as if search was performed
+  // Start = 1, Goal = 4
+  context_->SetStartVertexId(1);
+
+  context_->GetSearchInfo(1).SetParent(-1);  // Start has no parent
+  context_->GetSearchInfo(2).SetParent(1);
+  context_->GetSearchInfo(3).SetParent(2);
+  context_->GetSearchInfo(4).SetParent(3);
+
+  // Reconstruct path from 4 to 1
+  auto path = context_->ReconstructPath<ContextTestState>(graph_.get(), 4);
+
+  ASSERT_EQ(path.size(), 4);
+  EXPECT_EQ(path[0].id, 1);
+  EXPECT_EQ(path[1].id, 2);
+  EXPECT_EQ(path[2].id, 3);
+  EXPECT_EQ(path[3].id, 4);
+
+  // Test single-vertex path (start == goal)
+  context_->Reset();
+  context_->SetStartVertexId(1);
+  context_->GetSearchInfo(1).SetParent(-1);
+
+  auto single_path = context_->ReconstructPath<ContextTestState>(graph_.get(), 1);
+  ASSERT_EQ(single_path.size(), 1);
+  EXPECT_EQ(single_path[0].id, 1);
+}

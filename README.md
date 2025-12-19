@@ -73,11 +73,17 @@ Optimal space complexity O(m+n) using adjacency lists:
 **Concurrent read-only searches** are fully supported:
 ```cpp
 // Each thread gets independent search context
-void worker_thread(const Graph<Location>& map) {
+void worker_thread(const Graph<Location>* graph) {
     SearchContext<Location> context;  // Thread-local state
-    auto path = Dijkstra::Search(map, context, start, goal);  // Thread-safe
+    auto path = Dijkstra::Search(graph, context, start, goal);  // Thread-safe
 }
 ```
+
+**Thread-Safety Model:**
+- **Graph**: Read-only access only during concurrent searches (const pointer accepted)
+- **SearchContext**: Each concurrent search requires its own instance
+- **Strategy objects**: Stateless, can be safely shared across threads
+- **Legacy API**: Overloads without SearchContext parameter are NOT thread-safe
 
 **Graph modifications** require external synchronization (by design for performance).
 

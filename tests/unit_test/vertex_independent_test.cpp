@@ -126,28 +126,6 @@ TEST_F(VertexIndependentTest, GetNeighboursFunctionality) {
   EXPECT_EQ(neighbor_ids, expected_ids) << "Should return correct neighbor IDs";
 }
 
-TEST_F(VertexIndependentTest, VertexSearchInfoManagement) {
-  // Test search-related properties
-  EXPECT_FALSE(vertex1->is_checked) << "Vertex should start unchecked";
-  EXPECT_FALSE(vertex1->is_in_openlist) << "Vertex should not be in openlist initially";
-  
-  // Test modifying search properties
-  vertex1->is_checked = true;
-  vertex1->g_cost = 10.0;
-  vertex1->h_cost = 5.0;
-  vertex1->f_cost = 15.0;
-  
-  EXPECT_TRUE(vertex1->is_checked) << "Should be able to modify is_checked";
-  EXPECT_EQ(vertex1->g_cost, 10.0) << "Should be able to modify g_cost";
-  EXPECT_EQ(vertex1->h_cost, 5.0) << "Should be able to modify h_cost";
-  EXPECT_EQ(vertex1->f_cost, 15.0) << "Should be able to modify f_cost";
-  
-  // Test ClearVertexSearchInfo
-  vertex1->ClearVertexSearchInfo();
-  EXPECT_FALSE(vertex1->is_checked) << "ClearVertexSearchInfo should reset is_checked";
-  EXPECT_FALSE(vertex1->is_in_openlist) << "ClearVertexSearchInfo should reset is_in_openlist";
-}
-
 TEST_F(VertexIndependentTest, VertexTypeAliases) {
   // Test that Vertex type aliases work correctly
   using VertexType = Graph<TestState>::Vertex;

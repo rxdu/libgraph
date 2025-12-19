@@ -6,6 +6,13 @@
  *              Combined strategy implementation and public API
  *
  * Copyright (c) 2017-2025 Ruixiang Du (rdu)
+ *
+ * THREAD SAFETY:
+ * - AStarStrategy is stateless (heuristic function is const) and can be shared
+ * - For concurrent searches, each thread must use its own SearchContext
+ * - Graph must be read-only during all concurrent searches
+ * - Use the overloads that accept SearchContext& for thread-safe operation
+ * - Legacy overloads without SearchContext are NOT thread-safe
  */
 
 #ifndef ASTAR_HPP
@@ -50,8 +57,9 @@ public:
         return info.template GetFCost<Transition>();
     }
     
-    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
-                             vertex_iterator goal_vertex) const {
+    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex,
+                             vertex_iterator goal_vertex,
+                             typename Base::SearchContextType& /*context*/) const {
         info.SetGCost(Transition{});
         Transition h_cost = heuristic_(vertex->state, goal_vertex->state);
         info.SetHCost(h_cost);
@@ -60,10 +68,11 @@ public:
         info.SetInOpenList(false);
         info.SetParent(-1);
     }
-    
+
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        const Transition& edge_cost) const {
+                        const Transition& edge_cost,
+                        typename Base::SearchContextType& /*context*/) const {
         
         Transition current_g_cost = current_info.template GetGCost<Transition>();
         Transition new_g_cost = current_g_cost + edge_cost;
