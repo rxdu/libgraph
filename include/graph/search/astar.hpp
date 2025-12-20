@@ -60,9 +60,15 @@ public:
     
     void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex,
                              vertex_iterator goal_vertex,
-                             typename Base::SearchContextType& /*context*/) const {
+                             typename Base::SearchContextType& context) const {
         info.SetGCost(Transition{});
-        Transition h_cost = heuristic_(vertex->state, goal_vertex->state);
+
+        // In multi-goal mode, goal_vertex is vertex_end() (invalid), skip heuristic
+        Transition h_cost{};
+        if (!context.IsMultiGoalSearch()) {
+            h_cost = heuristic_(vertex->state, goal_vertex->state);
+        }
+
         info.SetHCost(h_cost);
         info.SetFCost(Transition{} + h_cost);
         info.SetChecked(false);
@@ -73,7 +79,7 @@ public:
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
                         const Transition& edge_cost,
-                        typename Base::SearchContextType& /*context*/) const {
+                        typename Base::SearchContextType& context) const {
 
         // Debug assertions for cost validity
         debug::AssertValidEdgeCost(edge_cost, "A* RelaxVertex: edge cost");
@@ -88,9 +94,13 @@ public:
 
         if (this->cost_comparator_(new_g_cost, successor_g_cost)) {
             successor_info.SetGCost(new_g_cost);
-            Transition h_cost = heuristic_(successor_vertex->state, goal_vertex->state);
 
-            debug::AssertValidHeuristic(h_cost, "A* RelaxVertex: heuristic value");
+            // In multi-goal mode, goal_vertex is vertex_end() (invalid), skip heuristic
+            Transition h_cost{};
+            if (!context.IsMultiGoalSearch()) {
+                h_cost = heuristic_(successor_vertex->state, goal_vertex->state);
+                debug::AssertValidHeuristic(h_cost, "A* RelaxVertex: heuristic value");
+            }
 
             successor_info.SetHCost(h_cost);
             successor_info.SetFCost(new_g_cost + h_cost);

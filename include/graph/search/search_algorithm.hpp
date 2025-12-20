@@ -331,6 +331,9 @@ private:
         // Clear previous search data but preserve allocated memory
         context.Reset();
 
+        // Single-goal search mode
+        context.SetMultiGoalSearch(false);
+
         // Track start vertex for reliable path reconstruction
         context.SetStartVertexId(start->vertex_id);
 
@@ -466,6 +469,9 @@ private:
 
         // Clear previous search data but preserve allocated memory
         context.Reset();
+
+        // Multi-goal search mode - strategies should not dereference goal_vertex
+        context.SetMultiGoalSearch(true);
 
         // Track start vertex for reliable path reconstruction
         context.SetStartVertexId(start->vertex_id);

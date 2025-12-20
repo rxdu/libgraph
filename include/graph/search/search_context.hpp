@@ -399,6 +399,10 @@ private:
   /// Useful for diagnostics and heuristic tuning
   size_t nodes_expanded_ = 0;
 
+  /// Flag indicating multi-goal search mode
+  /// When true, strategies should not dereference goal_vertex (it may be vertex_end())
+  bool is_multi_goal_search_ = false;
+
   /// Default reserve size for moderate-sized graphs
   static constexpr size_t DEFAULT_RESERVE_SIZE = 1000;
 
@@ -476,6 +480,30 @@ public:
    */
   void ResetNodesExpanded() noexcept {
     nodes_expanded_ = 0;
+  }
+
+  /**
+   * @brief Check if this is a multi-goal search
+   *
+   * When true, strategies should not dereference goal_vertex iterators
+   * as they may be vertex_end() (invalid). Use h_cost = 0 instead.
+   *
+   * @return True if multi-goal search mode is active
+   */
+  bool IsMultiGoalSearch() const noexcept {
+    return is_multi_goal_search_;
+  }
+
+  /**
+   * @brief Set multi-goal search mode
+   *
+   * Called by search algorithms to indicate multi-goal mode.
+   * Strategies use this to avoid dereferencing invalid goal iterators.
+   *
+   * @param is_multi_goal True for multi-goal search, false for single-goal
+   */
+  void SetMultiGoalSearch(bool is_multi_goal) noexcept {
+    is_multi_goal_search_ = is_multi_goal;
   }
 
   /**
@@ -573,6 +601,8 @@ public:
     start_vertex_id_ = -1;
     // Reset nodes expanded counter
     nodes_expanded_ = 0;
+    // Reset multi-goal flag
+    is_multi_goal_search_ = false;
     // Keep allocated memory in the map for next search
     // This avoids reallocating hash table buckets
   }

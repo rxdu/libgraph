@@ -96,9 +96,42 @@ jobs:
     - uses: codecov/codecov-action@v5
       if: github.ref == 'refs/heads/main'
       with:
-        fail_ci_if_error: true 
+        fail_ci_if_error: true
         files: ./build/coverage.info
         exclude: tests, src/demo
         flags: unittests # optional
         token: ${{ secrets.CODECOV_TOKEN }} # required
         verbose: true # optional (default = false)
+
+  # AddressSanitizer + UndefinedBehaviorSanitizer
+  sanitize-asan:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Update submodules
+      run: git submodule update --init --recursive
+    - name: Configure with ASAN + UBSAN
+      run: mkdir build && cd build && cmake -DBUILD_TESTING=ON -DENABLE_ASAN=ON -DENABLE_UBSAN=ON -DCMAKE_BUILD_TYPE=Debug ..
+    - name: Build
+      run: cmake --build build
+    - name: Run tests with ASAN + UBSAN
+      env:
+        ASAN_OPTIONS: detect_leaks=1:abort_on_error=1
+        UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+      run: cd build && ./bin/utests
+
+  # ThreadSanitizer (separate job - incompatible with ASAN)
+  sanitize-tsan:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Update submodules
+      run: git submodule update --init --recursive
+    - name: Configure with TSAN
+      run: mkdir build && cd build && cmake -DBUILD_TESTING=ON -DENABLE_TSAN=ON -DCMAKE_BUILD_TYPE=Debug ..
+    - name: Build
+      run: cmake --build build
+    - name: Run tests with TSAN
+      env:
+        TSAN_OPTIONS: halt_on_error=1:second_deadlock_stack=1
+      run: cd build && ./bin/utests

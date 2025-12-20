@@ -6,6 +6,9 @@ option(BUILD_TESTING "Build tests" OFF)
 option(BUILD_SAMPLES "Build samples" ON)
 option(STATIC_CHECK "Perform static check" OFF)
 option(COVERAGE_CHECK "Perform coverage check" OFF)
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
 
 # sanity check of the options
 if (COVERAGE_CHECK)
@@ -30,6 +33,30 @@ if (COVERAGE_CHECK)
     set(CMAKE_BUILD_TYPE Debug)
     set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage -fprofile-update=atomic")
   endif ()
+endif ()
+
+# Sanitizer configuration
+# Note: ASAN and TSAN are mutually exclusive
+if (ENABLE_ASAN AND ENABLE_TSAN)
+  message(FATAL_ERROR "ASAN and TSAN cannot be enabled simultaneously")
+endif ()
+
+if (ENABLE_ASAN)
+  message(STATUS "AddressSanitizer enabled")
+  add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g)
+  add_link_options(-fsanitize=address)
+endif ()
+
+if (ENABLE_UBSAN)
+  message(STATUS "UndefinedBehaviorSanitizer enabled")
+  add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer -g)
+  add_link_options(-fsanitize=undefined)
+endif ()
+
+if (ENABLE_TSAN)
+  message(STATUS "ThreadSanitizer enabled")
+  add_compile_options(-fsanitize=thread -fno-omit-frame-pointer -g)
+  add_link_options(-fsanitize=thread)
 endif ()
 
 ## Additional cmake module path
