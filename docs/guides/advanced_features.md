@@ -12,6 +12,7 @@ This guide covers advanced features and customization options in libgraph for us
 - [Memory Management Best Practices](#memory-management-best-practices)
 - [Advanced Search Patterns](#advanced-search-patterns)
 - [Integration Patterns](#integration-patterns)
+- [Production and Real-Time Features](#production-and-real-time-features)
 
 ## Custom Cost Types
 
@@ -865,5 +866,106 @@ public:
     const Graph<State, Transition>& GetGraph() const { return graph_; }
 };
 ```
+
+## Production and Real-Time Features
+
+### Rich Search Results with PathResult
+
+Get detailed search results including path cost and diagnostics:
+
+```cpp
+auto strategy = MakeDijkstraStrategy<State, double, Indexer>();
+auto result = SearchAlgorithm<...>::SearchWithResult(graph, context, start, goal, strategy);
+
+if (result.found) {
+    std::cout << "Path cost: " << result.total_cost << "\n";
+    std::cout << "Nodes expanded: " << result.nodes_expanded << "\n";
+    for (const auto& state : result.path) {
+        // Process path...
+    }
+}
+```
+
+### Early Termination with SearchLimits
+
+Bound search execution for real-time systems:
+
+```cpp
+// Limit by number of node expansions
+auto limits = SearchLimits::MaxExpansions(1000);
+auto result = SearchAlgorithm<...>::SearchWithLimits(graph, context, start, goal, strategy, limits);
+
+// Limit by time (milliseconds)
+auto limits = SearchLimits::Timeout(50);  // 50ms max
+auto result = SearchAlgorithm<...>::SearchWithLimits(graph, context, start, goal, strategy, limits);
+
+// Check if search was truncated
+if (result.truncated) {
+    std::cout << "Search stopped early after " << result.nodes_expanded << " expansions\n";
+}
+```
+
+### Multi-Goal Search
+
+Find the path to the nearest goal from a set of candidates (e.g., nearest charging station):
+
+```cpp
+std::vector<State> goals = {station1, station2, station3};
+auto result = Dijkstra::SearchMultiGoal(graph, context, start, goals);
+
+if (result.found) {
+    std::cout << "Reached goal index: " << result.goal_index << "\n";
+    std::cout << "Goal vertex ID: " << result.goal_vertex_id << "\n";
+    std::cout << "Path cost: " << result.total_cost << "\n";
+}
+
+// Also available for A*
+auto astar_result = AStar::SearchMultiGoal(graph, context, start, goals, heuristic);
+```
+
+### Debug Assertions
+
+In debug builds (without `NDEBUG`), the library validates:
+
+- Edge costs are non-negative
+- Edge costs are finite (not NaN or Inf)
+- Heuristic values are non-negative and finite
+- G-costs don't overflow
+
+These checks are compiled away in release builds for zero overhead.
+
+```cpp
+// Example: These would trigger assertions in debug mode
+graph.AddEdge(a, b, -5.0);           // Negative cost
+graph.AddEdge(a, b, INFINITY);       // Infinite cost
+graph.AddEdge(a, b, NAN);            // NaN cost
+```
+
+### Deterministic Search Results
+
+Search results are deterministic across runs:
+
+- Priority queue comparators break ties by `vertex_id`
+- No reliance on `unordered_map` iteration order for result generation
+- Same graph + same query = same path (guaranteed)
+
+This is critical for:
+- Reproducible testing and debugging
+- Consistent behavior in robotics/navigation systems
+- Deterministic simulation and replay
+
+### API Summary for Production Features
+
+**New Types:**
+- `PathResult<State, Cost>` - Rich search result with path, cost, nodes_expanded
+- `MultiGoalResult<State, Cost>` - Extends PathResult with goal_vertex_id, goal_index
+- `SearchLimits` - Early termination configuration
+
+**New Methods:**
+- `SearchAlgorithm::SearchWithResult()` - Returns PathResult
+- `SearchAlgorithm::SearchWithLimits()` - Bounded search
+- `Dijkstra::SearchMultiGoal()` - Find nearest goal
+- `AStar::SearchMultiGoal()` - Find nearest goal with heuristic
+- `context.GetNodesExpanded()` - Diagnostic counter
 
 These advanced features provide the foundation for building sophisticated graph-based applications with optimal performance and maintainability.

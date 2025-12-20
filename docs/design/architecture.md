@@ -11,7 +11,7 @@ This document provides an in-depth look at the libgraph library architecture, de
 - [Search Framework](#search-framework)
 - [Thread Safety Design](#thread-safety-design)
 - [Performance Characteristics](#performance-characteristics)
-- [Design Patterns](#design-patterns)
+cd - [Design Patterns](#design-patterns)
 - [Extension Points](#extension-points)
 
 ## Design Philosophy

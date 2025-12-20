@@ -470,19 +470,25 @@ auto path = Dijkstra::Search(graph, start, goal);
 
 ## Next Steps
 
-Excellent! You now understand the core pathfinding algorithms in libgraph. In **[Tutorial 3: Working with Different State Types](03-state-types.md)**, you'll learn how to use libgraph with various state types and custom indexing strategies.
+You now understand the core pathfinding algorithms in libgraph. Continue your learning:
 
-### Preview
+- **[Advanced Features](../../guides/advanced_features.md)** - Custom state types, custom indexers, multi-criteria costs
+- **[API Reference](../../design/api.md)** - Complete class and method documentation
+- **[Architecture](../../design/architecture.md)** - Understanding the template system
+- **[Examples](../../guides/examples.md)** - Real-world applications
+
+### Preview: Custom State Types
 ```cpp
-// Coming up in Tutorial 3:
 struct GameCharacter {
     std::string name;
     int health, mana;
     Position pos;
-    
+
     // Custom ID generation
     int64_t GetId() const { return std::hash<std::string>{}(name); }
 };
 
 Graph<GameCharacter> game_world;
 ```
+
+See **[Advanced Features](../../guides/advanced_features.md)** for complete coverage of custom state types and indexing strategies.
