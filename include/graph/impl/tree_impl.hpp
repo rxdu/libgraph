@@ -54,16 +54,19 @@ Tree<State, Transition, StateIndexer>::GetParentVertex(int64_t state_id) {
     throw ElementNotFoundError("Vertex", state_id);
   }
   if (vtx->vertices_from.size() > 1) {
-    throw StructureViolationError("single-parent", 
-                                  "Vertex with state_id " + std::to_string(state_id) + 
-                                  " has " + std::to_string(vtx->vertices_from.size()) + 
+    throw StructureViolationError("single-parent",
+                                  "Vertex with state_id " + std::to_string(state_id) +
+                                  " has " + std::to_string(vtx->vertices_from.size()) +
                                   " parents (expected at most 1)");
   }
 
   if (vtx == root_)
     return TreeType::vertex_end();
-  else
-    return vtx->vertices_from.front();
+  else {
+    // vertices_from now stores Vertex*, convert back to iterator
+    Vertex* parent_ptr = vtx->vertices_from.front();
+    return TreeType::FindVertex(parent_ptr->vertex_id);
+  }
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -72,40 +75,44 @@ void Tree<State, Transition, StateIndexer>::RemoveSubtree(int64_t state_id) {
 
   // remove if specified vertex exists
   if (vtx != TreeType::vertex_end()) {
+    Vertex* vtx_ptr = &(*vtx);
+
     // remove from other vertices that connect to the vertex to be deleted
-    for (auto &asv : vtx->vertices_from) {
-      asv->edges_to.erase(
-          std::remove_if(asv->edges_to.begin(), asv->edges_to.end(),
-                         [&vtx](Edge edge) { return ((edge.dst) == vtx); }),
-          asv->edges_to.end());
+    // vertices_from now stores Vertex* pointers
+    for (auto* parent_vertex : vtx->vertices_from) {
+      auto vtx_id = vtx_ptr->vertex_id;
+      parent_vertex->edges_to.erase(
+          std::remove_if(parent_vertex->edges_to.begin(), parent_vertex->edges_to.end(),
+                         [vtx_id](const Edge& edge) { return edge.dst->vertex_id == vtx_id; }),
+          parent_vertex->edges_to.end());
     }
 
     // remove all subsequent vertices
     // iterate through all vertices of the subtree using local visited tracking
     // for thread safety (instead of using deprecated vertex is_checked field)
     std::unordered_set<int64_t> visited;
-    std::vector<vertex_iterator> child_vertices;
-    std::queue<vertex_iterator> queue;
-    
-    queue.push(vtx);
-    visited.insert(vtx->vertex_id);
-    
+    std::vector<int64_t> child_vertex_ids;
+    std::queue<Vertex*> queue;
+
+    queue.push(vtx_ptr);
+    visited.insert(vtx_ptr->vertex_id);
+
     while (!queue.empty()) {
-      auto node = queue.front();
-      child_vertices.push_back(node);
-      
-      for (auto it = node->edges_to.begin(); it != node->edges_to.end(); ++it) {
-        if (visited.find(it->dst->vertex_id) == visited.end()) {
-          queue.push(it->dst);
-          visited.insert(it->dst->vertex_id);
+      auto* node = queue.front();
+      child_vertex_ids.push_back(node->vertex_id);
+
+      for (auto& edge : node->edges_to) {
+        if (visited.find(edge.dst->vertex_id) == visited.end()) {
+          queue.push(edge.dst);
+          visited.insert(edge.dst->vertex_id);
         }
       }
       queue.pop();
     }
 
-    for (auto &vtx : child_vertices) {
+    for (auto vertex_id : child_vertex_ids) {
       // remove from vertex map - unique_ptr handles cleanup automatically
-      TreeType::vertex_map_.erase(vtx.base());
+      TreeType::vertex_map_.erase(vertex_id);
     }
   }
 }
@@ -115,21 +122,25 @@ void Tree<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
                                                     Transition trans) {
   bool tree_empty = TreeType::vertex_map_.empty();
 
-  auto src_vertex = TreeType::ObtainVertexFromVertexMap(sstate);
-  auto dst_vertex = TreeType::ObtainVertexFromVertexMap(dstate);
+  auto src_vertex_it = TreeType::ObtainVertexFromVertexMap(sstate);
+  auto dst_vertex_it = TreeType::ObtainVertexFromVertexMap(dstate);
 
   // set root if tree is empty or a parent vertex is connected to root_
-  if (tree_empty || (dst_vertex == root_)) root_ = src_vertex;
+  if (tree_empty || (dst_vertex_it == root_)) root_ = src_vertex_it;
 
   // update transition if edge already exists
-  auto it = src_vertex->FindEdge(dstate);
-  if (it != src_vertex->edge_end()) {
+  auto it = src_vertex_it->FindEdge(dstate);
+  if (it != src_vertex_it->edge_end()) {
     it->cost = trans;
     return;
   }
 
-  dst_vertex->vertices_from.push_back(src_vertex);
-  src_vertex->edges_to.emplace_back(src_vertex, dst_vertex, trans);
+  // Use stable Vertex* pointers instead of iterators
+  Vertex* src_vertex_ptr = &(*src_vertex_it);
+  Vertex* dst_vertex_ptr = &(*dst_vertex_it);
+
+  dst_vertex_ptr->vertices_from.push_back(src_vertex_ptr);
+  src_vertex_ptr->edges_to.emplace_back(src_vertex_ptr, dst_vertex_ptr, trans);
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -191,7 +202,7 @@ Tree<State, Transition, StateIndexer>::GetVertex(int64_t vertex_id) const {
 template <typename State, typename Transition, typename StateIndexer>
 bool Tree<State, Transition, StateIndexer>::IsValidTree() const {
   if (TreeType::vertex_map_.empty()) return true;
-  
+
   // Check that all vertices (except root) have exactly one parent
   for (auto it = this->vertex_begin(); it != this->vertex_end(); ++it) {
     const_vertex_iterator const_root(root_.base());
@@ -201,53 +212,57 @@ bool Tree<State, Transition, StateIndexer>::IsValidTree() const {
       if (it->vertices_from.size() != 1) return false; // Non-root should have exactly one parent
     }
   }
-  
-  // Check for cycles using DFS
+
+  // Check for cycles using DFS with Vertex* pointers
   std::unordered_set<int64_t> visited;
   std::unordered_set<int64_t> rec_stack;
-  
-  std::function<bool(const_vertex_iterator)> has_cycle = [&](const_vertex_iterator v) -> bool {
+
+  std::function<bool(const Vertex*)> has_cycle = [&](const Vertex* v) -> bool {
     visited.insert(v->vertex_id);
     rec_stack.insert(v->vertex_id);
-    
-    for (auto& edge : v->edges_to) {
+
+    for (const auto& edge : v->edges_to) {
       if (rec_stack.find(edge.dst->vertex_id) != rec_stack.end()) {
         return true; // Found a cycle
       }
       if (visited.find(edge.dst->vertex_id) == visited.end()) {
-        if (has_cycle(const_vertex_iterator(edge.dst.base()))) return true;
+        if (has_cycle(edge.dst)) return true;
       }
     }
-    
+
     rec_stack.erase(v->vertex_id);
     return false;
   };
-  
+
   if (root_.base() != TreeType::vertex_map_.end()) {
+    // Use const access through const_vertex_iterator
     const_vertex_iterator const_root(root_.base());
-    if (has_cycle(const_root)) {
+    if (has_cycle(&(*const_root))) {
       return false;
     }
   }
-  
+
   return true;
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 int32_t Tree<State, Transition, StateIndexer>::GetTreeHeight() const {
   if (TreeType::vertex_map_.empty() || root_.base() == TreeType::vertex_map_.end()) return 0;
-  
-  std::function<int32_t(const_vertex_iterator)> get_height = [&](const_vertex_iterator v) -> int32_t {
+
+  // Use Vertex* pointers for recursion
+  std::function<int32_t(const Vertex*)> get_height = [&](const Vertex* v) -> int32_t {
     if (v->edges_to.empty()) return 0; // Leaf node
-    
+
     int32_t max_height = 0;
-    for (auto& edge : v->edges_to) {
-      max_height = std::max(max_height, get_height(const_vertex_iterator(edge.dst.base())));
+    for (const auto& edge : v->edges_to) {
+      max_height = std::max(max_height, get_height(edge.dst));
     }
     return max_height + 1;
   };
-  
-  return get_height(const_vertex_iterator(root_.base()));
+
+  // Use const access through const_vertex_iterator
+  const_vertex_iterator const_root(root_.base());
+  return get_height(&(*const_root));
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -268,14 +283,15 @@ template <typename State, typename Transition, typename StateIndexer>
 std::vector<typename Tree<State, Transition, StateIndexer>::const_vertex_iterator>
 Tree<State, Transition, StateIndexer>::GetChildren(int64_t vertex_id) const {
   std::vector<const_vertex_iterator> children;
-  
+
   auto vtx = this->FindVertex(vertex_id);
   if (vtx != this->vertex_end()) {
-    for (auto& edge : vtx->edges_to) {
-      children.push_back(const_vertex_iterator(edge.dst.base()));
+    for (const auto& edge : vtx->edges_to) {
+      // edge.dst is now Vertex*, convert back to iterator
+      children.push_back(TreeType::FindVertex(edge.dst->vertex_id));
     }
   }
-  
+
   return children;
 }
 
@@ -283,27 +299,28 @@ template <typename State, typename Transition, typename StateIndexer>
 size_t Tree<State, Transition, StateIndexer>::GetSubtreeSize(int64_t vertex_id) const {
   auto vtx = this->FindVertex(vertex_id);
   if (vtx == this->vertex_end()) return 0;
-  
+
   size_t size = 1; // Count the root of the subtree
-  std::queue<const_vertex_iterator> queue;
-  queue.push(vtx);
-  
+  // Use Vertex* pointers for BFS traversal
+  std::queue<const Vertex*> queue;
+  queue.push(&(*vtx));
+
   std::unordered_set<int64_t> visited;
   visited.insert(vtx->vertex_id);
-  
+
   while (!queue.empty()) {
-    auto node = queue.front();
+    const Vertex* node = queue.front();
     queue.pop();
-    
-    for (auto& edge : node->edges_to) {
+
+    for (const auto& edge : node->edges_to) {
       if (visited.find(edge.dst->vertex_id) == visited.end()) {
         size++;
-        queue.push(const_vertex_iterator(edge.dst.base()));
+        queue.push(edge.dst);
         visited.insert(edge.dst->vertex_id);
       }
     }
   }
-  
+
   return size;
 }
 

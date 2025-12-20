@@ -26,16 +26,25 @@ template <typename State, typename Transition, typename StateIndexer>
 class Graph;
 
 /// Vertex class template - now independent from Graph
+///
+/// STABILITY NOTE: Vertex uses raw Vertex pointers (Vertex*) for reverse adjacency
+/// (vertices_from) instead of iterators. This is intentional for stability:
+/// std::unordered_map iterators are invalidated on rehash, but pointers to values
+/// stored via unique_ptr remain stable. This ensures the graph remains valid
+/// even when vertices are added.
 template <typename State, typename Transition, typename StateIndexer>
 struct Vertex {
   using GraphType = Graph<State, Transition, StateIndexer>;
   using EdgeType = Edge<State, Transition, StateIndexer>;
-  
-  // IMPORTANT: Use Graph's vertex_iterator type to ensure compatibility
-  using vertex_iterator = typename GraphType::vertex_iterator;
+  using VertexType = Vertex<State, Transition, StateIndexer>;
+
   using EdgeListType = std::list<EdgeType>;
   using edge_iterator = typename EdgeListType::iterator;
   using const_edge_iterator = typename EdgeListType::const_iterator;
+
+  /// List of vertices that have edges pointing TO this vertex (reverse adjacency)
+  /// Uses stable Vertex* pointers instead of iterators for rehash safety
+  using IncomingVertexList = std::list<VertexType*>;
 
   /** @name Big Five
    *  Constructor and destructor
@@ -60,8 +69,9 @@ struct Vertex {
   // Edges connecting to other vertices
   EdgeListType edges_to;
 
-  // Vertices that contain edges connecting to current vertex
-  std::list<vertex_iterator> vertices_from;
+  // Vertices that contain edges connecting to current vertex (reverse adjacency)
+  // Uses stable Vertex* pointers instead of iterators for rehash safety
+  IncomingVertexList vertices_from;
 
   /** @name Edge access
    *  Edge iterators to access edges in the vertex
@@ -103,8 +113,9 @@ struct Vertex {
             typename std::enable_if<!std::is_integral<T>::value>::type* = nullptr>
   const_edge_iterator FindEdge(T state) const;
 
-  /// Return all neighbors of this vertex
-  std::vector<vertex_iterator> GetNeighbours();
+  /// Return all neighbors of this vertex (vertices connected by outgoing edges)
+  /// Returns stable Vertex* pointers instead of iterators for rehash safety
+  std::vector<VertexType*> GetNeighbours();
 
   /// Print vertex information
   void PrintVertex() const;

@@ -79,6 +79,104 @@ struct CostTraits {
 template <typename State>
 using Path = std::vector<State>;
 
+/**
+ * @brief Rich search result with path, cost, and diagnostics
+ *
+ * Provides more information than just the path for robotics applications:
+ * - Total path cost for comparing alternatives
+ * - Nodes expanded for tuning heuristics
+ * - Success/failure status
+ *
+ * @tparam State The state type stored in the path
+ * @tparam Cost The cost type (defaults to double)
+ */
+template <typename State, typename Cost = double>
+struct PathResult {
+    Path<State> path;           ///< Sequence of states from start to goal
+    Cost total_cost{};          ///< Total accumulated cost of the path
+    size_t nodes_expanded{0};   ///< Number of vertices expanded during search
+    bool found{false};          ///< True if a valid path was found
+
+    /// Implicit conversion to bool for convenient checking
+    explicit operator bool() const noexcept { return found; }
+
+    /// Check if path is empty (no path found or trivial path)
+    bool empty() const noexcept { return path.empty(); }
+
+    /// Get path length (number of waypoints)
+    size_t size() const noexcept { return path.size(); }
+};
+
+/**
+ * @brief Multi-goal search result with path, cost, and goal identification
+ *
+ * Extends PathResult to identify which goal was reached when searching
+ * for the nearest of multiple possible goals.
+ *
+ * @tparam State The state type stored in the path
+ * @tparam Cost The cost type (defaults to double)
+ */
+template <typename State, typename Cost = double>
+struct MultiGoalResult {
+    Path<State> path;           ///< Sequence of states from start to reached goal
+    Cost total_cost{};          ///< Total accumulated cost of the path
+    size_t nodes_expanded{0};   ///< Number of vertices expanded during search
+    bool found{false};          ///< True if any goal was reached
+    int64_t goal_vertex_id{-1}; ///< Vertex ID of the reached goal (-1 if not found)
+    size_t goal_index{0};       ///< Index in the goals vector (valid only if found)
+
+    /// Implicit conversion to bool for convenient checking
+    explicit operator bool() const noexcept { return found; }
+
+    /// Check if path is empty
+    bool empty() const noexcept { return path.empty(); }
+
+    /// Get path length
+    size_t size() const noexcept { return path.size(); }
+};
+
+/**
+ * @brief Search termination limits for real-time systems
+ *
+ * Allows bounding search execution time or effort for predictable latency.
+ * When a limit is reached, the search returns the best path found so far
+ * (if any) or an empty result.
+ */
+struct SearchLimits {
+    /// Maximum number of vertex expansions (0 = unlimited)
+    size_t max_expansions;
+
+    /// Maximum search duration in milliseconds (0 = unlimited)
+    size_t timeout_ms;
+
+    /// Default constructor - unlimited search
+    SearchLimits() : max_expansions(0), timeout_ms(0) {}
+
+    /// Constructor with explicit limits
+    SearchLimits(size_t max_exp, size_t timeout)
+        : max_expansions(max_exp), timeout_ms(timeout) {}
+
+    /// Check if any limits are set
+    bool HasLimits() const noexcept {
+        return max_expansions > 0 || timeout_ms > 0;
+    }
+
+    /// Factory for unlimited search
+    static SearchLimits Unlimited() noexcept {
+        return SearchLimits();
+    }
+
+    /// Factory for expansion-limited search
+    static SearchLimits MaxExpansions(size_t n) noexcept {
+        return SearchLimits(n, 0);
+    }
+
+    /// Factory for time-limited search
+    static SearchLimits Timeout(size_t ms) noexcept {
+        return SearchLimits(0, ms);
+    }
+};
+
 /// Forward declarations
 template <typename State, typename Transition, typename StateIndexer>
 class Graph;
@@ -297,6 +395,10 @@ private:
   /// Set by search algorithms at initialization, -1 means not set
   VertexId start_vertex_id_ = -1;
 
+  /// Number of vertices expanded during the current/last search
+  /// Useful for diagnostics and heuristic tuning
+  size_t nodes_expanded_ = 0;
+
   /// Default reserve size for moderate-sized graphs
   static constexpr size_t DEFAULT_RESERVE_SIZE = 1000;
 
@@ -342,6 +444,38 @@ public:
    */
   size_t Capacity() const noexcept {
     return search_data_.bucket_count();
+  }
+
+  /**
+   * @brief Get the number of nodes expanded in the current/last search
+   *
+   * Useful for:
+   * - Comparing heuristic effectiveness (fewer expansions = better heuristic)
+   * - Performance profiling and optimization
+   * - Debugging search behavior
+   *
+   * @return Number of vertices that were expanded (removed from open list)
+   */
+  size_t GetNodesExpanded() const noexcept {
+    return nodes_expanded_;
+  }
+
+  /**
+   * @brief Increment the nodes expanded counter
+   *
+   * Called by search algorithms when a vertex is expanded (popped from open list).
+   */
+  void IncrementNodesExpanded() noexcept {
+    ++nodes_expanded_;
+  }
+
+  /**
+   * @brief Reset the nodes expanded counter to zero
+   *
+   * Called at the start of a new search.
+   */
+  void ResetNodesExpanded() noexcept {
+    nodes_expanded_ = 0;
   }
 
   /**
@@ -437,6 +571,8 @@ public:
     }
     // Reset start vertex tracking
     start_vertex_id_ = -1;
+    // Reset nodes expanded counter
+    nodes_expanded_ = 0;
     // Keep allocated memory in the map for next search
     // This avoids reallocating hash table buckets
   }

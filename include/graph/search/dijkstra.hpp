@@ -21,6 +21,7 @@
 #include <limits>
 #include "graph/search/search_algorithm.hpp"
 #include "graph/search/search_strategy.hpp"
+#include "graph/impl/debug_checks.hpp"
 
 namespace xmotion {
 
@@ -66,11 +67,18 @@ public:
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
                         const Transition& edge_cost,
                         typename Base::SearchContextType& /*context*/) const {
-        
+
+        // Debug assertions for cost validity
+        debug::AssertValidEdgeCost(edge_cost, "Dijkstra RelaxVertex: edge cost");
+
         Transition current_g_cost = current_info.template GetGCost<Transition>();
         Transition new_cost = current_g_cost + edge_cost;
+
+        debug::AssertValidGCost(new_cost, "Dijkstra RelaxVertex: new g-cost");
+        debug::AssertCostNotOverflowed(new_cost, "Dijkstra RelaxVertex: g-cost overflow check");
+
         Transition successor_g_cost = successor_info.template GetGCost<Transition>();
-        
+
         if (this->cost_comparator_(new_cost, successor_g_cost)) {
             successor_info.SetGCost(new_cost);
             successor_info.SetHCost(Transition{});  // No heuristic in Dijkstra
@@ -192,8 +200,56 @@ public:
         
         SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
             ::Search(graph, context, start_it, dummy_goal, strategy);
-        
+
         return true;
+    }
+
+    /**
+     * @brief Search to the nearest of multiple goals
+     *
+     * Finds the shortest path from start to the nearest goal in the goals vector.
+     * Useful for robotics scenarios like finding the nearest charging station.
+     *
+     * @tparam VertexIdentifier Type used to identify vertices (state or ID)
+     * @param graph Pointer to the graph
+     * @param context Search context (will be reset)
+     * @param start Starting vertex identifier
+     * @param goals Vector of goal vertex identifiers
+     * @return MultiGoalResult with path to nearest goal
+     */
+    template<typename State, typename Transition, typename StateIndexer,
+             typename VertexIdentifier>
+    static MultiGoalResult<State, Transition> SearchMultiGoal(
+        const Graph<State, Transition, StateIndexer>* graph,
+        SearchContext<State, Transition, StateIndexer>& context,
+        VertexIdentifier start,
+        const std::vector<VertexIdentifier>& goals) {
+
+        using GraphType = Graph<State, Transition, StateIndexer>;
+        using vertex_iterator = typename GraphType::const_vertex_iterator;
+
+        MultiGoalResult<State, Transition> result;
+
+        if (!graph || goals.empty()) return result;
+
+        auto start_it = graph->FindVertex(start);
+        if (start_it == graph->vertex_end()) return result;
+
+        // Convert goal identifiers to iterators
+        std::vector<vertex_iterator> goal_iters;
+        goal_iters.reserve(goals.size());
+        for (const auto& g : goals) {
+            auto it = graph->FindVertex(g);
+            if (it != graph->vertex_end()) {
+                goal_iters.push_back(it);
+            }
+        }
+
+        if (goal_iters.empty()) return result;
+
+        auto strategy = MakeDijkstraStrategy<State, Transition, StateIndexer>();
+        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
+            ::SearchMultiGoal(graph, context, start_it, goal_iters, strategy);
     }
 };
 

@@ -156,7 +156,8 @@ private:
 
             // Explore neighbors
             for (const auto& edge : current->edges_to) {
-                vertex_iterator neighbor = edge.dst;
+                // edge.dst is now Vertex* (stable pointer), convert to iterator
+                vertex_iterator neighbor = graph->FindVertex(edge.dst->vertex_id);
                 auto& neighbor_info = context.GetSearchInfo(neighbor);
 
                 // Skip if already visited
@@ -323,17 +324,18 @@ public:
         while (!q.empty()) {
             auto current = q.front();
             q.pop();
-            
+
             // Mark as visited in context
             auto& current_info = context.GetSearchInfo(current);
             current_info.SetChecked(true);
-            
+
             for (const auto& edge : current->edges_to) {
-                auto neighbor = edge.dst;
-                int64_t neighbor_id = neighbor->vertex_id;
-                
+                int64_t neighbor_id = edge.dst->vertex_id;
+
                 if (visited.find(neighbor_id) == visited.end()) {
-                    q.push(neighbor);
+                    // edge.dst is now Vertex* (stable pointer), convert to iterator
+                    auto neighbor_it = graph->FindVertex(neighbor_id);
+                    q.push(neighbor_it);
                     visited.insert(neighbor_id);
                 }
             }
