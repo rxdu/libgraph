@@ -54,20 +54,21 @@ struct DynamicPriorityQueueTest : testing::Test {
 };
 
 TEST_F(DynamicPriorityQueueTest, QueueForGraph) {
+  // Use TestElement's value field for priority (instead of deprecated vertex g_cost)
+  // Set values for priority ordering: elements[0]=10, elements[1]=5, elements[2]=20
+  // After sorting by value: elements[1](5) < elements[0](10) < elements[2](20)
+
   Graph<TestElement*, double> graph;
 
   graph.AddEdge(&elements[0], &elements[1], 1.0);
   graph.AddEdge(&elements[1], &elements[2], 2.0);
 
-  graph.FindVertex(0)->g_cost = 1.0;
-  graph.FindVertex(1)->g_cost = 2.0;
-  graph.FindVertex(2)->g_cost = 3.0;
-
   using VertexIterator = Graph<TestElement*, double>::vertex_iterator;
 
   struct VertexComparator {
     bool operator()(VertexIterator x, VertexIterator y) const {
-      return (x->g_cost < y->g_cost);
+      // Compare using TestElement's value field
+      return (x->state->value < y->state->value);
     }
   };
 
@@ -82,11 +83,12 @@ TEST_F(DynamicPriorityQueueTest, QueueForGraph) {
   VertexComparator compare;
   compare(graph.FindVertex(0), graph.FindVertex(1));
 
-  queue.Push(graph.FindVertex(0));
-  queue.Push(graph.FindVertex(1));
-  queue.Push(graph.FindVertex(2));
+  queue.Push(graph.FindVertex(0));  // value = 10
+  queue.Push(graph.FindVertex(1));  // value = 5
+  queue.Push(graph.FindVertex(2));  // value = 20
 
-  ASSERT_EQ(queue.Pop()->g_cost, 1.0);
-  ASSERT_EQ(queue.Pop()->g_cost, 2.0);
-  ASSERT_EQ(queue.Pop()->g_cost, 3.0);
+  // Min-heap: smallest value comes out first
+  ASSERT_EQ(queue.Pop()->state->value, 5.0);   // elements[1]
+  ASSERT_EQ(queue.Pop()->state->value, 10.0);  // elements[0]
+  ASSERT_EQ(queue.Pop()->state->value, 20.0);  // elements[2]
 }

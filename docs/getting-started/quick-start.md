@@ -343,13 +343,14 @@ int main() {
 
 ## Next Steps
 
-Now that you have the basics, explore these advanced topics:
+Now that you have the basics, explore these topics:
 
-1. **[Complete API Reference](api.md)** - All classes and methods
-2. **[Search Algorithms Guide](search_algorithms.md)** - Deep dive into A*, Dijkstra, BFS, DFS  
-3. **[Architecture Overview](architecture.md)** - Understanding the template system
-4. **[Advanced Features](advanced_features.md)** - Custom indexers, validation, batch operations
-5. **[Performance Testing](performance_testing.md)** - Optimize your graph operations
+1. **[Tutorials](./tutorials/)** - Step-by-step learning path
+2. **[API Reference](../design/api.md)** - All classes and methods
+3. **[Search Algorithms](../design/search_algorithms.md)** - Deep dive into A*, Dijkstra, BFS, DFS
+4. **[Architecture](../design/architecture.md)** - Understanding the template system
+5. **[Advanced Features](../guides/advanced_features.md)** - Custom indexers, threading, production features
+6. **[Performance](../guides/performance.md)** - Benchmarking and optimization
 
 ### Quick Tips for Success
 

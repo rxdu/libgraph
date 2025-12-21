@@ -2,24 +2,11 @@
 
 A progressive learning path from basic graphs to advanced features.
 
-## Learning Path
+## Available Tutorials
 
 ### **Beginner Level**
 1. **[Basic Graph Operations](01-basic-graph.md)** - Your first graph and fundamental operations
 2. **[Simple Pathfinding](02-pathfinding.md)** - Using Dijkstra and A* for shortest paths
-3. **[Working with Different State Types](03-state-types.md)** - Custom states and indexing
-
-### **Intermediate Level**  
-4. **[Custom Cost Types](04-custom-costs.md)** - Multi-criteria optimization and lexicographic costs
-5. **[Thread-Safe Searches](05-thread-safety.md)** - Concurrent pathfinding with SearchContext
-6. **[Performance Optimization](06-performance.md)** - Pre-allocation, batch operations, and profiling
-
-### **Advanced Level**
-7. **[Grid-Based Pathfinding](07-grid-pathfinding.md)** - 2D/3D grids for games and robotics
-8. **[Real-World Applications](08-applications.md)** - GPS navigation, game AI, network analysis
-9. **[Extending the Library](09-extensions.md)** - Custom algorithms and advanced patterns
-
----
 
 ## Tutorial Goals
 
@@ -62,16 +49,21 @@ Each tutorial follows a consistent structure:
 3. **Step-by-Step Explanation** - How each part works
 4. **Key Concepts** - Important principles to remember
 5. **Exercises** - Practice problems to reinforce learning
-6. **Next Steps** - Preview of upcoming tutorials
+6. **Next Steps** - Preview of upcoming topics
 
 ---
 
 ## Additional Resources
 
-- **[Getting Started Guide](../getting_started.md)** - Quick introduction and installation
-- **[Complete API Reference](../api.md)** - Detailed class and method documentation  
-- **[Architecture Overview](../architecture.md)** - System design and patterns
-- **[Performance Testing](../performance_testing.md)** - Benchmarking and optimization
+For more advanced topics, see the main documentation:
+
+- **[Quick Start Guide](../quick-start.md)** - Quick introduction and installation
+- **[API Reference](../../design/api.md)** - Detailed class and method documentation
+- **[Search Algorithms](../../design/search_algorithms.md)** - In-depth algorithm coverage
+- **[Architecture](../../design/architecture.md)** - System design and patterns
+- **[Advanced Features](../../guides/advanced_features.md)** - Custom cost types, thread safety
+- **[Performance](../../guides/performance.md)** - Benchmarking and optimization
+- **[Examples](../../guides/examples.md)** - Real-world applications
 
 ---
 

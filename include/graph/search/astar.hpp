@@ -6,6 +6,13 @@
  *              Combined strategy implementation and public API
  *
  * Copyright (c) 2017-2025 Ruixiang Du (rdu)
+ *
+ * THREAD SAFETY:
+ * - AStarStrategy is stateless (heuristic function is const) and can be shared
+ * - For concurrent searches, each thread must use its own SearchContext
+ * - Graph must be read-only during all concurrent searches
+ * - Use the overloads that accept SearchContext& for thread-safe operation
+ * - Legacy overloads without SearchContext are NOT thread-safe
  */
 
 #ifndef ASTAR_HPP
@@ -15,6 +22,7 @@
 #include <limits>
 #include "graph/search/search_algorithm.hpp"
 #include "graph/search/search_strategy.hpp"
+#include "graph/impl/debug_checks.hpp"
 
 namespace xmotion {
 
@@ -50,33 +58,55 @@ public:
         return info.template GetFCost<Transition>();
     }
     
-    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex, 
-                             vertex_iterator goal_vertex) const {
+    void InitializeVertexImpl(SearchInfo& info, vertex_iterator vertex,
+                             vertex_iterator goal_vertex,
+                             typename Base::SearchContextType& context) const {
         info.SetGCost(Transition{});
-        Transition h_cost = heuristic_(vertex->state, goal_vertex->state);
+
+        // In multi-goal mode, goal_vertex is vertex_end() (invalid), skip heuristic
+        Transition h_cost{};
+        if (!context.IsMultiGoalSearch()) {
+            h_cost = heuristic_(vertex->state, goal_vertex->state);
+        }
+
         info.SetHCost(h_cost);
         info.SetFCost(Transition{} + h_cost);
         info.SetChecked(false);
         info.SetInOpenList(false);
         info.SetParent(-1);
     }
-    
+
     bool RelaxVertexImpl(SearchInfo& current_info, SearchInfo& successor_info,
                         vertex_iterator successor_vertex, vertex_iterator goal_vertex,
-                        const Transition& edge_cost) const {
-        
+                        const Transition& edge_cost,
+                        typename Base::SearchContextType& context) const {
+
+        // Debug assertions for cost validity
+        debug::AssertValidEdgeCost(edge_cost, "A* RelaxVertex: edge cost");
+
         Transition current_g_cost = current_info.template GetGCost<Transition>();
         Transition new_g_cost = current_g_cost + edge_cost;
+
+        debug::AssertValidGCost(new_g_cost, "A* RelaxVertex: new g-cost");
+        debug::AssertCostNotOverflowed(new_g_cost, "A* RelaxVertex: g-cost overflow check");
+
         Transition successor_g_cost = successor_info.template GetGCost<Transition>();
-        
+
         if (this->cost_comparator_(new_g_cost, successor_g_cost)) {
             successor_info.SetGCost(new_g_cost);
-            Transition h_cost = heuristic_(successor_vertex->state, goal_vertex->state);
+
+            // In multi-goal mode, goal_vertex is vertex_end() (invalid), skip heuristic
+            Transition h_cost{};
+            if (!context.IsMultiGoalSearch()) {
+                h_cost = heuristic_(successor_vertex->state, goal_vertex->state);
+                debug::AssertValidHeuristic(h_cost, "A* RelaxVertex: heuristic value");
+            }
+
             successor_info.SetHCost(h_cost);
             successor_info.SetFCost(new_g_cost + h_cost);
             return true;
         }
-        
+
         return false;
     }
     
@@ -184,6 +214,63 @@ public:
         
         SearchContext<State, Transition, StateIndexer> context;
         return Search(graph.get(), context, start, goal, std::move(heuristic), comp);
+    }
+
+    /**
+     * @brief Search to the nearest of multiple goals using A* with min-heuristic
+     *
+     * Finds the shortest path from start to the nearest goal. The heuristic
+     * function should return the minimum estimated cost to any goal for
+     * optimal behavior. If a simple single-goal heuristic is provided,
+     * consider using Dijkstra::SearchMultiGoal instead.
+     *
+     * @tparam VertexIdentifier Type used to identify vertices
+     * @tparam HeuristicFunc Heuristic function type (should handle multi-goal)
+     * @param graph Pointer to the graph
+     * @param context Search context (will be reset)
+     * @param start Starting vertex identifier
+     * @param goals Vector of goal vertex identifiers
+     * @param heuristic Function estimating cost to nearest goal
+     * @return MultiGoalResult with path to nearest goal
+     */
+    template<typename State, typename Transition, typename StateIndexer,
+             typename VertexIdentifier, typename HeuristicFunc,
+             typename TransitionComparator = std::less<Transition>>
+    static MultiGoalResult<State, Transition> SearchMultiGoal(
+        const Graph<State, Transition, StateIndexer>* graph,
+        SearchContext<State, Transition, StateIndexer>& context,
+        VertexIdentifier start,
+        const std::vector<VertexIdentifier>& goals,
+        HeuristicFunc heuristic,
+        const TransitionComparator& comp = TransitionComparator{}) {
+
+        using GraphType = Graph<State, Transition, StateIndexer>;
+        using vertex_iterator = typename GraphType::const_vertex_iterator;
+
+        MultiGoalResult<State, Transition> result;
+
+        if (!graph || goals.empty()) return result;
+
+        auto start_it = graph->FindVertex(start);
+        if (start_it == graph->vertex_end()) return result;
+
+        // Convert goal identifiers to iterators
+        std::vector<vertex_iterator> goal_iters;
+        goal_iters.reserve(goals.size());
+        for (const auto& g : goals) {
+            auto it = graph->FindVertex(g);
+            if (it != graph->vertex_end()) {
+                goal_iters.push_back(it);
+            }
+        }
+
+        if (goal_iters.empty()) return result;
+
+        auto strategy = MakeAStarStrategy<State, Transition, StateIndexer,
+                                          HeuristicFunc, TransitionComparator>(
+            std::move(heuristic), comp);
+        return SearchAlgorithm<decltype(strategy), State, Transition, StateIndexer>
+            ::SearchMultiGoal(graph, context, start_it, goal_iters, strategy);
     }
 };
 

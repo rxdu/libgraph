@@ -45,7 +45,13 @@ add_executable(utests
     unit_test/dfs_comprehensive_test.cpp
     unit_test/bfs_comprehensive_test.cpp
     unit_test/advanced_graph_operations_test.cpp
-    unit_test/search_context_comprehensive_test.cpp)
+    unit_test/search_context_comprehensive_test.cpp
+    # Production readiness tests (Phase 4)
+    unit_test/performance_scaling_test.cpp
+    unit_test/timing_bounds_test.cpp
+    unit_test/determinism_test.cpp
+    unit_test/concurrent_stress_test.cpp
+    unit_test/production_features_test.cpp)
 target_link_libraries(utests PRIVATE gtest gmock gtest_main graph)
 # get_target_property(PRIVATE_HEADERS graph INCLUDE_DIRECTORIES)
 target_include_directories(utests PRIVATE ${PRIVATE_HEADERS})

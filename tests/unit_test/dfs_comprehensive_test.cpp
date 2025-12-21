@@ -12,10 +12,12 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <atomic>
 
 #include "graph/graph.hpp"
 #include "graph/search/dfs.hpp"
 #include "graph/search/search_context.hpp"
+#include "graph/search/search_algorithm.hpp"
 
 using namespace xmotion;
 
@@ -273,7 +275,7 @@ TEST_F(DFSComprehensiveTest, SelfLoopHandling) {
 // Test DFS context reuse and performance
 TEST_F(DFSComprehensiveTest, ContextReusePerformance) {
   SearchContext<DFSTestState, double, DefaultIndexer<DFSTestState>> context;
-  
+
   // Create larger graph for performance testing
   const int GRAPH_SIZE = 100;
   for (int i = 1; i <= GRAPH_SIZE; ++i) {
@@ -282,19 +284,132 @@ TEST_F(DFSComprehensiveTest, ContextReusePerformance) {
       graph_->AddEdge(DFSTestState(i-1), DFSTestState(i), 1.0);
     }
   }
-  
+
   // Multiple searches with same context (should reuse allocated memory)
   auto start_time = std::chrono::high_resolution_clock::now();
-  
+
   for (int i = 0; i < 10; ++i) {
     context.Reset(); // Reset but keep allocated memory
     auto path = DFS::Search(graph_.get(), context, DFSTestState(1), DFSTestState(GRAPH_SIZE));
     EXPECT_EQ(path.size(), GRAPH_SIZE);
   }
-  
+
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-  
+
   // Performance should be reasonable for 10 searches on 100-node graph
   EXPECT_LT(duration.count(), 1000); // Less than 1 second
+}
+
+// Test concurrent DFS searches with shared strategy instance
+// This verifies the thread-safety fix where the timestamp counter is stored
+// in SearchContext instead of the DfsStrategy
+TEST_F(DFSComprehensiveTest, ConcurrentSearchesWithSharedStrategy) {
+  // Create a graph suitable for concurrent searches
+  const int GRAPH_SIZE = 50;
+  for (int i = 1; i <= GRAPH_SIZE; ++i) {
+    graph_->AddVertex(DFSTestState(i));
+    if (i > 1) {
+      graph_->AddEdge(DFSTestState(i-1), DFSTestState(i), 1.0);
+    }
+    // Add some cross-edges for more interesting graph structure
+    if (i > 5) {
+      graph_->AddEdge(DFSTestState(i), DFSTestState(i-5), 2.0);
+    }
+  }
+
+  // Create a shared strategy instance (this was previously unsafe)
+  auto strategy = MakeDfsStrategy<DFSTestState, double, DefaultIndexer<DFSTestState>>();
+
+  const int NUM_THREADS = 10;
+  const int SEARCHES_PER_THREAD = 20;
+  std::vector<std::thread> threads;
+  std::atomic<int> success_count{0};
+  std::atomic<int> failure_count{0};
+
+  // Lambda for each thread to execute concurrent DFS searches
+  auto search_task = [&](int thread_id) {
+    // Each thread has its own SearchContext (this is the correct usage pattern)
+    SearchContext<DFSTestState, double, DefaultIndexer<DFSTestState>> context;
+
+    for (int i = 0; i < SEARCHES_PER_THREAD; ++i) {
+      context.Reset();
+
+      // Search from vertex 1 to a random goal
+      int goal = (thread_id * SEARCHES_PER_THREAD + i) % (GRAPH_SIZE - 1) + 2;
+      auto start_it = graph_->FindVertex(DFSTestState(1));
+      auto goal_it = graph_->FindVertex(DFSTestState(goal));
+
+      if (start_it != graph_->vertex_end() && goal_it != graph_->vertex_end()) {
+        // Use the SearchAlgorithm directly with the shared strategy
+        auto path = SearchAlgorithm<decltype(strategy), DFSTestState, double, DefaultIndexer<DFSTestState>>
+            ::Search(graph_.get(), context, start_it, goal_it, strategy);
+
+        // Verify the path is valid
+        if (!path.empty()) {
+          // Path should start at vertex 1
+          if (path[0].id == 1 && path.back().id == goal) {
+            success_count++;
+          } else {
+            failure_count++;
+          }
+        } else {
+          // Empty path could be valid if no path exists, but in our graph all vertices are reachable
+          failure_count++;
+        }
+      }
+    }
+  };
+
+  // Launch threads
+  for (int t = 0; t < NUM_THREADS; ++t) {
+    threads.emplace_back(search_task, t);
+  }
+
+  // Wait for all threads to complete
+  for (auto& t : threads) {
+    t.join();
+  }
+
+  // All searches should succeed
+  EXPECT_EQ(failure_count.load(), 0) << "Some concurrent DFS searches failed";
+  EXPECT_EQ(success_count.load(), NUM_THREADS * SEARCHES_PER_THREAD)
+      << "Not all concurrent searches completed successfully";
+}
+
+// Test that context-level attributes are properly reset between searches
+TEST_F(DFSComprehensiveTest, ContextAttributeResetBetweenSearches) {
+  // Create simple graph
+  for (int i = 1; i <= 5; ++i) {
+    graph_->AddVertex(DFSTestState(i));
+    if (i > 1) {
+      graph_->AddEdge(DFSTestState(i-1), DFSTestState(i), 1.0);
+    }
+  }
+
+  SearchContext<DFSTestState, double, DefaultIndexer<DFSTestState>> context;
+
+  // First search
+  auto path1 = DFS::Search(graph_.get(), context, DFSTestState(1), DFSTestState(5));
+  EXPECT_EQ(path1.size(), 5);
+
+  // Check that timestamp counter was used
+  EXPECT_TRUE(context.HasContextAttribute("dfs_timestamp_counter"));
+  int64_t first_counter = context.GetContextAttributeOr<int64_t>("dfs_timestamp_counter", 0);
+  EXPECT_GT(first_counter, 0);
+
+  // Reset context
+  context.Reset();
+
+  // Counter should be cleared
+  int64_t reset_counter = context.GetContextAttributeOr<int64_t>("dfs_timestamp_counter", 0);
+  EXPECT_EQ(reset_counter, 0);
+
+  // Second search should work correctly
+  auto path2 = DFS::Search(graph_.get(), context, DFSTestState(1), DFSTestState(5));
+  EXPECT_EQ(path2.size(), 5);
+
+  // Counter should be populated again
+  int64_t second_counter = context.GetContextAttributeOr<int64_t>("dfs_timestamp_counter", 0);
+  EXPECT_GT(second_counter, 0);
 }

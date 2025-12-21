@@ -22,20 +22,24 @@ template <typename State, typename Transition, typename StateIndexer>
 class Vertex;
 
 /// Edge class template - now independent from Graph
+///
+/// STABILITY NOTE: Edge uses raw Vertex pointers (Vertex*) instead of iterators.
+/// This is intentional for stability: std::unordered_map iterators are invalidated
+/// on rehash, but pointers to values stored via unique_ptr remain stable.
+/// This ensures edges remain valid even when vertices are added to the graph.
 template <typename State, typename Transition, typename StateIndexer>
 struct Edge {
   // Forward declarations
   using GraphType = Graph<State, Transition, StateIndexer>;
   using VertexType = Vertex<State, Transition, StateIndexer>;
-  
-  // IMPORTANT: Use Graph's vertex_iterator type to ensure compatibility
-  using vertex_iterator = typename GraphType::vertex_iterator;
 
-  Edge(vertex_iterator src, vertex_iterator dst, Transition c)
+  Edge(VertexType* src, VertexType* dst, Transition c)
       : src(src), dst(dst), cost(c) {}
 
-  vertex_iterator src;
-  vertex_iterator dst;
+  /// Source vertex pointer (stable across graph modifications)
+  VertexType* src;
+  /// Destination vertex pointer (stable across graph modifications)
+  VertexType* dst;
   Transition cost;
 
   /// Check if current edge is identical to the other (all src, dst, cost)

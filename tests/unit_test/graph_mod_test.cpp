@@ -458,6 +458,38 @@ TEST_F(GraphModificationTest, StandardizedCountingMethods) {
   ASSERT_EQ(vertices.capacity(), vertex_count) << "size_t should work with STL methods";
 }
 
+TEST_F(GraphModificationTest, AddUndirectedEdgeAtomicity) {
+  // Test that AddUndirectedEdge is atomic - both edges added or neither
+  Graph<TestState *> graph;
+
+  // Pre-add vertices for a clean test
+  graph.AddVertex(nodes[0]);
+  graph.AddVertex(nodes[1]);
+  graph.AddVertex(nodes[2]);
+
+  // Test 1: Normal case - both edges should be added
+  graph.AddUndirectedEdge(nodes[0], nodes[1], 1.5);
+  ASSERT_EQ(graph.GetEdgeCount(), 2) << "Undirected edge should create 2 directed edges";
+  ASSERT_TRUE(graph.HasEdge(nodes[0], nodes[1])) << "Forward edge 0->1 should exist";
+  ASSERT_TRUE(graph.HasEdge(nodes[1], nodes[0])) << "Reverse edge 1->0 should exist";
+
+  // Test 2: Adding edge between same vertices updates cost in both directions
+  graph.AddUndirectedEdge(nodes[0], nodes[1], 2.0);
+  ASSERT_EQ(graph.GetEdgeCount(), 2) << "Updating edge should not change count";
+  ASSERT_DOUBLE_EQ(graph.GetEdgeWeight(nodes[0], nodes[1]), 2.0) << "Forward edge cost updated";
+  ASSERT_DOUBLE_EQ(graph.GetEdgeWeight(nodes[1], nodes[0]), 2.0) << "Reverse edge cost updated";
+
+  // Test 3: Self-loop creates proper undirected edge
+  graph.AddUndirectedEdge(nodes[2], nodes[2], 3.0);
+  ASSERT_EQ(graph.GetEdgeCount(), 3) << "Self-loop undirected should create 1 edge (both directions same)";
+  ASSERT_TRUE(graph.HasEdge(nodes[2], nodes[2])) << "Self-loop edge should exist";
+
+  // Test 4: Verify atomicity - removing one direction doesn't affect other
+  graph.RemoveEdge(nodes[0], nodes[1]);
+  ASSERT_FALSE(graph.HasEdge(nodes[0], nodes[1])) << "Forward edge should be removed";
+  ASSERT_TRUE(graph.HasEdge(nodes[1], nodes[0])) << "Reverse edge should still exist";
+}
+
 TEST_F(GraphModificationTest, VertexAccessEdge) {
   Graph<TestState *> graph;
 

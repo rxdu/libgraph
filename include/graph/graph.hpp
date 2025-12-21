@@ -382,9 +382,6 @@ public:
   int64_t GetTotalEdgeNumber() const { return static_cast<int64_t>(GetAllEdges().size()); }
 
   /* Utility functions */
-  /// This function is used to reset states of all vertice for a new search
-  void ResetAllVertices();
-
   /// This function removes all edges and vertices in the graph
   void ClearAll();
   ///@}

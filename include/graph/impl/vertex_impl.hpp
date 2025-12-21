@@ -76,10 +76,10 @@ bool Vertex<State, Transition, StateIndexer>::CheckNeighbour(T dst) {
 }
 
 template <typename State, typename Transition, typename StateIndexer>
-std::vector<typename Vertex<State, Transition, StateIndexer>::vertex_iterator>
+std::vector<typename Vertex<State, Transition, StateIndexer>::VertexType*>
 Vertex<State, Transition, StateIndexer>::GetNeighbours() {
-  std::vector<vertex_iterator> nbs;
-  for (auto it = edge_begin(); it != edge_end(); ++it) 
+  std::vector<VertexType*> nbs;
+  for (auto it = edge_begin(); it != edge_end(); ++it)
     nbs.push_back(it->dst);
   return nbs;
 }
@@ -89,17 +89,6 @@ void Vertex<State, Transition, StateIndexer>::PrintVertex() const {
   std::cout << "Vertex: id - " << vertex_id << std::endl;
 }
 
-// Add missing ClearVertexSearchInfo if it's used elsewhere
-template <typename State, typename Transition, typename StateIndexer>
-void Vertex<State, Transition, StateIndexer>::ClearVertexSearchInfo() {
-  is_checked = false;
-  is_in_openlist = false;  // to be removed
-  search_parent = vertex_iterator();
-
-  f_cost = std::numeric_limits<double>::max();
-  g_cost = std::numeric_limits<double>::max();
-  h_cost = std::numeric_limits<double>::max();
-}
 }  // namespace xmotion
 
 #endif /* VERTEX_IMPL_HPP */

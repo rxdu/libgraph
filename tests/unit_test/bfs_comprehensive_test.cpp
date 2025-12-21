@@ -397,3 +397,133 @@ TEST_F(BFSComprehensiveTest, ContextReuseOptimization) {
   // Verify context has accumulated search data
   EXPECT_GT(context.Size(), 0);
 }
+
+// Test that queue-based BFS finds shortest paths on grid-like graphs
+TEST_F(BFSComprehensiveTest, QueueBasedShortestPathOnGrid) {
+  SearchContext<BFSTestState, double, DefaultIndexer<BFSTestState>> context;
+  
+  // Create a 5x5 grid graph
+  // Vertices numbered 0-24, row-major
+  // Edges connect adjacent cells (up, down, left, right)
+  const int GRID_SIZE = 5;
+  
+  for (int i = 0; i < GRID_SIZE * GRID_SIZE; ++i) {
+    graph_->AddVertex(BFSTestState(i));
+  }
+  
+  for (int row = 0; row < GRID_SIZE; ++row) {
+    for (int col = 0; col < GRID_SIZE; ++col) {
+      int id = row * GRID_SIZE + col;
+      // Right neighbor
+      if (col + 1 < GRID_SIZE) {
+        graph_->AddEdge(BFSTestState(id), BFSTestState(id + 1), 1.0);
+        graph_->AddEdge(BFSTestState(id + 1), BFSTestState(id), 1.0);
+      }
+      // Down neighbor
+      if (row + 1 < GRID_SIZE) {
+        graph_->AddEdge(BFSTestState(id), BFSTestState(id + GRID_SIZE), 1.0);
+        graph_->AddEdge(BFSTestState(id + GRID_SIZE), BFSTestState(id), 1.0);
+      }
+    }
+  }
+  
+  // Test shortest path from corner (0,0) to corner (4,4)
+  // Manhattan distance = 8, so shortest path has 9 vertices
+  auto path = BFS::Search(graph_.get(), context, BFSTestState(0), BFSTestState(24));
+  
+  EXPECT_EQ(path.size(), 9); // 8 edges + 1 for start vertex
+  EXPECT_EQ(path.front().id, 0);
+  EXPECT_EQ(path.back().id, 24);
+  
+  // Verify path is valid (each step moves to adjacent cell)
+  for (size_t i = 1; i < path.size(); ++i) {
+    int diff = std::abs(path[i].id - path[i-1].id);
+    EXPECT_TRUE(diff == 1 || diff == GRID_SIZE) 
+        << "Invalid step from " << path[i-1].id << " to " << path[i].id;
+  }
+}
+
+// Test BFS with non-arithmetic (string-like) transition type
+// Note: This test verifies that queue-based BFS works correctly with
+// non-arithmetic cost types, which was problematic with the old priority_queue approach
+struct StringCost {
+  std::string label;
+  StringCost() : label("inf") {}
+  explicit StringCost(const std::string& l) : label(l) {}
+  StringCost(int) : label("step") {} // Allow construction from int for SetGCost
+  bool operator==(const StringCost& other) const { return label == other.label; }
+  StringCost operator+(const StringCost&) const { return StringCost("step"); }
+};
+
+namespace xmotion {
+template<>
+struct CostTraits<StringCost> {
+  static StringCost infinity() { return StringCost("inf"); }
+};
+} // namespace xmotion
+
+TEST_F(BFSComprehensiveTest, NonArithmeticCostType) {
+  Graph<BFSTestState, StringCost> string_graph;
+  SearchContext<BFSTestState, StringCost, DefaultIndexer<BFSTestState>> context;
+
+  string_graph.AddVertex(BFSTestState(1));
+  string_graph.AddVertex(BFSTestState(2));
+  string_graph.AddVertex(BFSTestState(3));
+  string_graph.AddEdge(BFSTestState(1), BFSTestState(2), StringCost("edge_a"));
+  string_graph.AddEdge(BFSTestState(2), BFSTestState(3), StringCost("edge_b"));
+
+  // Queue-based BFS should work regardless of cost type
+  auto path = BFS::Search(&string_graph, context, BFSTestState(1), BFSTestState(3));
+
+  EXPECT_EQ(path.size(), 3);
+  EXPECT_EQ(path[0].id, 1);
+  EXPECT_EQ(path[1].id, 2);
+  EXPECT_EQ(path[2].id, 3);
+}
+
+// Test BFS performance scaling (should be linear O(V+E))
+TEST_F(BFSComprehensiveTest, LinearTimeComplexityVerification) {
+  // Test with increasing graph sizes
+  std::vector<int> sizes = {100, 500, 1000};
+  std::vector<double> times;
+  
+  for (int size : sizes) {
+    Graph<BFSTestState, double> test_graph;
+    SearchContext<BFSTestState, double, DefaultIndexer<BFSTestState>> context;
+    
+    // Create linear chain (V vertices, V-1 edges)
+    for (int i = 1; i <= size; ++i) {
+      test_graph.AddVertex(BFSTestState(i));
+      if (i > 1) {
+        test_graph.AddEdge(BFSTestState(i-1), BFSTestState(i), 1.0);
+      }
+    }
+    
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    // Run multiple searches to get measurable time
+    for (int run = 0; run < 10; ++run) {
+      context.Reset();
+      auto path = BFS::Search(&test_graph, context, BFSTestState(1), BFSTestState(size));
+      EXPECT_EQ(path.size(), static_cast<size_t>(size));
+    }
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    double duration_ms = std::chrono::duration<double, std::milli>(end - start).count();
+    times.push_back(duration_ms);
+  }
+  
+  // Verify roughly linear scaling (time should increase ~proportionally to size)
+  // Allow some variance due to system noise
+  // For linear scaling: time[1]/time[0] should be roughly sizes[1]/sizes[0]
+  if (times[0] > 0.01) { // Only check if times are measurable
+    double ratio_sizes = static_cast<double>(sizes[1]) / sizes[0];
+    double ratio_times = times[1] / times[0];
+    
+    // Linear scaling means ratio_times should be close to ratio_sizes
+    // Allow 3x variance for system noise
+    EXPECT_LT(ratio_times, ratio_sizes * 3.0)
+        << "BFS time does not scale linearly: size ratio=" << ratio_sizes
+        << ", time ratio=" << ratio_times;
+  }
+}

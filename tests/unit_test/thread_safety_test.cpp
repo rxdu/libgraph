@@ -16,6 +16,19 @@
 
 #include "gtest/gtest.h"
 
+// Detect if running under ThreadSanitizer
+// Tests that intentionally trigger races should be skipped under TSAN
+#if defined(__SANITIZE_THREAD__)
+  #define RUNNING_UNDER_TSAN 1
+#elif defined(__has_feature)
+  #if __has_feature(thread_sanitizer)
+    #define RUNNING_UNDER_TSAN 1
+  #endif
+#endif
+#ifndef RUNNING_UNDER_TSAN
+  #define RUNNING_UNDER_TSAN 0
+#endif
+
 #include "graph/graph.hpp"
 #include "graph/tree.hpp"
 #include "graph/search/astar.hpp"
@@ -232,8 +245,14 @@ TEST_F(ThreadSafetyTest, DISABLED_ConcurrentVertexAdditions) {
 }
 
 TEST_F(ThreadSafetyTest, ConcurrentEdgeAdditions) {
+  // This test intentionally triggers race conditions to document unsafe patterns
+  // Skip under TSAN since it will detect the intentional races and abort
+  if (RUNNING_UNDER_TSAN) {
+    GTEST_SKIP() << "Skipping intentional race test under ThreadSanitizer";
+  }
+
   Graph<ThreadSafeState> graph;
-  
+
   // Pre-create vertices
   const int VERTEX_COUNT = 20;
   for (int i = 0; i < VERTEX_COUNT; ++i) {
@@ -276,8 +295,14 @@ TEST_F(ThreadSafetyTest, ConcurrentEdgeAdditions) {
 // ===== MIXED READ/WRITE OPERATIONS =====
 
 TEST_F(ThreadSafetyTest, MixedReadWriteOperations) {
+  // This test intentionally triggers race conditions to document unsafe patterns
+  // Skip under TSAN since it will detect the intentional races and abort
+  if (RUNNING_UNDER_TSAN) {
+    GTEST_SKIP() << "Skipping intentional race test under ThreadSanitizer";
+  }
+
   Graph<ThreadSafeState> graph;
-  
+
   // Pre-populate with some vertices
   for (int i = 0; i < 50; ++i) {
     graph.AddVertex(ThreadSafeState(i));

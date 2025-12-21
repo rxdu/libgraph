@@ -1,62 +1,17 @@
 libgraph: C++ Graph Library                         {#mainpage}
 =============================
 
-## Overview
+A modern, header-only C++11 library for graph construction and pathfinding.
 
-libgraph is a modern, header-only C++11 library for graph construction and pathfinding algorithms. It provides high-performance graph operations with thread-safe concurrent searches and support for generic cost types.
+## Features
 
-### Key Features
+- **Header-only**: Include and use, no linking required
+- **Thread-safe**: Concurrent searches via external SearchContext
+- **Generic costs**: Custom cost types with lexicographic comparison
+- **Complete algorithms**: A*, Dijkstra, BFS, DFS
+- **Production-ready**: Early termination, multi-goal search, rich results
 
-- **High Performance**: O(m+n) space complexity with optimized priority queues
-- **Thread-Safe**: Concurrent searches using external SearchContext
-- **Generic**: Custom cost types, comparators, and state indexing
-- **Complete Algorithm Suite**: A*, Dijkstra, BFS, DFS with unified framework
-- **Robust**: Comprehensive exception handling, structure validation, memory safety via RAII
-- **Well-Documented**: Extensive API reference, tutorials, and working examples
-
-## Library Architecture
-
-### Template System
-
-The library is built around three main template parameters:
-
-~~~cpp
-template<typename State, typename Transition = double, typename StateIndexer = DefaultIndexer<State>>
-class Graph;
-~~~
-
-- **State**: Your vertex data type (locations, game states, network nodes, etc.)
-- **Transition**: Edge weight/cost type (defaults to `double`, supports custom types)  
-- **StateIndexer**: Functor for generating unique IDs from states (auto-detects `id`, `id_`, or `GetId()`)
-
-### Core Components
-
-#### Graph Data Structure
-
-The graph uses an adjacency list representation with O(m+n) space complexity:
-
-* **Graph** container
-  * **Vertex** collection (hash map with O(1) average access)
-    * **Edge** list (linked list for each vertex)
-    * State data storage
-    * Reverse references for efficient operations
-  * Thread-safe search support via external SearchContext
-  * RAII memory management with `std::unique_ptr`
-
-#### Search Algorithms
-
-Four algorithms implemented with unified framework:
-
-| Algorithm | Use Case | Time Complexity | Optimality |
-|-----------|----------|-----------------|------------|
-| **Dijkstra** | Shortest paths in weighted graphs | O((m+n) log n) | Guaranteed optimal |
-| **A\*** | Heuristic-guided pathfinding | O((m+n) log n)* | Optimal with admissible heuristic |
-| **BFS** | Shortest paths by edge count | O(m+n) | Optimal for unweighted |
-| **DFS** | Graph traversal, reachability | O(m+n) | Not optimal for paths |
-
-*A* performance depends on heuristic quality*
-
-## Quick Example
+## Quick Start
 
 ~~~cpp
 #include "graph/graph.hpp"
@@ -64,253 +19,197 @@ Four algorithms implemented with unified framework:
 
 using namespace xmotion;
 
-// Define your state type
 struct Location {
     int id;
-    std::string name;
-    double x, y;  // Coordinates for heuristics
-    
-    Location(int i, const std::string& n, double x, double y) 
-        : id(i), name(n), x(x), y(y) {}
+    double x, y;
 };
 
 int main() {
-    // Create graph
     Graph<Location> map;
-    
-    // Add vertices  
-    Location home{0, "Home", 0.0, 0.0};
-    Location work{1, "Work", 10.0, 5.0};
-    Location store{2, "Store", 3.0, 2.0};
-    
-    map.AddVertex(home);
-    map.AddVertex(work);
-    map.AddVertex(store);
-    
-    // Add weighted edges
-    map.AddEdge(home, store, 3.5);   // Distance/cost
-    map.AddEdge(store, work, 7.2);
-    map.AddEdge(home, work, 12.0);   // Direct route
-    
-    // Find optimal path
-    auto path = Dijkstra::Search(map, home, work);
-    
-    // Path will be: Home -> Store -> Work (total cost: 10.7)
-    // Better than direct route (cost: 12.0)
-    
-    return 0;
+
+    Location a{0, 0.0, 0.0}, b{1, 5.0, 0.0}, c{2, 2.5, 4.0};
+    map.AddVertex(a);
+    map.AddVertex(b);
+    map.AddVertex(c);
+
+    map.AddEdge(a, c, 2.0);
+    map.AddEdge(c, b, 2.0);
+    map.AddEdge(a, b, 5.0);
+
+    auto path = Dijkstra::Search(&map, a, b);
+    // Returns: a -> c -> b (cost 4.0, shorter than direct route of 5.0)
 }
 ~~~
 
-## Advanced Features
-
-### Thread Safety
-
-The library supports concurrent read-only searches through SearchContext:
+## Thread-Safe Search
 
 ~~~cpp
-// Thread-safe concurrent searches
-void worker_thread(const Graph<Location>& map) {
-    SearchContext<Location> context;  // Thread-local search state
-    auto path = Dijkstra::Search(map, context, start, goal);
-    // Process path...
+void worker(const Graph<Location>& map, Location start, Location goal) {
+    SearchContext<Location> context;  // Each thread gets its own
+    auto path = Dijkstra::Search(&map, context, start, goal);
 }
 ~~~
 
-Graph modifications require external synchronization.
+## Production Features
 
-### Custom Cost Types
+### Rich Results
 
 ~~~cpp
-struct MultiCriteriaCost {
-    double time;
-    double distance; 
-    double toll;
-    
-    bool operator<(const MultiCriteriaCost& other) const {
-        // Lexicographic comparison: time > distance > toll
-        if (time != other.time) return time < other.time;
-        if (distance != other.distance) return distance < other.distance;
-        return toll < other.toll;
+auto result = Dijkstra::SearchMultiGoal(&graph, context, start, goals);
+if (result.found) {
+    // result.path        - the path to nearest goal
+    // result.total_cost  - accumulated cost
+    // result.goal_index  - which goal was reached
+    // result.nodes_expanded - for diagnostics
+}
+~~~
+
+### Early Termination
+
+~~~cpp
+auto limits = SearchLimits::MaxExpansions(1000);  // Stop after 1000 nodes
+// or
+auto limits = SearchLimits::Timeout(50);  // Stop after 50ms
+
+auto result = SearchAlgorithm<...>::SearchWithLimits(
+    &graph, context, start, goal, strategy, limits);
+~~~
+
+### Multi-Goal Search
+
+~~~cpp
+std::vector<Location> charging_stations = {s1, s2, s3};
+auto result = Dijkstra::SearchMultiGoal(&graph, context, robot_pos, charging_stations);
+// Finds path to nearest charging station
+~~~
+
+## Algorithms
+
+| Algorithm | Best For | Optimality |
+|-----------|----------|------------|
+| Dijkstra | Weighted graphs | Optimal |
+| A* | With good heuristic | Optimal |
+| BFS | Unweighted graphs | Optimal |
+| DFS | Reachability | Not optimal |
+
+### Dijkstra
+
+~~~cpp
+auto path = Dijkstra::Search(&graph, start, goal);
+~~~
+
+### A*
+
+~~~cpp
+auto heuristic = [](const Location& a, const Location& b) {
+    return std::hypot(a.x - b.x, a.y - b.y);
+};
+auto path = AStar::Search(&graph, context, start, goal, heuristic);
+~~~
+
+### BFS / DFS
+
+~~~cpp
+auto path = BFS::Search(&graph, start, goal);
+bool reachable = BFS::IsReachable(&graph, start, target);
+
+auto path = DFS::Search(&graph, start, goal);
+DFS::TraverseAll(&graph, context, start);  // Visit all reachable
+~~~
+
+## Custom Cost Types
+
+~~~cpp
+struct RouteCost {
+    double time, distance;
+
+    bool operator<(const RouteCost& o) const {
+        return std::tie(time, distance) < std::tie(o.time, o.distance);
     }
-    
-    MultiCriteriaCost operator+(const MultiCriteriaCost& other) const {
-        return {time + other.time, distance + other.distance, toll + other.toll};
+    RouteCost operator+(const RouteCost& o) const {
+        return {time + o.time, distance + o.distance};
     }
 };
 
-// Specialize CostTraits for custom type
-namespace xmotion {
-    template<>
-    struct CostTraits<MultiCriteriaCost> {
-        static MultiCriteriaCost infinity() {
-            return {std::numeric_limits<double>::max(), 
-                   std::numeric_limits<double>::max(),
-                   std::numeric_limits<double>::max()};
-        }
-    };
-}
+template<>
+struct xmotion::CostTraits<RouteCost> {
+    static RouteCost infinity() {
+        return {std::numeric_limits<double>::max(),
+                std::numeric_limits<double>::max()};
+    }
+};
 
-Graph<Location, MultiCriteriaCost> multi_criteria_map;
-~~~
-
-### Performance Optimization
-
-~~~cpp
-// Pre-allocate for large graphs
-graph.reserve(100000);  // Reserve space for 100k vertices
-
-// Batch operations
-std::vector<Location> locations = LoadLocations();
-graph.AddVertices(locations);
-
-// Reuse search context for multiple searches
-SearchContext<Location> context;
-context.PreAllocate(100000);  // Pre-allocate search state
-for (const auto& query : queries) {
-    context.Reset();  // Clear previous search
-    auto path = Dijkstra::Search(graph, context, query.start, query.goal);
-}
-~~~
-
-## Algorithm Usage
-
-### Dijkstra Algorithm
-
-For guaranteed optimal shortest paths:
-
-~~~cpp
-// Basic usage
-auto path = Dijkstra::Search(graph, start, goal);
-
-// Thread-safe usage  
-SearchContext<State> context;
-auto path = Dijkstra::Search(graph, context, start, goal);
-
-// Custom cost comparator
-auto path = Dijkstra::Search(graph, context, start, goal, std::greater<MyCost>());
-~~~
-
-### A* Algorithm
-
-For heuristic-guided optimal pathfinding:
-
-~~~cpp
-// Euclidean distance heuristic
-double EuclideanDistance(const Location& from, const Location& to) {
-    double dx = from.x - to.x;
-    double dy = from.y - to.y;
-    return std::sqrt(dx * dx + dy * dy);
-}
-
-// Basic usage
-auto path = AStar::Search(graph, start, goal, EuclideanDistance);
-
-// Thread-safe usage
-SearchContext<Location> context;
-auto path = AStar::Search(graph, context, start, goal, EuclideanDistance);
-~~~
-
-### BFS and DFS
-
-For unweighted graphs and traversal:
-
-~~~cpp
-// Shortest path by edge count
-auto bfs_path = BFS::Search(graph, start, goal);
-
-// Graph traversal and reachability
-auto dfs_path = DFS::Search(graph, start, goal);
+Graph<Location, RouteCost> graph;
 ~~~
 
 ## State Indexing
 
-### Default Indexing
-
-The DefaultIndexer automatically works with common patterns:
+States need unique IDs. The library auto-detects common patterns:
 
 ~~~cpp
-struct MyState {
-    int64_t id;        // Works automatically
-    // OR
-    int64_t id_;       // Works automatically  
-    // OR
-    int64_t GetId() const { return unique_value; }  // Works automatically
+struct State { int64_t id; };      // Member 'id'
+struct State { int64_t id_; };     // Member 'id_'
+struct State { int64_t GetId() const; };  // Method 'GetId()'
+~~~
+
+Or provide a custom indexer:
+
+~~~cpp
+struct MyIndexer {
+    int64_t operator()(const MyState& s) const { return s.unique_field; }
 };
+Graph<MyState, double, MyIndexer> graph;
 ~~~
-
-### Custom Indexing
-
-For states that don't match default patterns:
-
-~~~cpp
-struct MyCustomIndexer {
-    int64_t operator()(const MyState& state) const {
-        return state.custom_unique_field;
-    }
-};
-
-// Usage
-Graph<MyState, double, MyCustomIndexer> graph;
-~~~
-
-## Memory Management
-
-The library uses RAII for automatic memory management:
-
-- **Graph**: Automatically manages vertex/edge memory using `std::unique_ptr`
-- **No manual cleanup** required for graph structures
-- **Copy/move semantics** work as expected
-- **Exception safety** with strong guarantees for most operations
-
-## Error Handling
-
-Comprehensive exception hierarchy:
-
-~~~cpp
-try {
-    auto& vertex = graph.GetVertexSafe(invalid_id);
-} catch (const ElementNotFoundError& e) {
-    std::cout << "Vertex not found: " << e.what() << std::endl;
-}
-
-try {
-    graph.ValidateStructure();
-} catch (const DataCorruptionError& e) {
-    std::cout << "Graph corruption detected: " << e.what() << std::endl;
-}
-~~~
-
-## Getting Started
-
-1. **Include the headers**:
-   ~~~cpp
-   #include "graph/graph.hpp"
-   #include "graph/search/dijkstra.hpp"
-   ~~~
-
-2. **Define your state type** with unique identification
-3. **Create and populate the graph** with vertices and edges  
-4. **Use search algorithms** to find optimal paths
-5. **Implement thread safety** with SearchContext for concurrent usage
-
-## Documentation
-
-- **Getting Started Guide**: Step-by-step introduction
-- **API Reference**: Complete class and method documentation
-- **Tutorial Series**: Progressive learning from basics to advanced features
-- **Architecture Overview**: Design patterns and implementation details
-- **Performance Testing**: Benchmarking framework and optimization guides
 
 ## Examples
 
-Working examples are available in the `sample/` directory:
+Working examples in `sample/`:
 
-- `simple_graph_demo.cpp` - Basic graph construction and pathfinding
-- `thread_safe_search_demo.cpp` - Concurrent search demonstrations
-- `lexicographic_cost_demo.cpp` - Multi-criteria optimization
-- `incremental_search_demo.cpp` - Dynamic pathfinding
+| File | Description |
+|------|-------------|
+| `simple_graph_demo.cpp` | Basic graph and pathfinding |
+| `thread_safe_search_demo.cpp` | Concurrent searches |
+| `lexicographic_cost_demo.cpp` | Multi-criteria costs |
+| `tuple_cost_demo.cpp` | std::tuple as cost type |
+| `incremental_search_demo.cpp` | Dynamic graph updates |
+| `graph_type_demo.cpp` | Different graph configurations |
+
+## API Overview
+
+### Core Classes
+
+- **Graph<State, Transition, Indexer>** - Main graph container
+- **SearchContext<State, Transition, Indexer>** - Thread-local search state
+- **Dijkstra, AStar, BFS, DFS** - Search algorithm classes
+
+### Result Types
+
+- **Path<State>** - Simple vector of states
+- **PathResult<State, Cost>** - Path + cost + nodes_expanded
+- **MultiGoalResult<State, Cost>** - PathResult + goal_index
+- **SearchLimits** - Early termination configuration
+
+### Key Methods
+
+~~~cpp
+// Graph
+graph.AddVertex(state);
+graph.AddEdge(from, to, cost);
+graph.FindVertex(state);
+graph.GetNeighbors(state);
+
+// Search
+Dijkstra::Search(&graph, start, goal);
+Dijkstra::SearchMultiGoal(&graph, context, start, goals);
+AStar::Search(&graph, context, start, goal, heuristic);
+BFS::IsReachable(&graph, start, target);
+
+// Context
+context.Reset();
+context.Reserve(n);
+context.GetNodesExpanded();
+~~~
 
 ## License
 
-This library is distributed under the MIT License.
+MIT License

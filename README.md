@@ -73,13 +73,42 @@ Optimal space complexity O(m+n) using adjacency lists:
 **Concurrent read-only searches** are fully supported:
 ```cpp
 // Each thread gets independent search context
-void worker_thread(const Graph<Location>& map) {
+void worker_thread(const Graph<Location>* graph) {
     SearchContext<Location> context;  // Thread-local state
-    auto path = Dijkstra::Search(map, context, start, goal);  // Thread-safe
+    auto path = Dijkstra::Search(graph, context, start, goal);  // Thread-safe
 }
 ```
 
+**Thread-Safety Model:**
+- **Graph**: Read-only access only during concurrent searches (const pointer accepted)
+- **SearchContext**: Each concurrent search requires its own instance
+- **Strategy objects**: Stateless, can be safely shared across threads
+- **Legacy API**: Overloads without SearchContext parameter are NOT thread-safe
+
 **Graph modifications** require external synchronization (by design for performance).
+
+### Production Features (v3.1.0)
+
+**Rich search results** with cost and diagnostics:
+```cpp
+auto result = SearchAlgorithm<...>::SearchWithResult(graph, context, start, goal, strategy);
+if (result.found) {
+    std::cout << "Cost: " << result.total_cost << ", Expanded: " << result.nodes_expanded;
+}
+```
+
+**Bounded search** for real-time systems:
+```cpp
+auto limits = SearchLimits::MaxExpansions(1000);  // or SearchLimits::Timeout(50)
+auto result = SearchAlgorithm<...>::SearchWithLimits(graph, context, start, goal, strategy, limits);
+```
+
+**Multi-goal search** (find nearest goal):
+```cpp
+std::vector<Location> goals = {charging_station1, charging_station2, charging_station3};
+auto result = Dijkstra::SearchMultiGoal(graph, context, robot_position, goals);
+// result.goal_index tells which goal was reached
+```
 
 ---
 
@@ -138,7 +167,7 @@ cmake --build .
 ./bin/simple_graph_demo
 ./bin/thread_safe_search_demo
 
-# Run comprehensive tests (199 tests, 100% pass rate)
+# Run comprehensive tests (317 tests, 100% pass rate)
 ./bin/utests
 ```
 
@@ -180,6 +209,7 @@ auto path = Dijkstra::Search(map, {0, "Home"}, {1, "Work"});
 - **[Architecture Overview](docs/architecture.md)** - System design and template patterns
 - **[Advanced Features](docs/advanced_features.md)** - Custom costs, validation, thread safety
 - **[Search Algorithms Guide](docs/search_algorithms.md)** - Deep dive into A*, Dijkstra, BFS, DFS
+- **[Production Readiness](docs/PRODUCTION_READINESS.md)** - Robotics deployment guide
 
 ### **For Contributors**
 - **[Performance Testing](docs/performance_testing.md)** - Benchmarking and optimization

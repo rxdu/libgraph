@@ -126,23 +126,24 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
 
   // remove if specified vertex exists
   if (it != vertex_map_.end()) {
-    auto vtx = vertex_iterator(it);
+    Vertex* vtx_ptr = it->second.get();
+
     // remove upstream connections
     // e.g. other vertices that connect to the vertex to be deleted
-    for (auto &asv : vtx->vertices_from) {
-      // Optimized: Use captured vertex id for comparison (avoids iterator dereference)
-      auto vtx_id = vtx->vertex_id;
-      asv->edges_to.remove_if([vtx_id](const Edge& edge) { 
-        return edge.dst->vertex_id == vtx_id; 
+    for (auto* incoming_vertex : vtx_ptr->vertices_from) {
+      // Remove edges from incoming_vertex that point to vtx_ptr
+      auto vtx_id = vtx_ptr->vertex_id;
+      incoming_vertex->edges_to.remove_if([vtx_id](const Edge& edge) {
+        return edge.dst->vertex_id == vtx_id;
       });
     }
 
     // remove downstream connections
     // e.g. other vertices that are connected by the vertex to be deleted
-    for (auto &edge : vtx->edges_to) {
-      auto &target_vertex = edge.dst;
-      // Use list::remove for vertex_iterator (simpler and more efficient)
-      target_vertex->vertices_from.remove(vtx);
+    for (auto& edge : vtx_ptr->edges_to) {
+      Vertex* target_vertex = edge.dst;
+      // Remove vtx_ptr from target's incoming list
+      target_vertex->vertices_from.remove(vtx_ptr);
     }
 
     // remove from vertex map - unique_ptr handles cleanup automatically
@@ -153,34 +154,41 @@ void Graph<State, Transition, StateIndexer>::RemoveVertex(int64_t state_id) {
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::AddEdge(State sstate, State dstate,
                                                      Transition trans) {
-  auto src_vertex = ObtainVertexFromVertexMap(std::move(sstate));
+  auto src_vertex_it = ObtainVertexFromVertexMap(std::move(sstate));
+  Vertex* src_vertex_ptr = &(*src_vertex_it);
 
   // update transition if edge already exists
-  auto it = src_vertex->FindEdge(dstate);
-  if (it != src_vertex->edge_end()) {
+  auto it = src_vertex_it->FindEdge(dstate);
+  if (it != src_vertex_it->edge_end()) {
     it->cost = trans;
     return;
   }
 
   // otherwise add new edge
-  auto dst_vertex = ObtainVertexFromVertexMap(std::move(dstate));
-  dst_vertex->vertices_from.push_back(src_vertex);
-  src_vertex->edges_to.emplace_back(src_vertex, dst_vertex, trans);
+  auto dst_vertex_it = ObtainVertexFromVertexMap(std::move(dstate));
+  Vertex* dst_vertex_ptr = &(*dst_vertex_it);
+
+  // Use stable Vertex* pointers instead of iterators for rehash safety
+  dst_vertex_ptr->vertices_from.push_back(src_vertex_ptr);
+  src_vertex_ptr->edges_to.emplace_back(src_vertex_ptr, dst_vertex_ptr, trans);
 }
 
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::RemoveEdge(State sstate,
                                                         State dstate) {
-  auto src_vertex = FindVertex(sstate);
-  auto dst_vertex = FindVertex(dstate);
+  auto src_vertex_it = FindVertex(sstate);
+  auto dst_vertex_it = FindVertex(dstate);
 
-  if ((src_vertex != vertex_end()) && (dst_vertex != vertex_end())) {
-    for (auto it = src_vertex->edges_to.begin();
-         it != src_vertex->edges_to.end(); ++it) {
-      if (it->dst == dst_vertex) {
-        src_vertex->edges_to.erase(it);
-        // Use list::remove for consistency and efficiency
-        dst_vertex->vertices_from.remove(src_vertex);
+  if ((src_vertex_it != vertex_end()) && (dst_vertex_it != vertex_end())) {
+    Vertex* src_vertex_ptr = &(*src_vertex_it);
+    Vertex* dst_vertex_ptr = &(*dst_vertex_it);
+
+    for (auto it = src_vertex_ptr->edges_to.begin();
+         it != src_vertex_ptr->edges_to.end(); ++it) {
+      if (it->dst == dst_vertex_ptr) {
+        src_vertex_ptr->edges_to.erase(it);
+        // Remove src from dst's incoming list using stable pointer comparison
+        dst_vertex_ptr->vertices_from.remove(src_vertex_ptr);
         return true;
       }
     }
@@ -192,8 +200,17 @@ bool Graph<State, Transition, StateIndexer>::RemoveEdge(State sstate,
 template <typename State, typename Transition, typename StateIndexer>
 void Graph<State, Transition, StateIndexer>::AddUndirectedEdge(
     State sstate, State dstate, Transition trans) {
+  // Add first edge
   AddEdge(sstate, dstate, trans);
-  AddEdge(dstate, sstate, trans);
+
+  // Try to add second edge with rollback on failure
+  try {
+    AddEdge(dstate, sstate, trans);
+  } catch (...) {
+    // Rollback: remove the first edge to maintain atomicity
+    RemoveEdge(sstate, dstate);
+    throw;  // Re-throw the original exception
+  }
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -219,12 +236,6 @@ Graph<State, Transition, StateIndexer>::GetAllEdges() const {
       edges.push_back(it);
   }
   return edges;
-}
-
-template <typename State, typename Transition, typename StateIndexer>
-void Graph<State, Transition, StateIndexer>::ResetAllVertices() {
-  for (auto &vertex_pair : vertex_map_)
-    vertex_pair.second->ClearVertexSearchInfo();
 }
 
 template <typename State, typename Transition, typename StateIndexer>
@@ -415,30 +426,30 @@ Graph<State, Transition, StateIndexer>::AddVertexWithResult(State state) {
 template <typename State, typename Transition, typename StateIndexer>
 bool Graph<State, Transition, StateIndexer>::AddEdgeWithResult(State from, State to, Transition trans) {
   try {
-    // Check if both vertices exist or can be created
+    // Check if both vertices exist
     auto from_it = FindVertex(from);
     auto to_it = FindVertex(to);
-    
-    bool from_exists = from_it != vertex_end();
-    bool to_exists = to_it != vertex_end();
-    
+
     // If vertices don't exist, we can't add edge in "WithResult" mode
     // This is more conservative than the regular AddEdge which creates vertices
-    if (!from_exists || !to_exists) {
+    if (from_it == vertex_end() || to_it == vertex_end()) {
       return false;
     }
-    
-    // Check if edge already exists
-    for (const auto& edge : from_it->edges_to) {
-      if (edge.dst == to_it) {
-        // Edge exists, update weight and return true
-        const_cast<Transition&>(edge.cost) = trans;
-        return true;
-      }
+
+    Vertex* from_ptr = &(*from_it);
+    Vertex* to_ptr = &(*to_it);
+
+    // Check if edge already exists using FindEdge (returns non-const iterator)
+    auto edge_it = from_it->FindEdge(to);
+    if (edge_it != from_it->edge_end()) {
+      // Edge exists, update weight and return true
+      edge_it->cost = trans;
+      return true;
     }
-    
-    // Add new edge
-    AddEdge(from, to, trans);
+
+    // Add new edge using stable Vertex* pointers
+    to_ptr->vertices_from.push_back(from_ptr);
+    from_ptr->edges_to.emplace_back(from_ptr, to_ptr, trans);
     return true;
   } catch (...) {
     return false;
